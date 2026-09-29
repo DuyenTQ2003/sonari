@@ -1,9 +1,11 @@
+
 # CLAUDE.md
 
 Read this file, then `docs/HANDOFF.md`, at the start of every session. Read
 `docs/PLAN-v7.md` and `docs/adr/` only when the task touches them.
 
 ## Project
+
 
 Sonari: a Duolingo-style, topic-based English course for Vietnamese students that
 builds IELTS listening and speaking. There are 7 difficulty levels, and the MVP is
@@ -82,10 +84,22 @@ Never cut: the basic eval harness, GOP calibration.
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project can use a knowledge graph at graphify-out/. It is not generated yet;
+run `graphify .` to create it. Until then, skip the rules below.
 
 Rules:
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Git workflow
+
+- `main` is protected: never commit or push to it directly. Pushes are rejected
+  server-side and every PR needs 3 green CI checks.
+- **Branch first, work second.** Every session starts with:
+  `git checkout main && git pull && git checkout -b <prefix>/<slug>`
+  Prefixes: `feat/`, `fix/`, `chore/`, `docs/`, `test/`.
+- Squash merge only; the branch is deleted on merge.
+- A PR body states what changed and the command that proves it.
+- Work only in `~/sonari` (WSL). Never open or edit the repo from a Windows path.
