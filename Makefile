@@ -1,8 +1,15 @@
 SERVICES := core speech
 UV_RUN := uv run --directory
 
+LINT_TARGETS := $(SERVICES:%=lint-%)
+TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
+
+# Every target is phony (none produces a file of that name).
+# NOTE: make skips implicit (%) rule search for phony targets, so per-service targets
+# must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
+# otherwise they silently become empty recipes ("Nothing to be done").
 .PHONY: dev lint typecheck test test-core test-speech test-scripts fmt lint-scripts \
-	$(SERVICES:%=lint-%) $(SERVICES:%=typecheck-%)
+	$(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
 dev:
 	@trap 'kill 0' INT TERM; \
@@ -10,9 +17,9 @@ dev:
 	$(UV_RUN) services/speech uvicorn sonari_speech.main:app --reload --port 8001 & \
 	wait
 
-lint: $(SERVICES:%=lint-%) lint-scripts
+lint: $(LINT_TARGETS) lint-scripts
 
-lint-%:
+$(LINT_TARGETS): lint-%:
 	$(UV_RUN) services/$* ruff check .
 	$(UV_RUN) services/$* ruff format --check .
 
@@ -21,9 +28,9 @@ lint-scripts:
 	uv run --no-project --with ruff ruff format --check scripts
 	uv run --no-project python scripts/check_no_vietnamese.py services scripts
 
-typecheck: $(SERVICES:%=typecheck-%)
+typecheck: $(TYPECHECK_TARGETS)
 
-typecheck-%:
+$(TYPECHECK_TARGETS): typecheck-%:
 	$(UV_RUN) services/$* mypy
 
 test: test-core test-speech test-scripts
@@ -36,7 +43,7 @@ test-speech:
 	$(UV_RUN) services/speech pytest
 
 test-scripts:
-	uv run --no-project --with pytest pytest -q scripts/tests
+	uv run --no-project --with pytest --with pyyaml pytest -q scripts/tests
 
 fmt:
 	@for s in $(SERVICES); do \
