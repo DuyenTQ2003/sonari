@@ -29,5 +29,5 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [tool.pytest.ini_options]
-pythonpath = ["tools/evaldata"]
+pythonpath = ["tools/evaldata", "spikes/gop"]
 addopts = "-q"

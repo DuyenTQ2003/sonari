@@ -124,3 +124,73 @@ of magnitude.
 
 Audio: LibriSpeech dev-clean, CC BY 4.0 (Panayotov et al., ICASSP 2015; LibriVox).
 No audio is committed.
+
+---
+
+# P02 results: forced alignment + naive GOP (HARD GATE G0)
+
+Date: 2026-09-29. Aligner: `spikes/gop/align.py` (numpy CTC Viterbi, no torchaudio).
+Script: `uv run --directory spikes/gop python run_gop.py`.
+
+Method, fixed before the first run:
+- Each clip is aligned over its whole length to the target word's espeak IPA; the
+  context words fall into the leading and trailing blank states.
+- `gop = mean over segment frames of (log p(expected) - max_{q != expected} log p(q))`,
+  with q over phoneme tokens only (blank and `<s> <pad> </s> <unk>` excluded). The
+  blank-inclusive value is shown for reference and is not used for the verdict.
+- Competitor = the phoneme token with the highest mean log posterior over the segment.
+- Gate: on good.wav, gop(θ | correct) > 0, gop(t | substituted θ→t) < 0, and the
+  substituted case names θ as competitor.
+
+## Verdict: PASS
+
+On good.wav ("think"), /θ/ against the correct reference scores **gop = +3.886**;
+/t/ against the substituted reference scores **gop = −5.713**, and the named
+competitor is **θ**, the phoneme the speaker actually produced. That is a gap of
+9.6 nats on the same audio and the same frames (300–320 ms).
+
+## Segments
+
+Boundaries are in ms from the clip start. A segment is the frames the CTC path assigns
+to the token, so most are one 20 ms frame. Manifest word spans (from the P01 character
+aligner): good "think" 300–480 ms, bad "took" 300–460 ms.
+
+| Run | Reference | # | Phone | ms | gop | gop incl. blank | Competitor | mean p |
+|---|---|---|---|---|---|---|---|---|
+| good | correct | 0 | θ | 300–320 | 3.886 | 3.886 | ð | 0.9369 |
+| good | correct | 1 | ɪ | 360–380 | 2.974 | 2.974 | i | 0.8610 |
+| good | correct | 2 | ŋ | 440–460 | 1.575 | 1.575 | n | 0.8110 |
+| good | correct | 3 | k | 520–540 | 3.353 | 3.353 | kʲ | 0.8988 |
+| good | substituted | 0 | **t** | 300–320 | **−5.713** | −5.713 | **θ** | 0.0031 |
+| good | substituted | 1 | ɪ | 360–380 | 2.974 | 2.974 | i | 0.8610 |
+| good | substituted | 2 | ŋ | 440–460 | 1.575 | 1.575 | n | 0.8110 |
+| good | substituted | 3 | k | 520–540 | 3.353 | 3.353 | kʲ | 0.8988 |
+| bad | correct | 0 | t | 280–300 | 3.798 | 3.798 | d | 0.9603 |
+| bad | correct | 1 | ʊ | 360–380 | 1.350 | 1.350 | ə | 0.5182 |
+| bad | correct | 2 | k | 460–500 | 4.464 | 1.940 | ɡ | 0.7771 |
+| bad | substituted | 0 | **θ** | **160–180** | −10.047 | −10.047 | **æ** | 0.0000 |
+| bad | substituted | 1 | ʊ | 360–380 | 1.350 | 1.350 | ə | 0.5182 |
+| bad | substituted | 2 | k | 460–500 | 4.464 | 1.940 | ɡ | 0.7771 |
+
+Segment wavs: `DATA_DIR/derived/g0/segments/<run>_<idx>_<phone>.wav` (14 files, kept
+out of the repo like all audio). At 20–40 ms each they are too short to judge by ear;
+placement was checked against the manifest word spans instead.
+
+## Findings
+
+- **Placement.** In good.wav every segment sits in order inside or just after the
+  manifest span; /k/ at 520–540 ms is past the manifest end (480 ms), which confirms
+  the P01 note that the character aligner cut the final /k/.
+- **The symmetric case misplaces the missing phoneme (not gating, but it matters for
+  G1).** Scoring bad.wav ("took") against /θ ʊ k/, the aligner put /θ/ at 160–180 ms,
+  inside the preceding word "and", not at the /t/ onset (280–300 ms). The competitor is
+  therefore `æ`, not `t`. The low gop (−10.0) would still flag an error, but it names
+  the wrong sound and points at the wrong place. In good.wav the substituted /t/ landed
+  on the right frame only because no better spot existed nearby. Cause: whole-clip
+  alignment lets an absent phoneme drift into context, since the leading blank state
+  can absorb any frames. G1 must constrain the search (align the full context
+  sequence, or restrict to the word span) before its competitor names can be trusted.
+- The blank-inclusive GOP differs only on the /k/ of "took" (a two-frame segment whose
+  second frame is mostly blank), which is why it is not the primary score.
+- n = 1 pair, native speaker, one contrast. This passes the go/no-go gate; it is not a
+  calibration. Thresholds come from G1.
