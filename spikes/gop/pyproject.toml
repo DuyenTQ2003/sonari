@@ -1,0 +1,27 @@
+# Throwaway GOP spike (P01/P02). May use torch; production speech service will not.
+[project]
+name = "sonari-gop-spike"
+version = "0.0.0"
+description = "wav2vec2 espeak phoneme spike on the G0 pair"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "soundfile>=0.12",
+    "torch>=2.4",
+    "transformers>=4.44",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+extend = "../../ruff.toml"

@@ -8,7 +8,7 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # NOTE: make skips implicit (%) rule search for phony targets, so per-service targets
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
-.PHONY: dev lint typecheck test test-core test-speech test-scripts fmt lint-scripts \
+.PHONY: dev lint typecheck test test-core test-speech test-scripts test-tools fmt lint-scripts \
 	$(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
 dev:
@@ -24,16 +24,16 @@ $(LINT_TARGETS): lint-%:
 	$(UV_RUN) services/$* ruff format --check .
 
 lint-scripts:
-	uv run --no-project --with ruff ruff check scripts
-	uv run --no-project --with ruff ruff format --check scripts
-	uv run --no-project python scripts/check_no_vietnamese.py services scripts
+	uv run --no-project --with ruff ruff check scripts tools spikes
+	uv run --no-project --with ruff ruff format --check scripts tools spikes
+	uv run --no-project python scripts/check_no_vietnamese.py services scripts tools spikes
 
 typecheck: $(TYPECHECK_TARGETS)
 
 $(TYPECHECK_TARGETS): typecheck-%:
 	$(UV_RUN) services/$* mypy
 
-test: test-core test-speech test-scripts
+test: test-core test-speech test-scripts test-tools
 
 test-core:
 	$(UV_RUN) services/core pytest
@@ -45,9 +45,13 @@ test-speech:
 test-scripts:
 	uv run --no-project --with pytest --with pyyaml pytest -q scripts/tests
 
+# numpy-only tests; the root project (torch) is not installed for these.
+test-tools:
+	uv run --no-project --with pytest --with numpy pytest tools
+
 fmt:
 	@for s in $(SERVICES); do \
 		$(UV_RUN) services/$$s ruff check --fix . && $(UV_RUN) services/$$s ruff format . || exit 1; \
 	done
-	uv run --no-project --with ruff ruff check --fix scripts
-	uv run --no-project --with ruff ruff format scripts
+	uv run --no-project --with ruff ruff check --fix scripts tools spikes
+	uv run --no-project --with ruff ruff format scripts tools spikes
