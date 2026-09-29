@@ -73,14 +73,18 @@ def find_violations(path: Path) -> list[tuple[int, str]]:
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
     failed = False
+    checked = 0
     for path in iter_python_files([Path(arg) for arg in argv]):
         if is_exempt(path):
             continue
+        checked += 1
         for number, line in find_violations(path):
             print(f"{path}:{number}: Vietnamese text in .py file: {line}")
             failed = True
     if failed:
         print("Move learner-facing copy to apps/web/messages/vi.json.")
+    else:
+        print(f"OK: no Vietnamese text in {checked} Python files.")
     return 1 if failed else 0
 
 
