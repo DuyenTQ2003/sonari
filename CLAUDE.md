@@ -103,3 +103,19 @@ Rules:
 - Squash merge only; the branch is deleted on merge.
 - A PR body states what changed and the command that proves it.
 - Work only in `~/sonari` (WSL). Never open or edit the repo from a Windows path.
+
+### Session automation
+
+Claude runs the whole loop except the merge:
+
+1. `git checkout main && git pull && git checkout -b <prefix>/<slug>`
+2. implement the task
+3. `make lint typecheck test` — fix until green
+4. `git add -A && git commit` with a conventional message
+5. `git push -u origin <branch>`
+6. `gh pr create --fill`
+7. `sleep 15 && gh pr checks --watch`
+8. report the PR number and stop
+
+The human reviews the diff and merges. Never run `gh pr merge`, never use
+`--admin`, never push to `main`.
