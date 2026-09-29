@@ -26,8 +26,8 @@ Then: M3 P33–P35 → M4 P40–P48 → M5 P50–P56 → M6 P60–P64 → M7 P70
 Hard gates:
 - **P02** decides whether GOP works at all. If the gate fails, stop all tracks and
   re-plan.
-- **P25** is the Pearson r ≥ 0.6 gate. If it fails, switch to word-level scoring and
-  continue.
+- **P25** is gate G1 (minimal-pair error detection). If it fails, switch to word-level
+  scoring and continue. See PLAN-v7 §9.1 for why G1/G2 replaced a Pearson r gate.
 
 ## Session preamble (paste first in every session)
 
@@ -44,32 +44,41 @@ write in the repo is English.
 
 # M0 — Spike
 
-### P01 — wav2vec2 phoneme spike
+### P01 — Eval data bootstrap + wav2vec2 phoneme spike
 Depends on: — · Revise before running: no
 
 ```text
-Task: prove that wav2vec2 phoneme recognition can tell a correct /θ/ from a /t/
-substitution.
+Task: fetch public evaluation audio, build the G0 pair by script, and prove that
+wav2vec2 phoneme recognition separates the two sounds. Read docs/eval-data.md first.
+No audio is recorded by hand anywhere in this project.
 
 Setup
-- Create spikes/gop/ with its own pyproject (uv). Dependencies: torch (CPU),
-  transformers, soundfile, numpy. This spike may use torch; production will not.
+- spikes/gop/ with its own pyproject (uv). Dependencies: torch (CPU), transformers,
+  soundfile, numpy, pandas. This spike may use torch; production will not.
 - Model: facebook/wav2vec2-lv-60-espeak-cv-ft.
-- I will put two recordings in spikes/gop/audio/: good.wav (I say "think" with /θ/)
-  and bad.wav (I say "tink"). Add a README section telling me how to record them:
-  16 kHz mono, 1–2 s, quiet room. If the files are missing, stop and ask.
+- All data under DATA_DIR (default ~/sonari-data), never in the repo.
 
 Do
-1. spikes/gop/run_spike.py: load audio, resample to 16 kHz if needed, run the model,
-   greedy CTC decode, and print the phoneme sequence for each file.
-2. Print frame-level posteriors for the tokens θ and t across the utterance
-   (max over frames and mean over the top-5 frames).
-3. Write spikes/gop/RESULTS.md with the decoded sequences and the numbers.
+1. tools/evaldata/fetch_librispeech.py: download and extract dev-clean into DATA_DIR,
+   with a checksum check and a resume-safe download. Print the licence (CC BY 4.0) and
+   write DATA_DIR/librispeech/LICENCE-NOTE.md.
+2. tools/evaldata/index.py: parse the transcripts into a dataframe of
+   (utterance_id, speaker_id, flac_path, text, duration); cache it as parquet.
+3. tools/evaldata/build_g0.py: pick one utterance containing a word with initial
+   /theta/ (think, three, thought, thank) and one containing a /t/-initial word (tin,
+   took, talk, time), preferring the same speaker. Cut each to the target word plus
+   ~0.3 s of context, convert to 16 kHz mono WAV, and write
+   DATA_DIR/derived/g0/{good,bad}.wav plus g0_manifest.json recording the source
+   utterance ids, speaker ids and words chosen.
+4. spikes/gop/run_spike.py: run the model on both files, greedy CTC decode, print the
+   phoneme sequence for each, and print frame-level posteriors for the theta and t
+   tokens (max over frames, mean of the top-5 frames).
+5. spikes/gop/RESULTS.md: the decodes, the numbers, and the manifest contents.
 
 Done when
-- `uv run python run_spike.py` prints both decodes.
-- RESULTS.md states plainly whether good.wav decodes /θ/ and bad.wav decodes /t/.
-  Do not interpret a failure as success. If both decode the same, say so and stop.
+- `uv run python tools/evaldata/build_g0.py` produces both wavs with a manifest.
+- RESULTS.md states plainly whether each clip decodes the expected phoneme. Do not
+  interpret a failure as success. If both decode the same, say so and stop.
 ```
 
 ### P02 — forced alignment + naive GOP (HARD GATE)
@@ -84,21 +93,24 @@ Do
    log-posteriors (blank handling, repeated tokens). Do not depend on torchaudio's
    forced_align: the production image will run onnxruntime + numpy only. Keep it
    under 120 lines with a unit test on a synthetic posterior matrix.
-2. Expected sequence for "think" is hard-coded for now as espeak IPA tokens that
-   exist in the model vocab (read vocab.json to confirm token spelling).
+2. The expected sequence comes from the g0 manifest's target word, written as espeak
+   IPA tokens that exist in the model vocab (read vocab.json to confirm spelling).
+   Also score the good clip a second time against a substituted reference (theta
+   replaced by t) — that mismatch case is what G1 generalises.
 3. For each aligned phoneme segment compute:
      gop = mean over frames of (log p(expected) - max_{q != expected} log p(q))
    and record the argmax competitor q.
-4. Export each segment as a small wav (segments/<file>_<idx>_<phone>.wav) so I can
-   listen to where /θ/ was placed.
+4. Export each segment as a small wav (segments/<file>_<idx>_<phone>.wav) so the
+   placement can be checked.
 5. Append results to RESULTS.md: segment boundaries in ms, gop, competitor, for both
    files.
 
 Gate (write the verdict in RESULTS.md)
-- PASS if the gop for /θ/ in good.wav exceeds bad.wav by a clear margin, and the
-  competitor in bad.wav is /t/.
+- PASS if the gop for the correct reference is clearly higher than for the
+  substituted reference on the same audio, and the competitor named in the
+  substituted case is the phoneme the speaker actually produced.
 - FAIL otherwise. On FAIL, do not tune thresholds to force a pass. List three
-  hypotheses (recording, token mapping, model) and stop.
+  hypotheses (clip selection, token mapping, model) and stop.
 ```
 
 ### P03 — ARPAbet → espeak IPA mapping
@@ -468,50 +480,76 @@ Done when
 - A test proves no Vietnamese text appears in any response.
 ```
 
-### P24 — Calibration data tooling
-Depends on: P23, recordings from M0 · Revise before running: YES — paste how the recordings are stored and consented
+### P24 — Build the G1 minimal-pair set
+Depends on: P23, docs/eval-data.md · Revise before running: no
 
 ```text
-Task: tooling to hand-label 200 utterances at phoneme level.
+Task: build 200 evaluation items from LibriSpeech by minimal-pair reference
+substitution. No recording. Read docs/eval-data.md section G1 first.
 
 Do
-1. tools/labeler/: a minimal local web page (served by a small FastAPI app) that plays
-   an utterance, shows the expected phonemes with the aligned segments, and lets me
-   mark each phoneme correct / substituted-by-X / deleted, plus an overall 1–5
-   rating.
-2. Storage: JSONL per utterance with speaker id (pseudonymous), consent record id,
-   labeller, timestamp. Audio stays outside git; paths are relative to DATA_DIR.
-3. Inter-rater support: the same utterance can have several label sets.
-4. Export script to a frozen dataset version with a manifest and checksum.
+1. tools/evaldata/wordpairs.yaml: for each of the 8 error codes, a list of minimal
+   pairs (real word, substituted reference) differing in exactly the target phoneme,
+   with the phoneme position recorded.
+2. tools/evaldata/build_g1.py: search the LibriSpeech index for utterances containing
+   a pair's real word; take up to ~12 items per error code, preferring distinct
+   speakers; cut the word plus context; emit two items per utterance:
+     match     - audio + reference text with the real word
+     mismatch  - same audio + reference text with the substituted word
+   Selection is deterministic with a recorded seed.
+3. DATA_DIR/derived/g1/manifest.csv: item_id, utterance_id, speaker_id, wav_path,
+   error_code, condition, reference_text, target_word, target_phoneme_index.
+4. Validation: every item is 16 kHz mono, 0.4-8 s; every mismatch has a match sibling;
+   the per-code count table is printed; speaker overlap across codes is reported. Fail
+   loudly on a missing sibling.
+5. A split file (by utterance_id, 70/30, seed recorded) written next to the manifest,
+   so P25 cannot choose its own split.
 
 Done when
-- I can label 10 utterances in the tool and export dataset v0.
-- Nothing personally identifying is written into the repo.
+- The manifest has ~200 items with the per-code table printed.
+- A test asserts no utterance_id appears in both splits.
 ```
 
-### P25 — Calibration + eval gate (HARD GATE)
-Depends on: P24 with ≥ 200 labelled utterances · Revise before running: no
+### P25 — Gates G1 and G2 (HARD GATE)
+Depends on: P24 · Revise before running: no
 
 ```text
-Task: fit thresholds and decide phoneme-level vs word-level scoring.
+Task: fit thresholds and decide phoneme-level vs word-level scoring, using the
+minimal-pair set (G1) and an accented-speech set (G2). See PLAN-v7 section 9.1.
 
 Do
-1. eval/gop/: split the dataset by speaker (no speaker in both train and test).
-2. Fit thresholds (global, then per-phoneme offsets only for phonemes with ≥ 30
-   test examples).
-3. Metrics on test: Pearson r of overall score vs human 1–5 rating (with 95%
-   bootstrap CI), per-phoneme error-detection precision/recall, and a substitution
-   accuracy (predicted competitor = labelled substitute).
-4. Write thresholds/v1.yaml and eval/gop/REPORT.md with a reliability plot.
-5. Gate: phoneme level if Pearson r ≥ 0.6 (lower CI bound reported). Otherwise set
-   level="word" in responses, hide phoneme chips via the contract field, and record
-   the decision in the report.
-6. `make eval-gop` reproduces the report from the frozen dataset.
+1. eval/gop/: use the split file produced by P24 (by utterance_id). Do not recompute
+   it.
+2. Fit thresholds on train: global first, then per-phoneme offsets only for phonemes
+   with at least 30 test examples. Write thresholds/v1.yaml.
+3. G1 metrics on test:
+     - detection recall: of the mismatch items, how many flag the substituted phoneme;
+     - precision: of all flagged phonemes in mismatch items, how many are the target;
+     - false-alarm rate: fraction of phonemes flagged in match items;
+     - competitor accuracy: the named competitor equals the phoneme actually produced;
+     - per-error-code breakdown (8 rows) — a code below 0.5 recall is named explicitly.
+   Gate: recall >= 0.8, precision >= 0.7, false-alarm <= 0.15.
+4. G2: repeat the same construction over a Common Voice non-native slice, or use
+   L2-ARCTIC's real annotations if access was granted, and report detection recall. If
+   neither is under DATA_DIR, write "G2 not run" in the report — do not skip silently
+   and do not substitute another number.
+5. eval/gop/REPORT.md: both gates, the per-code table, the split seed, and a plain
+   statement of what these numbers do and do not show: native English speech,
+   constructed reference errors, no Vietnamese-learner validation.
+6. Verdict: phoneme level if G1 passes. Otherwise set level="word" in responses and
+   record the decision.
+7. `make eval-gop` reproduces the report from the frozen dataset.
+
+Rules
+- Do not tune thresholds against the test split. If you are tempted, that is the
+  finding: report it.
+- Do not report a Pearson r against human ratings. There are no human ratings here.
+- Do not describe the set as "learner errors". They are reference substitutions.
 
 Done when
-- REPORT.md states the verdict with numbers and CI.
-- CI runs a fast subset of the eval and fails if r drops by more than 0.05 from the
-  recorded value.
+- REPORT.md states the G1 verdict with the numbers and the per-code table.
+- CI runs a fast subset and fails if recall drops more than 0.05 below the recorded
+  value.
 ```
 
 ---
@@ -550,6 +588,9 @@ Do
    colour + wavy underline + label, a phoneme chip strip with a tap-for-detail sheet,
    at most 3 fix cards with reference audio, "Thử lại" and "Chia sẻ kết quả".
 3. level="word" responses hide the phoneme strip (the P25 fallback).
+3b. While G3 is open, the result screen carries a small "beta" marker and the score
+   ring is framed as sounds to work on, not as a measurement of the learner. The
+   wording is in vi.json; keep it short and non-apologetic.
 4. Accessibility: verdicts readable by a screen reader; colour is never the only
    channel (test with a grayscale snapshot).
 
@@ -587,7 +628,9 @@ Task: store attempts safely and turn anonymous users into accounts.
 Do
 1. Anonymous session id (httpOnly cookie). Attempts stored with score JSON always;
    audio stored in R2 only if the user ticked a separate, unticked-by-default
-   consent box ("cho phép dùng bản ghi để cải thiện chấm điểm").
+   consent box ("cho phép dùng bản ghi để cải thiện chấm điểm"). This consented audio
+   is the only route to gate G3 (PLAN-v7 §9.1), so the consent text must cover
+   evaluation use explicitly.
 2. R2 keys by attempt id, lifecycle rule to delete non-consented temp audio after
    24 h. Consent record: text version, timestamp, attempt id.
 3. On UserRegistered, a consumer claims attempts of the anonymous session.
@@ -1129,6 +1172,10 @@ Task: make the work legible to an AI Engineer hiring manager.
 Do
 1. README: problem, architecture diagram (Mermaid), and the PLAN-v7 §14 portfolio map
    filled with real numbers from eval/REPORT.md. Every claim links to a report.
+1b. A "Limits of the evaluation" section: G1 is native English speech with constructed
+   reference errors, G2 is non-Vietnamese accented speech, G3 is open and what would
+   close it. Write it plainly; an honest limits section is stronger than an
+   unqualified number.
 2. docs/adr/README.md index.
 3. A 3-minute demo video script: recording → phoneme error → Vietnamese fix → unit
    lesson → speaking result.
