@@ -45,9 +45,9 @@ test-speech:
 test-scripts:
 	uv run --no-project --with pytest --with pyyaml pytest -q scripts/tests
 
-# numpy-only tests; the root project (torch) is not installed for these.
+# numpy-only tests (tools + spike aligner); neither torch project is installed for these.
 test-tools:
-	uv run --no-project --with pytest --with numpy pytest tools
+	uv run --no-project --with pytest --with numpy pytest tools spikes/gop/tests
 
 fmt:
 	@for s in $(SERVICES); do \

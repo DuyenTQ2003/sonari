@@ -25,3 +25,7 @@ explicit = true
 
 [tool.ruff]
 extend = "../../ruff.toml"
+
+[tool.ruff.lint]
+# IPA phoneme symbols are data here, not look-alike typos.
+allowed-confusables = ["ɪ", "ː"]
