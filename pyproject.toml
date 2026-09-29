@@ -1,0 +1,33 @@
+# Repo-level tools (evaluation data). Not a package and not a uv workspace:
+# each service under services/ and each spike under spikes/ is its own uv project.
+[project]
+name = "sonari-tools"
+version = "0.0.0"
+description = "Sonari repo tools: public evaluation data fetch and G0/G1 builders"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pyarrow>=16",
+    "soundfile>=0.12",
+    "torch>=2.4",
+    "transformers>=4.44",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["tools/evaldata"]
+addopts = "-q"

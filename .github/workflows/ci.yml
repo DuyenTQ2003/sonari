@@ -33,5 +33,5 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-      - run: make lint-scripts test-scripts
+      - run: make lint-scripts test-scripts test-tools
       - run: uvx pre-commit run --all-files --show-diff-on-failure
