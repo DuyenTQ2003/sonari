@@ -1,0 +1,28 @@
+# Throwaway TTS spike (P05). May use torch; the production TTS batch runs offline.
+[project]
+name = "sonari-tts-spike"
+version = "0.0.0"
+description = "Kokoro-82M listening and real-time-factor spike"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "en-core-web-sm",
+    "kokoro>=0.9.4",
+    "numpy>=2.4.6",
+    "soundfile>=0.14.0",
+    "torch>=2.14.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+extend = "../../ruff.toml"

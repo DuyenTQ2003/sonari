@@ -1,0 +1,58 @@
+{
+  "sentence": {
+    "text": "Many plants end their long winter sleep and form new buds and shoots.",
+    "source_url": "https://learningenglish.voanews.com/a/watching-the-grass-grow-is-not-fun/8003108.html",
+    "title": "'Watching the Grass Grow' Is Not Fun",
+    "program": "Words and Their Stories",
+    "byline": "VOA Learning English",
+    "credit_line": "Anna Matteo wrote this story for VOA Learning English.",
+    "published": "2025-03-15",
+    "fetched": "2026-09-30",
+    "voice": "af_heart",
+    "speeds": [
+      0.8,
+      1.0,
+      1.15
+    ]
+  },
+  "dialogue": {
+    "source_url": "https://learningenglish.voanews.com/a/lets-learn-english-level-2-lesson1/3960391.html",
+    "title": "Let's Learn English - Level 2 - Lesson 1: Budget Cuts",
+    "program": "Let's Learn English",
+    "byline": "VOA Learning English",
+    "published": "2019-05-12",
+    "fetched": "2026-09-30",
+    "note": "Turns 1-6 of the Anna/Jonathan exchange, verbatim; typographic quotes changed to straight quotes.",
+    "voices": {
+      "Anna": "af_heart",
+      "Jonathan": "am_michael"
+    },
+    "gap_s": 0.4,
+    "turns": [
+      {
+        "speaker": "Anna",
+        "text": "So, Jonathan, what do you think today's meeting is about? The email sounded important."
+      },
+      {
+        "speaker": "Jonathan",
+        "text": "Well, I have heard people in the building talking about budget cuts."
+      },
+      {
+        "speaker": "Anna",
+        "text": "Oh! Budget cuts? Wait, who has been talking about budget cuts?"
+      },
+      {
+        "speaker": "Jonathan",
+        "text": "Mark in Accounting."
+      },
+      {
+        "speaker": "Anna",
+        "text": "Mark in Accounting? That's one person. That's not \"people.\""
+      },
+      {
+        "speaker": "Jonathan",
+        "text": "I know, but Mark knows everything that goes on at The Studio."
+      }
+    ]
+  }
+}

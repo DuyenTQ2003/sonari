@@ -8,8 +8,8 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # NOTE: make skips implicit (%) rule search for phony targets, so per-service targets
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
-.PHONY: dev lint typecheck test test-core test-speech test-scripts test-tools fmt lint-scripts \
-	$(LINT_TARGETS) $(TYPECHECK_TARGETS)
+.PHONY: dev lint typecheck test test-core test-speech test-scripts test-tools check-phoneset fmt \
+	lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
 dev:
 	@trap 'kill 0' INT TERM; \
@@ -57,6 +57,10 @@ voa-crawl:
 
 voa-report:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.report
+# Needs network (model vocab from the Hugging Face hub) and espeak-ng; not part of CI.
+check-phoneset:
+	$(UV_RUN) spikes/gop python -m phoneset.check_vocab
+	$(UV_RUN) spikes/gop python -m phoneset.roundtrip_test
 
 fmt:
 	@for s in $(SERVICES); do \

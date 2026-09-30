@@ -5,8 +5,11 @@ version = "0.0.0"
 description = "wav2vec2 espeak phoneme spike on the G0 pair"
 requires-python = ">=3.11,<3.12"
 dependencies = [
+    "g2p-en>=2.1.0",
     "numpy>=1.26",
     "pandas>=2.2",
+    "phonemizer>=3.4.0",
+    "pyyaml>=6.0.3",
     "soundfile>=0.12",
     "torch>=2.4",
     "transformers>=4.44",
@@ -28,4 +31,4 @@ extend = "../../ruff.toml"
 
 [tool.ruff.lint]
 # IPA phoneme symbols are data here, not look-alike typos.
-allowed-confusables = ["ɪ", "ː"]
+allowed-confusables = ["ɪ", "ː", "ɑ", "ɡ", "ʔ", "ˈ", "ˌ"]
