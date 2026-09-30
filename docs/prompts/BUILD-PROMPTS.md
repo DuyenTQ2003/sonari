@@ -497,6 +497,14 @@ Do
      match     - audio + reference text with the real word
      mismatch  - same audio + reference text with the substituted word
    Selection is deterministic with a recorded seed.
+   Record the target word's time span from the word alignment in the manifest. G1
+   scoring must constrain phoneme alignment to that span: when the reference contains
+   a phoneme the speaker never produced, free alignment over the whole clip lets that
+   phoneme drift into neighbouring words. P02 saw exactly this - scoring "took"
+   against /theta U k/ placed /theta/ inside the preceding word "and", 120 ms away
+   from the real /t/, and named the wrong competitor. Also verify the cut window
+   keeps the word's final consonant; the P01 "think" clip lost its /k/, and FIN_DEL
+   items would otherwise be false positives.
 3. DATA_DIR/derived/g1/manifest.csv: item_id, utterance_id, speaker_id, wav_path,
    error_code, condition, reference_text, target_word, target_phoneme_index.
 4. Validation: every item is 16 kHz mono, 0.4-8 s; every mismatch has a match sibling;
@@ -524,6 +532,11 @@ Do
    with at least 30 test examples. Write thresholds/v1.yaml.
 3. G1 metrics on test:
      - detection recall: of the mismatch items, how many flag the substituted phoneme;
+     - localisation: the flagged phoneme must fall inside the target word's span from
+       the manifest. A flag outside that span counts as a MISS, not a detection.
+       Report in-span and out-of-span counts separately: a scorer that flags the right
+       error in the wrong place is not usable in the product, which tells the learner
+       which sound to fix.
      - precision: of all flagged phonemes in mismatch items, how many are the target;
      - false-alarm rate: fraction of phonemes flagged in match items;
      - competitor accuracy: the named competitor equals the phoneme actually produced;
