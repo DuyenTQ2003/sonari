@@ -52,7 +52,15 @@ faster at all.
 
 | Question | Answer |
 |---|---|
-| Good enough for course audio? (Yes / Only with changes / No) | |
-| Which speed should the "slow" button use? (0.8x / other) | |
-| Is 1.15x worth offering? | |
-| Anything that would make you reject a voice? | |
+| Good enough for course audio? | Yes |
+| Which speed should the "slow" button use? | 0.8x |
+| Is 1.15x worth offering? | Yes, for levels 6-7 |
+| Anything that would make you reject a voice? | Unclear final consonants, or stress on the wrong syllable |
+
+Intelligibility, final consonants and stress are all acceptable, and 0.8x shows no
+artefacts.
+
+Scope note: judged by an intermediate listener. For a true beginner the same audio is
+likely too hard, and slowing it down does not fix that — 0.8x stretches the utterance
+but keeps liaison, reduced vowels and the absence of phrase-level pauses. This does
+not affect the MVP, which is level 4. See docs/backlog.md for levels 1-3.
