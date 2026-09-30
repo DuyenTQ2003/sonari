@@ -1,0 +1,51 @@
+# Hand labels for every word whose mapped tokens still differ from espeak-ng after the
+# fold rules (compare.py). Read by roundtrip_test.py, which fails on an unlabelled word
+# and on any "mapping bug": bugs get fixed in arpabet_to_espeak.yaml, not listed here.
+#
+# class: accent variant | g2p error | mapping bug
+# Keys are quoted because YAML reads a bare on/off as a boolean.
+# The class is the author's judgement from the two token lists, not a measurement.
+# CMUdict (behind g2p_en) and espeak-ng en-us are both General American but disagree
+# on a few lexical vowels and on weak forms; those are "accent variant".
+"a":
+  class: accent variant
+  note: weak form (CMUdict) vs citation form (espeak-ng) of a function word
+"and":
+  class: accent variant
+  note: weak form vs citation form of a function word
+"than":
+  class: accent variant
+  note: weak form vs citation form of a function word
+"into":
+  class: accent variant
+  note: weak form vs citation form of a function word
+"on":
+  class: accent variant
+  note: LOT vs CLOTH vowel (ɑː vs ɔ); both occur in US English
+"want":
+  class: accent variant
+  note: LOT vs CLOTH vowel (ɑː vs ɔ); both occur in US English
+"long":
+  class: accent variant
+  note: THOUGHT vs short ɔ before ŋ; both occur in US English
+"off":
+  class: accent variant
+  note: THOUGHT vs short ɔ before f; both occur in US English
+"because":
+  class: accent variant
+  note: both /bɪˈkɔːz/ and /bɪˈkʌz/ are common; g2p_en returned the first, espeak-ng the second
+"really":
+  class: accent variant
+  note: two-syllable ɹ ˈɪ l i vs espeak-ng's ɹ ˈiə l i; both occur
+"interest":
+  class: accent variant
+  note: unstressed vowel quality (ə vs ɛ) in the second syllable
+"different":
+  class: accent variant
+  note: three-syllable CMUdict form vs two-syllable espeak-ng form (syncope)
+"every":
+  class: accent variant
+  note: three-syllable CMUdict form vs two-syllable espeak-ng form (syncope)
+"include":
+  class: accent variant
+  note: espeak-ng assimilates n to ŋ before k; CMUdict keeps n

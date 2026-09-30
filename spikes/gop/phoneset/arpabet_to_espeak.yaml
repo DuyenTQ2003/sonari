@@ -1,0 +1,90 @@
+# ARPAbet (CMUdict / g2p_en, stress digits stripped) -> espeak IPA tokens.
+#
+# Every value is a token of the facebook/wav2vec2-lv-60-espeak-cv-ft vocab.json
+# (phoneset/check_vocab.py asserts it). The model was fine-tuned on espeak-ng en-us
+# labels, so the tokens follow espeak's own phone segmentation, not textbook IPA.
+#
+# Accent: US English (General American, rhotic). Choices that depend on the accent are
+# marked "ACCENT" below.
+version: 1
+accent: en-us
+
+# One entry per ARPAbet phone: 39 in total.
+phones:
+  # Vowels
+  AA: [ɑː]      # father, hot. ACCENT: father-bother merger (no ɒ).
+  AE: [æ]       # trap
+  AH: [ʌ]       # stressed (strut); see `unstressed` for schwa
+  AO: [ɔː]      # thought. ACCENT: no cot-caught merger in the espeak en-us labels.
+  AW: [aʊ]      # mouth
+  AY: [aɪ]      # price
+  EH: [ɛ]       # dress
+  ER: [ɜː]      # stressed (nurse); see `unstressed` for ɚ. ACCENT: rhotic.
+  EY: [eɪ]      # face
+  IH: [ɪ]       # kit
+  IY: [iː]      # fleece; see `unstressed_iy` for the unstressed cases
+  OW: [oʊ]      # goat. ACCENT: US oʊ, not GB əʊ.
+  OY: [ɔɪ]      # choice
+  UH: [ʊ]       # foot
+  UW: [uː]      # goose
+  # Consonants
+  B: [b]
+  CH: [tʃ]      # one token in the vocab
+  D: [d]        # ACCENT: kept as d, never the flap ɾ of "water", "city"
+  DH: [ð]
+  F: [f]
+  G: [ɡ]        # U+0261 LATIN SMALL LETTER SCRIPT G, not ASCII g
+  HH: [h]
+  JH: [dʒ]      # one token in the vocab
+  K: [k]
+  L: [l]
+  M: [m]
+  N: [n]
+  NG: [ŋ]
+  P: [p]
+  R: [ɹ]        # U+0279, the espeak rhotic
+  S: [s]
+  SH: [ʃ]
+  T: [t]        # ACCENT: kept as t, never the flap ɾ or the glottal stop ʔ
+  TH: [θ]
+  V: [v]
+  W: [w]
+  Y: [j]
+  Z: [z]
+  ZH: [ʒ]
+
+# Used instead of `phones` when the CMUdict stress digit is 0 (unstressed).
+unstressed:
+  AH: [ə]
+  ER: [ɚ]
+
+# Unstressed IY (CMUdict IY0) is context dependent in espeak: "happy" h ˈæ p i, "create"
+# k ɹ iː ˈeɪ t, "anything" ˈɛ n ɪ θ ˌɪ ŋ.
+unstressed_iy:
+  word_final: [i]
+  before_vowel: [iː]
+  elsewhere: [ɪ]
+
+# Vowel + R. Followed by a consonant or the word end, espeak emits one token ("car"
+# k ˈɑːɹ); each token below is in the vocab, and scoring ɑː + ɹ would score a unit the
+# model never emits. Before a vowel espeak keeps vowel and ɹ apart ("very" v ˈɛ ɹ i),
+# except for UH, which it doubles ("during" d ˈʊɹ ɹ ɪ ŋ). Without `before_vowel` the
+# vowel and R are mapped separately in that position.
+r_coloured:
+  AA: {token: [ɑːɹ]}
+  AO: {token: [ɔːɹ]}
+  EH: {token: [ɛɹ]}
+  IH: {token: [ɪɹ]}
+  IY: {token: [ɪɹ]}   # CMUdict spells the NEAR set of "here", "hear", "ear" as IY R
+  UH: {token: [ʊɹ], before_vowel: [ʊɹ, ɹ]}
+  AY: {token: [aɪɚ]}  # "fire", "retire"; ER0 after AY is handled by `vowel_merges`
+
+# An unstressed vowel that espeak fuses with the vowel before it into one token.
+vowel_merges:
+  AY+AH: [aɪə]   # "science", "quiet"
+  AY+ER: [aɪɚ]   # "fire", "entire"
+  IY+AH: [iə]    # "area", "idea", "various"
+
+# CMUdict's ER already contains an r. Before a vowel espeak articulates it again
+# ("around" ɚ ɹ ˈaʊ n d, "current" k ˈɜː ɹ ə n t), so this token follows the ER token.
+er_before_vowel: [ɹ]
