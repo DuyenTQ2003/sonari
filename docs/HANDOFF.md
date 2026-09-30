@@ -13,6 +13,12 @@ Last updated: 2026-09-30
   (`run_gop.py`): θ|correct gop +3.89, t|substituted gop −5.71, competitor θ.
 - Root `pyproject.toml` (`sonari-tools`, not a workspace) so `uv run python tools/...`
   works from the repo root. New `make test-tools` (numpy-only) runs in CI.
+
+- **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, one real VOA sentence at
+  0.8x/1.0x/1.15x and a 6-turn VOA dialogue (`af_heart`, `am_michael`); wavs in
+  `~/sonari-data/derived/tts/`. RTF on this i5-11400H (WSL2): 0.35-0.41 at 4 threads,
+  0.70-0.77 at 1 thread. See `spikes/tts/RESULTS.md`.
+
 - **P03 done.** `spikes/gop/phoneset/`: `arpabet_to_espeak.yaml` (39 phones plus context
   rules), `mapping.py`, `check_vocab.py` (50/50 tokens in vocab), `roundtrip_test.py`,
   `REPORT.md`. 200 NGSL words vs espeak-ng: 88.0% strict, 93.0% after fold rules; the 14
@@ -36,4 +42,7 @@ Last updated: 2026-09-30
 3. P11 Compose (ADR-0001 now in the repo).
 
 ## Blockers
+- P05: the owner fills in `spikes/tts/CHECKLIST.md` by ear; no quality verdict exists yet.
+- This branch is stacked on the P01 branch: merge the P01 PR first, then rebase.
+- None for P11.
 - None.

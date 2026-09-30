@@ -12,3 +12,6 @@ PR description.
 - Agent tutor, MCP server, grammar RAG
 - Reading, writing
 - Web push reminders (email first)
+- Beginner-friendly TTS for levels 1-3: 0.8x alone is not enough. Options, cheapest
+  first: try other Kokoro voices; insert 300-500 ms pauses at clause boundaries;
+  play each line twice (slow with pauses, then natural). Raised after the P05 spike.
