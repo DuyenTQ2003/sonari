@@ -13,6 +13,10 @@ Last updated: 2026-09-30
   (`run_gop.py`): θ|correct gop +3.89, t|substituted gop −5.71, competitor θ.
 - Root `pyproject.toml` (`sonari-tools`, not a workspace) so `uv run python tools/...`
   works from the repo root. New `make test-tools` (numpy-only) runs in CI.
+- **P06 built, inventory partial (0.9%).** `tools/voa_inventory/`: polite resumable crawler,
+  parser, licence filter, level/topic tags, report. 600 of 67,337 sitemap URLs sampled at
+  random: 73 usable; 96 of 169 audio+text pages fail the licence filter. 7 of 8 level 4
+  topics have < 2 usable items in this sample (not conclusive). `docs/voa-inventory.md`.
 
 - **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, one real VOA sentence at
   0.8x/1.0x/1.15x and a 6-turn VOA dialogue (`af_heart`, `am_michael`); wavs in
@@ -37,11 +41,15 @@ Last updated: 2026-09-30
   Untested against model output; see REPORT.md, last section, before P22/P25.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
+1. P03: ARPAbet → espeak IPA mapping.
 1. P04: ONNX export + CPU benchmark.
 2. Design A6 → P12 contracts.
 3. P11 Compose (ADR-0001 now in the repo).
 
 ## Blockers
+- P06: finish the crawl in your own terminal (about 18 h, resumable), then `make voa-report`:
+  `VOA_CONTACT_EMAIL=you@x.com make voa-crawl ARGS="--limit 100000"` (Claude background jobs
+  stop after 10 minutes).
 - P05: the owner fills in `spikes/tts/CHECKLIST.md` by ear; no quality verdict exists yet.
 - This branch is stacked on the P01 branch: merge the P01 PR first, then rebase.
 - None for P11.

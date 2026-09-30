@@ -4,3 +4,5 @@ target-version = "py311"
 
 [lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# Typographic quotes are real input for the VOA page parser, not look-alike typos.
+allowed-confusables = ["’", "”"]

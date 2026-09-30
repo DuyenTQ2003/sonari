@@ -49,6 +49,14 @@ test-scripts:
 test-tools:
 	uv run --no-project --with pytest --with numpy --with pyyaml pytest tools spikes/gop/tests
 
+# VOA inventory (P06): a polite, resumable crawl into DATA_DIR/voa_cache, then an offline
+# report. The crawl needs VOA_CONTACT_EMAIL (it goes into the User-Agent). Not part of CI.
+.PHONY: voa-crawl voa-report
+voa-crawl:
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.crawl $(ARGS)
+
+voa-report:
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.report
 # Needs network (model vocab from the Hugging Face hub) and espeak-ng; not part of CI.
 check-phoneset:
 	$(UV_RUN) spikes/gop python -m phoneset.check_vocab
