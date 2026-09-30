@@ -43,21 +43,15 @@ LEXICON = {
 SUBSTITUTE = {"θ": "t", "t": "θ"}
 
 
-class Scorer:
-    def __init__(self) -> None:
-        self.extractor = Wav2Vec2FeatureExtractor.from_pretrained(MODEL)
-        self.model = Wav2Vec2ForCTC.from_pretrained(MODEL).eval()
+class PhonemeScorer:
+    """Model vocabulary plus GOP scoring. Takes log-posteriors from any backend."""
+
+    def __init__(self, blank: int) -> None:
         vocab_path = Path(hf_hub_download(MODEL, "vocab.json"))
         self.vocab: dict[str, int] = json.loads(vocab_path.read_text("utf-8"))
         self.id2tok = {v: k for k, v in self.vocab.items()}
-        self.blank = self.model.config.pad_token_id
+        self.blank = blank
         self.phoneme_ids = np.array(sorted(v for k, v in self.vocab.items() if k not in SPECIAL))
-
-    def log_probs(self, audio: np.ndarray) -> np.ndarray:
-        inputs = self.extractor(audio, sampling_rate=SAMPLE_RATE, return_tensors="pt")
-        with torch.inference_mode():
-            logits = self.model(inputs.input_values).logits[0]
-        return torch.log_softmax(logits, dim=-1).numpy()
 
     def score(self, log_probs: np.ndarray, phones: list[str]) -> list[dict]:
         missing = [p for p in phones if p not in self.vocab]
@@ -86,6 +80,21 @@ class Scorer:
                 }
             )
         return segments
+
+
+class Scorer(PhonemeScorer):
+    """PhonemeScorer with the torch model as the log-posterior backend."""
+
+    def __init__(self) -> None:
+        self.extractor = Wav2Vec2FeatureExtractor.from_pretrained(MODEL)
+        self.model = Wav2Vec2ForCTC.from_pretrained(MODEL).eval()
+        super().__init__(self.model.config.pad_token_id)
+
+    def log_probs(self, audio: np.ndarray) -> np.ndarray:
+        inputs = self.extractor(audio, sampling_rate=SAMPLE_RATE, return_tensors="pt")
+        with torch.inference_mode():
+            logits = self.model(inputs.input_values).logits[0]
+        return torch.log_softmax(logits, dim=-1).numpy()
 
 
 def export_segments(audio: np.ndarray, name: str, segments: list[dict]) -> None:
