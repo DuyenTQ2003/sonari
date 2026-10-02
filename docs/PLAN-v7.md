@@ -90,7 +90,7 @@ are our own approximation, and the docs say so.
 ```
 Course (IELTS track)
 └── Level 1..7             difficulty (§3.1)
-    └── Unit                one topic, ~8 per level
+    └── Unit                one topic, ~8 per level (level 4: 8 plus Unit 0, §4.2)
         ├── L1 Vocabulary A       6 words
         ├── L2 Vocabulary B       6 words
         ├── L3 Sentences in use   the 12 words inside real sentences
@@ -103,37 +103,90 @@ Review (separate mode)      FSRS queue of everything learned, daily
 A lesson is 10–15 exercises of **mixed types** and takes about 5 minutes. Mixing types
 within one lesson is the core Duolingo mechanic, not the path graphic.
 
-### 4.1 MVP slice: Level 4, 8 units
+### 4.1 MVP slice: Level 4, 8 units plus Unit 0
 
 Level 4 comes first for three reasons. Most VN university targets (IELTS 4.5–5.5) sit
 there. VOA Learning English content is richest at this level. And the v6 B1 work
 carries over directly.
 
-| # | Topic (VI) | Grammar point | Pronunciation focus |
-|---|---|---|---|
-| 1 | Công nghệ trong đời sống | Present simple vs "to be" (VI has no copula agreement) | Final /s/ /z/ |
-| 2 | Học tập & công việc | Present continuous for current activity | /ʃ/ vs /s/ |
-| 3 | Gia đình & bạn bè | Possessives, "have got" | /θ/ /ð/ |
-| 4 | Đồ ăn & nhà hàng | Countable/uncountable + "Would you like" | /æ/ vs /e/ |
-| 5 | Thiên nhiên & môi trường | Frequency adverbs, word order | Final clusters /st/ /ks/ |
-| 6 | Sở thích & thời gian rảnh | like/enjoy + V-ing | Word stress, 2-syllable words |
-| 7 | Du lịch & phương tiện | Past simple (VI marks time with "đã", not inflection) | -ed endings /t/ /d/ /ɪd/ |
-| 8 | Mua sắm | Comparatives | /ɪ/ vs /iː/ |
+| # | Topic (VI) | Grammar point | Pronunciation focus | Confirmed items |
+|---|---|---|---|---|
+| 1 | Thói quen lành mạnh (Healthy habits) | Present simple with frequency adverbs | /θ/ /ð/ | 11 |
+| 2 | Học tập & công việc (Study and work) | want / need / plan / hope + to-infinitive | Word stress, 2-syllable words | 12 |
+| 3 | Đồ ăn (Food and eating) | Countable/uncountable: much, many, a lot of, few, little | Final /s/ /z/ in plurals | 10 |
+| 4 | Công nghệ trong đời sống (Technology in daily life) | can / could for ability and possibility | /ʃ/ vs /s/ | 12 |
+| 5 | Động vật (Animals) | Past simple (VI marks time with "đã", not inflection) | -ed endings /t/ /d/ /ɪd/ | 13 |
+| 6 | Âm nhạc (Music) | Past simple with when-clauses | /æ/ vs /e/ | 13 |
+| 7 | Thiên nhiên & địa điểm (Nature and places) | Comparatives and superlatives | /ɪ/ vs /iː/ | 19 |
+| 8 | Thể thao (Sport) | Present perfect | Final clusters /st/ /ks/ /nts/ | 14 |
 
-Units 1 and 5 were swapped after the P06 inventory: the tagger found no level-4 items
-for "self and hometown" or "daily routine", and reading the sample confirmed they are
-textbook topics, not news topics. Technology and nature/environment replaced them,
-chosen by reading titles, not by tagger counts: the tagger measures at P 0.37 / R 0.32
-on 100 owner-labelled pages (`tools/voa_inventory/labels/evaluation.md`), so its counts
-locate pages to read and do not state how many usable items exist. ADR-0006: swap the
-topic, never write the text.
+**How the units were chosen.** The first list was written before the corpus was
+inventoried, and three of its topics then failed on inspection (hometown: no item; daily
+routine: one; shopping: none about shopping). This list replaces it whole, not topic by
+topic. It comes from reading, by title and where a title was ambiguous the
+first paragraph, all 188 usable level-4 pages that are neither English-lesson programmes
+nor fiction, at the crawl snapshot of about 17% of the site (394 usable level-4 pages in
+all; 42% were English lessons, 10% fiction). The title reads were done by one reader (the
+assistant), not a second labeller; the 100 owner labels (`tools/voa_inventory/labels/`)
+are the only ground truth. The tagger is not evidence (P 0.37 / R 0.32). Each unit has at
+least 10 candidate passages of 250–1,200 words confirmed by title. The margin rule was at
+least 6, fixed before the lists were counted. Lists, counts and the reasoning are in `docs/level4-units-proposal.md`, which is the
+record of how this was decided.
+
+**Grammar column.** Each point is the strongest signal of its unit in spaCy counts over the
+candidate passages (density against the pool of all 122, and how many passages contain the
+pattern at least twice). It is not taken from the old table, which was written for the old
+topics. Units 5 and 6 both rest on the past simple: Animals teaches the tense and Music
+teaches it inside when-clauses. If the chosen passages make that redundant, §5.4 decides
+the point at authoring time.
+
+**Pronunciation column.** This is a redistribution of the eight Vietnamese-specific foci
+(§2) over the units. It is not a corpus signal: four of the eight features stay within
+about 0.85–1.15 of the pool in every unit, and the other four (`-ed` endings, /θ ð/, /æ e/
+and /ʃ s/) vary with topic only as a side effect of genre, not as a reason to teach them.
+
+**Reserve.** Films and TV (8 confirmed, 6 within the length range, none owner-labelled) is
+the only reserve that meets the margin. Family and friends (6, of which 5 in range) and
+Festivals (4, of which 3) fall below it. Topics with 0–3 items (self and hometown, daily
+routine, shopping, home, weather, transport) are not supportable. Family, hometown and
+home are covered by Unit 0 (§4.2) without a source passage.
 
 The topic list and grammar column are **candidates**. Under source-first authoring
 (§5.4) the final grammar point is whichever candidate the chosen VOA passage actually
 contains. A unit whose passage lacks it swaps topic or grammar point, never the text.
 
-Volume: 96 words, 8 grammar points, 8 source passages, and about 570 exercises. **Exercises
-are generated from templates, not written by hand** (§5.2).
+**Volume.** 8 units: 96 words, 8 grammar points, 8 source passages and about 570
+exercises (about 71 per unit). Unit 0 adds 18 words, no grammar point, no source passage
+and about 70 exercises. Total: **9 units, 114 words, 8 grammar points, 8 source passages,
+about 640 exercises.** **Exercises are generated from templates, not written by hand**
+(§5.2).
+
+### 4.2 Unit 0: Part 1 starter
+
+Unit 0 opens level 4 and is speaking-only. It teaches the three topics that open almost
+every IELTS Part 1 and that the corpus cannot supply: **hometown, home (accommodation) and
+family.** VOA is a news site, so the closer a topic sits to everyday personal life, the
+fewer items exist. A learner who has never answered "Tell me about your hometown" loses
+fluency exactly where the examiner forms a first impression, and this is the largest gap
+the corpus-driven list leaves (`docs/level4-units-proposal.md` §4).
+
+- **Shape.** Three topics, each a vocabulary lesson (6 words, with example sentences) and
+  a speaking lesson (Part 1 questions, scored on three axes): 6 lessons, the same count as
+  every other unit. There is **no source passage, no reading and no L5 Listening lesson.**
+  Pronunciation focus: none assigned.
+- **Why ADR-0006 permits it.** The ADR bans generated English *source text*. Part 1
+  questions are scaffolding, which the ADR lets the LLM draft, and the example sentences
+  still come from Tatoeba (ADR step 5). No passage, dialogue or model answer is generated; the only
+  generated English is the questions themselves. Questions are drafted fresh and never
+  copied from Cambridge, British Council or IDP material.
+- **What it does not do.**
+  - It extracts no vocabulary from a passage, because there is none. Its 18 words come
+    from the Oxford 3000 and NGSL lists for these topics, not from ADR step 2.
+  - It has no grammar lesson, because §5.4 derives a grammar point from the passage
+    (ADR step 3). Task completion (§7.3) therefore checks vocabulary only in this unit.
+  - It has no model answers or sample responses. Those would be generated English, which
+    ADR-0006 forbids.
+  - It does not change the eval gates, the licensing filter or ADR-0006.
 
 ---
 
@@ -340,14 +393,14 @@ data moat.
 - [ ] Exercise engine: the 8 deterministic types + the 2 GOP types
 - [ ] Path screen, unit screen, lesson player, lesson-complete screen
 - [ ] FSRS-5 review mode, XP, daily goal, streak + freeze
-- [ ] **Unit 4 (Đồ ăn & nhà hàng) built end to end by hand**
-- Exit: one learner can complete unit 4 and see a review queue the next day
+- [ ] **Unit 3 (Đồ ăn, food and eating) built end to end by hand**
+- Exit: one learner can complete unit 3 and see a review queue the next day
 
 ### M5 — Content pipeline + level 4
 - [ ] Pipeline §5.5, template expansion, Kokoro batch
 - [ ] Write ADR-0006 recording source-first authoring (§5.4)
 - [ ] Per-item licensing filter (VOA byline, no wire content)
-- [ ] Units 1–8 through review
+- [ ] Units 1–8 and Unit 0 through review
 - [ ] Email streak reminder
 
 ### M6 — Speaking (L6)
@@ -422,6 +475,7 @@ The binding constraint is **CPU for GOP**, not money. It is measured in M0.
 | GOP throughput too low on free VPS | M0 benchmark. Options: int8 ONNX quantisation, a queue with a UI "đang chấm" state, a cap on concurrent scoring |
 | Free-speech GOP unreliable | Separate gate. Fall back to fluency + task completion |
 | VOA lacks an item for a planned topic or level | Topic list is a candidate list. Swap topic, never generate text |
+| The corpus supports exactly these 8 units with one reserve | The 8 units were confirmed by title only, and Films and TV (the reserve) sits exactly at the margin with no owner label. A unit that fails on close reading at M5 is replaced by Films and TV; a second failure leaves the course at **7 units**. Unit 0 has no passage and is unaffected. Read every chosen passage in full before building on it; the crawl keeps widening the pool |
 | Non-public-domain content inside VOA pages | Byline filter, store source URL, exclude wire and third-party media |
 | Content volume overwhelms solo dev | One level only. Template expansion. Manual review limited to Vietnamese explanations |
 | Band claims mislead learners or draw complaints | §3.2 honesty rule and non-affiliation notice |
