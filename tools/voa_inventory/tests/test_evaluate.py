@@ -1,7 +1,21 @@
 from pathlib import Path
 
 import pytest
-from voa_inventory.evaluate import Cell, choose, f_beta, load_labels, pooled, render, score, wilson
+from voa_inventory.evaluate import (
+    MIN_SUPPORT,
+    PREFIX,
+    Cell,
+    Corpus,
+    choose,
+    f_beta,
+    load_labels,
+    macro,
+    measurable,
+    pooled,
+    score,
+    wilson,
+)
+from voa_inventory.evaluate_render import bug_cost, render
 from voa_inventory.topics import load_catalog
 
 IDS = ["food_restaurant", "shopping"]
@@ -80,20 +94,43 @@ def test_load_labels_rejects_blank_or_unknown_labels(tmp_path: Path, bad: str) -
         load_labels(path, {"shopping"})
 
 
-def test_render_states_the_choice_the_counts_and_that_old_counts_were_upper_bounds() -> None:
-    catalog = load_catalog()
-    ids = [t.id for t in catalog.topics]
-    cids = [c.id for c in catalog.candidates]
-    labels = {f"u{i}": "none" for i in range(4)} | {"u9": "food_restaurant"}
-    predicted_old = {u: {"food_restaurant"} for u in labels}  # tags everything
-    predicted_new = {u: ({"food_restaurant"} if u == "u9" else set()) for u in labels}
+def test_only_labels_with_enough_pages_are_measurable_and_macro_averages_those() -> None:
+    labels = {f"a{i}": "food_restaurant" for i in range(MIN_SUPPORT)} | {"b": "shopping"}
+    ok = measurable(labels, IDS)
+    assert ok == ["food_restaurant"]
+    cells = {"food_restaurant": Cell(tp=4, fp=0, fn=6), "shopping": Cell(tp=0, fp=9, fn=1)}
+    assert macro(cells, ok) == (pytest.approx(1.0), pytest.approx(0.4))  # shopping left out
+    assert macro({"x": Cell(fn=3)}, ["x"]) == (0.0, 0.0)  # never tagged: precision counts 0
+    assert macro(cells, []) == (None, None)
+
+
+def test_bug_cost_says_when_old_counts_were_not_upper_bounds() -> None:
+    labels = {"u1": "food_restaurant", "u2": "food_restaurant", "u3": "none"}
     results = {
-        "keyword-v1": score(predicted_old, labels, ids),
-        "phrase": score(predicted_new, labels, ids),
+        PREFIX: {"food_restaurant": Cell(tp=1, fn=1), "shopping": Cell(fp=1)},
+        "keyword-v1": {"food_restaurant": Cell(tp=1, fn=1), "shopping": Cell(fp=1)},
+        "phrase": {"food_restaurant": Cell(tp=2), "shopping": Cell()},
     }
-    cresults = {n: score({u: set() for u in labels}, labels, cids) for n in results}
-    text = render(results, cresults, labels, catalog, "phrase")
+    text = bug_cost(results, labels, IDS, "phrase", placeholder=3)
+    assert "they were not upper bounds." in text
+    assert "`shopping` 1 tagged vs 0 labelled" in text  # too high
+    assert "`food_restaurant` 1 tagged vs 2 labelled" in text  # too low
+    assert "For 3 of the 3 labelled pages" in text
+
+
+def test_render_hides_rates_for_small_topics_and_states_the_labelling() -> None:
+    catalog = load_catalog()
+    ids = [t.id for t in catalog.topics] + [c.id for c in catalog.candidates]
+    labels = {f"u{i}": "language_learning" for i in range(MIN_SUPPORT)}
+    labels |= {"f1": "food_restaurant", "n1": "none"}
+    tag_all = {u: {"language_learning"} for u in labels}  # tags everything as a lesson
+    results = {
+        n: score(tag_all, labels, ids) for n in (PREFIX, "keyword-v1", "phrase", "embedding")
+    }
+    text = render(results, labels, catalog, "phrase", Corpus(200, 0.1), placeholder=12)
     assert "**Chosen: `phrase`.**" in text
-    assert "The earlier counts were upper bounds." in text
-    assert "1 of 5 were correct" in text  # the baseline tagged 5 pages, 1 correctly
-    assert "1.00 (1/1)" in text  # the new tagger's precision on food, with counts
+    assert "one label by one person (the owner)" in text
+    assert "P 0.83 (10/12)" in text  # language_learning has enough pages for a rate
+    assert "tp 0 · fp 0 · fn 1" in text  # food_restaurant does not
+    assert "10 of 12 usable level 4 pages teach English" in text
+    assert "measured on placeholder text and is\nvoid." in text

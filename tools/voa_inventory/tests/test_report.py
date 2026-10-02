@@ -80,3 +80,14 @@ def test_markdown_names_topics_short_of_two_items_and_states_coverage(
     assert "`shopping`" in md
     full = render_md(rows, {"sitemap_urls": 7, "seed": 3}, load_catalog(), "phrase")
     assert "| SWAP |" in full  # full coverage and still short: the topic must be swapped
+
+
+def test_a_topic_with_enough_tags_is_never_called_confirmed(
+    cache: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("voa_inventory.rows.MIN_WORDS", 10)
+    monkeypatch.setattr("voa_inventory.render.NEEDED", 1)
+    rows = load_rows(cache, PhraseTagger())
+    md = render_md(rows, {"sitemap_urls": 7, "seed": 3}, load_catalog(), "phrase")
+    food = next(line for line in md.splitlines() if "(`food_restaurant`)" in line)
+    assert food.endswith("| 1+ tagged, unconfirmed |")  # a tag count is not a supply figure

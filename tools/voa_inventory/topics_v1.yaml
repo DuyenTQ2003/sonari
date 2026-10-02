@@ -11,32 +11,13 @@
 min_score: 2
 title_weight: 2
 
+# Units 1 and 5 follow the PLAN-v7 4.1 swap (technology, nature). The blocks moved between
+# `topics` and `candidates` unchanged; no phrase, keyword or threshold was edited.
 topics:
-  self_hometown:
+  technology_devices:
     unit: 1
-    label: Self and hometown
-    keywords:
-      - hometown*
-      - home town
-      - introduc*
-      - yourself
-      - about me
-      - my name
-      - where you are from
-      - where you're from
-      - where are you from
-      - nationality
-      - native country
-      - birthplace
-      - born in
-      - grew up
-      - growing up
-      - my country
-      - get to know
-      - life story
-      - biography
-      - comes from
-      - come from
+    label: Technology in daily life
+    keywords: [phone*, smartphone*, computer*, internet, online, app, apps, website*, social media, video game*, technology, device*, robot*, laptop*]
   study_work:
     unit: 2
     label: Study and work
@@ -130,26 +111,10 @@ topics:
       - pizza
       - rice
       - noodle*
-  daily_routine:
+  nature_environment:
     unit: 5
-    label: Daily routine
-    keywords:
-      - daily
-      - routine*
-      - habit*
-      - every day
-      - everyday
-      - morning*
-      - wake up
-      - wakes up
-      - sleep*
-      - schedule*
-      - bedtime
-      - commut*
-      - chores
-      - day in the life
-      - evening*
-      - afternoon*
+    label: Nature and environment
+    keywords: [nature, environment*, forest*, river*, ocean*, mountain*, tree*, plant*, recycl*, pollution, park*, beach*]
   hobbies_leisure:
     unit: 6
     label: Hobbies and free time
@@ -260,18 +225,55 @@ candidates:
   animals_pets:
     label: Animals and pets
     keywords: [animal*, pet, pets, dog*, cat, cats, bird*, horse*, zoo*, fish, wildlife, puppy, puppies, kitten*]
-  technology_devices:
-    label: Technology in daily life
-    keywords: [phone*, smartphone*, computer*, internet, online, app, apps, website*, social media, video game*, technology, device*, robot*, laptop*]
   festivals_holidays:
     label: Festivals and celebrations
     keywords: [festival*, holiday*, celebrat*, christmas, new year, birthday*, party, parties, tradition*, custom*, parade*, gift*]
+  self_hometown:
+    label: Self and hometown
+    keywords:
+      - hometown*
+      - home town
+      - introduc*
+      - yourself
+      - about me
+      - my name
+      - where you are from
+      - where you're from
+      - where are you from
+      - nationality
+      - native country
+      - birthplace
+      - born in
+      - grew up
+      - growing up
+      - my country
+      - get to know
+      - life story
+      - biography
+      - comes from
+      - come from
+  daily_routine:
+    label: Daily routine
+    keywords:
+      - daily
+      - routine*
+      - habit*
+      - every day
+      - everyday
+      - morning*
+      - wake up
+      - wakes up
+      - sleep*
+      - schedule*
+      - bedtime
+      - commut*
+      - chores
+      - day in the life
+      - evening*
+      - afternoon*
   housing_home:
     label: Home and housing
     keywords: [house*, home, homes, apartment*, room*, rent*, furniture, building*, moving]
-  nature_environment:
-    label: Nature and environment
-    keywords: [nature, environment*, forest*, river*, ocean*, mountain*, tree*, plant*, recycl*, pollution, park*, beach*]
   language_learning:
     label: Learning English
     keywords: [english, language*, vocabulary, grammar, pronunciation, speaking, idiom*, expression*, phrase*, spelling]

@@ -12,23 +12,30 @@ what inflate that). If the two are within TIE of each other, choose the phrase t
 deterministic and needs no model. The old keyword tagger is measured but never selected.
 Nothing is tuned after the numbers appear: thresholds and lists come from topics.yaml as
 committed before the sample was drawn.
+
+Reporting rule, fixed before any tagger was scored on the labels: a topic gets a precision
+and recall only with at least MIN_SUPPORT labelled pages; below that the report shows raw
+counts and says the sample is too small. Macro averages run over those topics only.
 """
 
 import argparse
 import csv
+import json
 import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from voa_inventory.crawl import default_cache_dir
-from voa_inventory.rows import Row, Tagger, load_rows
-from voa_inventory.sample import LABELS_CSV, SEED, SIZE
-from voa_inventory.topics import Catalog, PhraseTagger, TopicMeta, keyword_tagger, load_catalog
+from voa_inventory.rows import LEVEL_4, Row, Tagger, load_rows
+from voa_inventory.sample import LABELS_CSV, SIZE
+from voa_inventory.topics import PhraseTagger, keyword_tagger, load_catalog
 
 EVALUATION = LABELS_CSV.with_name("evaluation.md")
 TIE = 0.02
 BETA = 0.5
+MIN_SUPPORT = 10
+PREFIX = "keyword-v1 on pre-fix text"
 
 
 @dataclass(frozen=True)
@@ -79,6 +86,20 @@ def pooled(cells: dict[str, Cell]) -> Cell:
     )
 
 
+def measurable(labels: dict[str, str], ids: list[str]) -> list[str]:
+    """Topics with enough labelled pages for a rate to mean anything."""
+    return [t for t in ids if sum(v == t for v in labels.values()) >= MIN_SUPPORT]
+
+
+def macro(cells: dict[str, Cell], ids: list[str]) -> tuple[float | None, float | None]:
+    """Unweighted mean precision and recall over `ids`; an undefined precision counts as 0."""
+    if not ids:
+        return None, None
+    p = sum(cells[t].precision or 0.0 for t in ids) / len(ids)
+    r = sum(cells[t].recall or 0.0 for t in ids) / len(ids)
+    return p, r
+
+
 def f_beta(cell: Cell, beta: float = BETA) -> float:
     p, r = cell.precision, cell.recall
     if not p or not r:
@@ -103,120 +124,71 @@ def choose(phrase: dict[str, Cell], embedding: dict[str, Cell]) -> str:
     return "embedding" if fe - fp > TIE else "phrase"
 
 
-def predictions(tagger: Tagger, rows: list[Row]) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
-    tags = tagger.tag_all([(r.item.title, r.item.first_paragraph) for r in rows])
-    urls = [r.item.url for r in rows]
-    return (
-        {u: set(t.topics) for u, t in zip(urls, tags, strict=True)},
-        {u: set(t.candidates) for u, t in zip(urls, tags, strict=True)},
-    )
+def predictions(tagger: Tagger, rows: list[Row], prefix: bool = False) -> dict[str, set[str]]:
+    """url -> every topic and candidate id the tagger gives the page.
 
-
-def _fmt(value: float | None, num: int, den: int) -> str:
-    return "n/a" if value is None else f"{value:.2f} ({num}/{den})"
-
-
-def metrics_table(
-    results: dict[str, dict[str, Cell]],
-    metas: tuple[TopicMeta, ...],
-    labels: dict[str, str],
-    pool_label: str,
-) -> list[str]:
-    names = list(results)
-    support = {t.id: sum(v == t.id for v in labels.values()) for t in metas}
-    header = ["Topic", "Labelled"] + [f"{n} P" for n in names] + [f"{n} R" for n in names]
-    body = []
-    for t in metas:
-        cells = [results[n][t.id] for n in names]
-        body.append([
-            f"`{t.id}`", str(support[t.id]),
-            *(_fmt(c.precision, c.tp, c.tp + c.fp) for c in cells),
-            *(_fmt(c.recall, c.tp, c.tp + c.fn) for c in cells),
-        ])  # fmt: skip
-    totals = [pooled(results[n]) for n in names]
-    body.append([
-        pool_label, str(sum(support.values())),
-        *(_fmt(c.precision, c.tp, c.tp + c.fp) for c in totals),
-        *(_fmt(c.recall, c.tp, c.tp + c.fn) for c in totals),
+    `prefix` feeds the first paragraph the extractor returned before the placeholder fix.
+    """
+    tags = tagger.tag_all([
+        (r.item.title, r.item.prefix_first_paragraph if prefix else r.item.first_paragraph)
+        for r in rows
     ])  # fmt: skip
-    body.append(["F0.5 (pooled)", "", *(f"{f_beta(c):.2f}" for c in totals), *[""] * len(names)])
-    lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
-    return lines + ["| " + " | ".join(r) + " |" for r in body]
+    return {r.item.url: set(t.topics) | set(t.candidates) for r, t in zip(rows, tags, strict=True)}
 
 
-def render(
-    results: dict[str, dict[str, Cell]],
-    candidate_results: dict[str, dict[str, Cell]],
-    labels: dict[str, str],
-    catalog: Catalog,
-    chosen: str,
-) -> str:
-    plan_ids = {t.id for t in catalog.topics}
-    cand_ids = {c.id for c in catalog.candidates}
-    on_topic = sum(v in plan_ids for v in labels.values())
-    on_candidate = sum(v in cand_ids for v in labels.values())
-    none_n = len(labels) - on_topic - on_candidate
-    old = pooled(results["keyword-v1"])
-    lo, hi = wilson(old.tp, old.tp + old.fp)
-    old_p = f"{old.precision:.2f}" if old.precision is not None else "n/a"
-    plan = metrics_table(results, catalog.topics, labels, "**all 8 (pooled)**")
-    cand = metrics_table(
-        candidate_results, catalog.candidates, labels, "**all candidates (pooled)**"
+@dataclass(frozen=True)
+class Corpus:
+    """Size of the pool the labelled sample was drawn from."""
+
+    usable_level4: int
+    coverage: float  # parsed pages / sitemap URLs
+
+
+def corpus(rows: list[Row], cache_dir: Path) -> Corpus:
+    meta_path = cache_dir / "meta.json"
+    meta = json.loads(meta_path.read_text("utf-8")) if meta_path.exists() else {}
+    total = meta.get("sitemap_urls", 0)
+    return Corpus(
+        sum(r.usable and r.level == LEVEL_4 for r in rows), len(rows) / total if total else 0.0
     )
-    return f"""### How the tagger was chosen
-
-The first tagger matched bare keywords in the title and first paragraph, with no stop
-patterns, and it over-counted badly. It is measured below as `keyword-v1`, only as a
-baseline. Two replacements were built before any label existed, from `topics.yaml` as
-committed: `phrase` (topic-specific phrases plus negative patterns) and `embedding` (bge-m3
-similarity to a description per topic, similarity floor fixed in advance).
-
-Labelled set: {len(labels)} usable level 4 pages drawn at random (seed {SEED}), labelled by
-the owner with one topic or `none`: {on_topic} on one of the eight topics, {on_candidate} on a
-replacement candidate, {none_n} `none`. P is precision and R recall, shown with counts
-(correctly tagged / tagged, and correctly tagged / labelled). A page tagged with two topics
-counts once for each. With this few pages per topic every rate is very uncertain; read the
-counts.
-
-{chr(10).join(plan)}
-
-Replacement candidates on the same pages:
-
-{chr(10).join(cand)}
-
-Rule (fixed beforehand): choose the higher pooled F0.5 of `phrase` and `embedding` on the eight
-plan topics, `phrase` if within {TIE}. **Chosen: `{chosen}`.**
-
-**The earlier counts were upper bounds.** Of the pages `keyword-v1` tagged with a plan
-topic, {old.tp} of {old.tp + old.fp} were correct (precision {old_p}, 95% interval
-{lo:.2f}-{hi:.2f}). Every per-topic count published before this change was inflated by
-the rest.
-"""
 
 
 def main() -> int:
+    from voa_inventory.evaluate_render import render
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache-dir", type=Path, default=default_cache_dir())
     parser.add_argument("--labels", type=Path, default=LABELS_CSV)
     args = parser.parse_args()
     catalog = load_catalog()
-    ids = [t.id for t in catalog.topics]
-    valid = set(ids) | {c.id for c in catalog.candidates}
-    labels = load_labels(args.labels, valid)
+    ids = [t.id for t in catalog.topics] + [c.id for c in catalog.candidates]
+    labels = load_labels(args.labels, set(ids))
     if len(labels) != SIZE:
         print(f"warning: {len(labels)} labelled pages, expected {SIZE}", file=sys.stderr)
-    rows = [r for r in load_rows(args.cache_dir, PhraseTagger()) if r.item.url in labels]
+    all_rows = load_rows(args.cache_dir, PhraseTagger())
+    rows = [r for r in all_rows if r.item.url in labels]
+    missing = set(labels) - {r.item.url for r in rows}
+    if missing:
+        sys.exit(f"{len(missing)} labelled URLs are not in the cache, e.g. {sorted(missing)[0]}")
     from voa_inventory.embed import EmbeddingTagger
 
-    taggers = {
-        "keyword-v1": keyword_tagger(),
-        "phrase": PhraseTagger(),
-        "embedding": EmbeddingTagger(),
+    old = keyword_tagger()
+    predicted = {
+        PREFIX: predictions(old, rows, prefix=True),
+        "keyword-v1": predictions(old, rows),
+        "phrase": predictions(PhraseTagger(), rows),
+        "embedding": predictions(EmbeddingTagger(), rows),
     }
-    results = {name: score(predictions(t, rows)[0], labels, ids) for name, t in taggers.items()}
-    chosen = choose(results["phrase"], results["embedding"])
-    EVALUATION.write_text(render(results, labels, catalog, chosen), encoding="utf-8")
-    print(EVALUATION.read_text("utf-8"))
+    results = {name: score(p, labels, ids) for name, p in predicted.items()}
+    plan = [t.id for t in catalog.topics]
+    chosen = choose(
+        {t: results["phrase"][t] for t in plan}, {t: results["embedding"][t] for t in plan}
+    )
+    # Pages whose pre-fix first paragraph was boilerplate rather than article text.
+    placeholder = sum(r.item.prefix_first_paragraph != r.item.first_paragraph for r in rows)
+    text = render(results, labels, catalog, chosen, corpus(all_rows, args.cache_dir), placeholder)
+    EVALUATION.write_text(text, encoding="utf-8")
+    print(text)
     return 0
 
 

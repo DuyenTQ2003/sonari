@@ -29,6 +29,8 @@ def test_first_paragraph_skips_player_placeholder_and_short_lead_lines() -> None
     item = load("player_placeholder_article.html")
     assert item.first_paragraph.startswith("Street markets are common in many cities")
     assert "No media source" not in item.first_paragraph
+    # The pre-fix lead is kept only so the evaluation can measure what the bug cost.
+    assert item.prefix_first_paragraph.startswith("No media source")
 
 
 @pytest.mark.parametrize(

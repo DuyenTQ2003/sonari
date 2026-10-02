@@ -109,6 +109,10 @@ class Item:
     first_paragraph: str
     license_ok: bool
     license_reasons: tuple[str, ...]
+    # What the extractor returned as the first paragraph before the placeholder fix (often
+    # the player's "No media source currently available"). Only the evaluation reads it, to
+    # show what the bug cost; nothing is tagged or counted from it.
+    prefix_first_paragraph: str = ""
 
 
 def _ld(html: str) -> dict:
@@ -198,4 +202,5 @@ def parse_item(html: str, url: str) -> Item:
         first_paragraph=_lead_paragraph(body),
         license_ok=verdict.license_ok,
         license_reasons=verdict.reasons,
+        prefix_first_paragraph=body[0] if body else "",
     )

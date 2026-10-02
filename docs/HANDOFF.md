@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-30
+Last updated: 2026-10-02
 
 ## Done
 - Docs: PLAN-v7, CLAUDE.md, ADR-0001/0004/0006, design-system (v7), BUILD-PROMPTS,
@@ -13,10 +13,10 @@ Last updated: 2026-09-30
   Dynamic int8 (MatMul only, 355 vs 1264 MB) keeps the G0 verdict (max GOP change 0.375).
   3 s clip p50 at 1/2/4 threads: fp32 1336/797/568 ms, int8 609/372/280 ms. Burst under
   2 s p95 on 1/2/4 cores: fp32 1/2/3, int8 2/5/7. **Laptop under WSL2, not the VPS.**
-- **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, VOA sentence at three
-  speeds plus a 6-turn dialogue; RTF 0.35-0.41 at 4 threads. Fill `CHECKLIST.md`.
-- **P06 built, inventory partial.** `tools/voa_inventory/`; `docs/voa-inventory.md` covers
-  600 of 67,337 pages (73 usable; 96 of 169 audio+text pages fail the licence filter).
+- **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, 3 speeds + dialogue, RTF 0.35-0.41.
+- **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Plan-topic
+  P 0.37, R 0.32: tag counts are leads, not supply. Pre-fix counts void. 34/100 usable lv-4
+  pages are `language_learning`; `shopping` 0/100 unconfirmed. Units 1/5 per PLAN 4.1 swap.
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
@@ -32,8 +32,8 @@ Last updated: 2026-09-30
 3. P20 speech-service runtime (needs the int8 vs fp32 decision from BENCH.md).
 
 ## Blockers
-- P04: rerun `spikes/gop/onnx/` on the real VPS (commands in BENCH.md); the capacity
-  numbers above are for this laptop.
-- P06: crawl cache has ~6,500 pages, idle since 15:14. Resume `VOA_CONTACT_EMAIL=... make
-  voa-crawl ARGS="--limit 100000"`, then `make voa-report`; commit `data/`, `docs/`.
-- P05: the owner fills in `spikes/tts/CHECKLIST.md` by ear; no quality verdict yet.
+- P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
+- P06: crawl (`--limit 30000`) running at 12.2%; then `make voa-evaluate voa-report`. Owner:
+  find a shopping passage by reading, or swap unit 8. Branch docs/level4-topic-swap cites the
+  void pre-fix counts ("5 usable items"); re-word from `labels/evaluation.md` before merge.
+- P05: owner fills `spikes/tts/CHECKLIST.md` by ear; no quality verdict yet.

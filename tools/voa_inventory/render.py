@@ -31,7 +31,7 @@ def topic_table(rows: list[Row], catalog: Catalog, coverage: float) -> tuple[lis
     for t in catalog.topics:
         counts, _ = count_usable(rows, t.id)
         if counts.level4 >= NEEDED:
-            verdict = "enough"
+            verdict = f"{NEEDED}+ tagged, unconfirmed"  # tagger precision is low; read them
         else:
             short.append(t.id)
             verdict = "SWAP" if coverage >= 1 else f"fewer than {NEEDED} in sample"
@@ -51,7 +51,9 @@ def candidate_table(rows: list[Row], catalog: Catalog) -> list[str]:
     ranked.sort(key=lambda x: (-x[0].level4, -x[0].any_level, x[1].id))
     body = []
     for counts, t, pool in ranked:
-        examples = "<br>".join(f"[{r.item.title[:60]}]({r.item.url})" for r in pool[:2])
+        examples = "<br>".join(
+            f"[{' '.join(r.item.title.split())[:60]}]({r.item.url})" for r in pool[:2]
+        )
         body.append([
             f"{t.label} (`{t.id}`)", str(counts.level4), str(counts.levels45),
             str(counts.any_level), examples,
@@ -122,7 +124,9 @@ Licence outcome of the {len(would_be)} pages with audio and enough text:
 Level is a coarse heuristic (`levels.py`): *Let's Learn English* lessons by programme
 level, everything else by Flesch-Kincaid grade (below 7 is level 4, 7-9 level 5, 9-11
 level 6, above level 7). Topics come from the **{tagger_name}** tagger (`topics.yaml`) on
-each page's title and first paragraph. Counts are usable items.
+each page's title and first paragraph. Counts are usable items **tagged** with the topic:
+the tagger's measured precision and recall are low (next section), so a count says where to
+look, not how many passages exist. The owner-labelled estimate is under "Finding" below.
 
 {chr(10).join(topic_lines)}
 

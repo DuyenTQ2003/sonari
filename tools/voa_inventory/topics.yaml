@@ -56,33 +56,34 @@ stop:
   - voa learning english
   - learning english
 
+# Units 1 and 5 follow the PLAN-v7 4.1 swap (technology, nature). The blocks moved between
+# `topics` and `candidates` unchanged; no phrase, keyword or threshold was edited.
 topics:
-  self_hometown:
+  technology_devices:
     unit: 1
-    label: Self and hometown
+    label: Technology in daily life
     description: >
-      Introducing yourself: your name, your age, where you are from, your hometown and
-      country, and the story of your life.
+      Technology in daily life: phones, computers, the internet, apps, social media and
+      the devices people use every day.
     phrases:
-      - hometown*
-      - home town
-      - introduce yourself
-      - introducing yourself
-      - tell us about yourself
-      - about yourself
-      - my name is
-      - nationality
-      - birthplace
-      - grew up in
-      - growing up in
-      - born and raised
-      - native country
-      - home country
-      - life story
-      - get to know you
-      - where you are from
-      - where you're from
-      - where are you from
+      - smartphone*
+      - phone
+      - phones
+      - cell phone*
+      - computer*
+      - internet
+      - online
+      - app
+      - apps
+      - website*
+      - social media
+      - laptop*
+      - tablet*
+      - robot*
+      - artificial intelligence
+      - software
+      - gadget*
+      - device*
   study_work:
     unit: 2
     label: Study and work
@@ -208,31 +209,26 @@ topics:
       - grocery
       - groceries
       - coffee
-  daily_routine:
+  nature_environment:
     unit: 5
-    label: Daily routine
+    label: Nature and environment
     description: >
-      A person's daily routine: waking up, getting ready, commuting, working, eating and
-      going to sleep, and the habits and schedules that make up an ordinary day.
+      Nature and the environment: forests, rivers, oceans, mountains, national parks,
+      wildlife, pollution and protecting the planet.
     phrases:
-      - daily routine
-      - daily life
-      - morning routine
-      - everyday life
-      - day in the life
-      - a typical day
-      - wake up
-      - wakes up
-      - waking up
-      - bedtime
-      - sleep habits
-      - sleep schedule
-      - commute
-      - commuting
-      - chores
-      - habit
-      - habits
-      - every morning
+      - nature
+      - environment*
+      - forest*
+      - river*
+      - ocean*
+      - mountain*
+      - national park*
+      - wildlife
+      - recycl*
+      - pollution
+      - beach*
+      - endangered
+      - conservation
   hobbies_leisure:
     unit: 6
     label: Hobbies and free time
@@ -421,30 +417,6 @@ candidates:
       - horse*
       - zoo*
       - veterinar*
-  technology_devices:
-    label: Technology in daily life
-    description: >
-      Technology in daily life: phones, computers, the internet, apps, social media and
-      the devices people use every day.
-    phrases:
-      - smartphone*
-      - phone
-      - phones
-      - cell phone*
-      - computer*
-      - internet
-      - online
-      - app
-      - apps
-      - website*
-      - social media
-      - laptop*
-      - tablet*
-      - robot*
-      - artificial intelligence
-      - software
-      - gadget*
-      - device*
   festivals_holidays:
     label: Festivals and celebrations
     description: >
@@ -467,6 +439,55 @@ candidates:
       - ramadan
       - diwali
       - lunar new year
+  self_hometown:
+    label: Self and hometown
+    description: >
+      Introducing yourself: your name, your age, where you are from, your hometown and
+      country, and the story of your life.
+    phrases:
+      - hometown*
+      - home town
+      - introduce yourself
+      - introducing yourself
+      - tell us about yourself
+      - about yourself
+      - my name is
+      - nationality
+      - birthplace
+      - grew up in
+      - growing up in
+      - born and raised
+      - native country
+      - home country
+      - life story
+      - get to know you
+      - where you are from
+      - where you're from
+      - where are you from
+  daily_routine:
+    label: Daily routine
+    description: >
+      A person's daily routine: waking up, getting ready, commuting, working, eating and
+      going to sleep, and the habits and schedules that make up an ordinary day.
+    phrases:
+      - daily routine
+      - daily life
+      - morning routine
+      - everyday life
+      - day in the life
+      - a typical day
+      - wake up
+      - wakes up
+      - waking up
+      - bedtime
+      - sleep habits
+      - sleep schedule
+      - commute
+      - commuting
+      - chores
+      - habit
+      - habits
+      - every morning
   housing_home:
     label: Home and housing
     description: >
@@ -491,25 +512,6 @@ candidates:
       - buying a house
       - living room
       - bedroom*
-  nature_environment:
-    label: Nature and environment
-    description: >
-      Nature and the environment: forests, rivers, oceans, mountains, national parks,
-      wildlife, pollution and protecting the planet.
-    phrases:
-      - nature
-      - environment*
-      - forest*
-      - river*
-      - ocean*
-      - mountain*
-      - national park*
-      - wildlife
-      - recycl*
-      - pollution
-      - beach*
-      - endangered
-      - conservation
   language_learning:
     label: Learning English
     description: >
