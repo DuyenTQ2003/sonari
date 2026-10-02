@@ -1,4 +1,5 @@
 exclude: ^\.claude/
+default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -19,3 +20,8 @@ repos:
         language: python
         types: [python]
         exclude: (^|/)tests/fixtures/
+      - id: strip-ai-trailers
+        name: strip AI co-author trailers
+        entry: sed -i -e '/^Co-[Aa]uthored-[Bb]y:.*[Cc]laude/d' -e '/Generated with \[Claude Code\]/d'
+        language: system
+        stages: [commit-msg]
