@@ -31,9 +31,13 @@ Last updated: 2026-10-02
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
+
 - P06: crawl still running (17%); then `make voa-evaluate voa-report`.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry
   the old 8 topics. ADR-0006 steps 2-3 assume a passage; Unit 0 has none (PLAN 4.2).
+- P06: crawl still running (17%); when done, `make voa-evaluate voa-report`.
+- P06/units: owner reads `docs/level4-units-proposal.md` (8 units from the corpus, each 10+
+  title-confirmed items; hometown/home/family not covered), then PLAN-v7 4.1 is rewritten.
 - P05: owner fills `spikes/tts/CHECKLIST.md` by ear; no quality verdict yet.
