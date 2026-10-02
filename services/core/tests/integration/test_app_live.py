@@ -82,6 +82,8 @@ def test_database_calls_are_traced_for_the_async_mongo_and_redis_clients(
         **os.environ,
         "MONGO_URI_CORE": live_settings.mongo_uri,
         "REDIS_URL": live_settings.redis_url,
+        "JWT_SECRET": live_settings.jwt_secret.get_secret_value(),
+        "TURNSTILE_SECRET_KEY": live_settings.turnstile_secret.get_secret_value(),
         "OTEL_ENABLED": "true",
     }
 

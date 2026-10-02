@@ -11,6 +11,8 @@ from fastapi import FastAPI
 from opentelemetry.sdk.trace import TracerProvider
 
 from sonari_core import analytics, content, gamification, identity, learning
+from sonari_core.identity.service import AuthService
+from sonari_core.identity.wiring import IdentityRuntime, build_identity
 from sonari_core.shared import health
 from sonari_core.shared.contexts import ContextSpec, init_contexts
 from sonari_core.shared.errors import install_error_handlers
@@ -34,11 +36,13 @@ def create_app(
     *,
     resources: Resources | None = None,
     tracer_provider: TracerProvider | None = None,
+    auth_service: AuthService | None = None,
 ) -> FastAPI:
     """Build the core application.
 
-    `resources` and `tracer_provider` exist for tests; production passes neither, and the
-    real MongoDB and Redis clients are then created when the application starts.
+    `resources`, `tracer_provider` and `auth_service` exist for tests; production passes
+    none of them, and the real MongoDB and Redis clients and the auth service are then
+    created when the application starts.
     """
     settings = settings or Settings()  # required fields come from the environment
     configure_logging(settings.log_level)
@@ -47,12 +51,18 @@ def create_app(
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         active = resources or build_resources(settings)
         app.state.resources = active
+        identity_runtime: IdentityRuntime | None = None
         try:
             if active.mongo is not None:
                 await init_contexts(active.mongo, CONTEXTS)
+            if auth_service is None and active.redis is not None:
+                identity_runtime = build_identity(settings, active.redis)
+                app.state.auth = identity_runtime.service
             yield
         finally:
             shutdown_telemetry()
+            if identity_runtime is not None:
+                await identity_runtime.aclose()
             if resources is None:
                 await active.close()
 
@@ -60,9 +70,12 @@ def create_app(
     app.state.settings = settings
     if resources is not None:
         app.state.resources = resources
+    if auth_service is not None:
+        app.state.auth = auth_service
 
     shutdown_telemetry = setup_telemetry(app, settings, tracer_provider)
     app.add_middleware(RequestIdMiddleware)
     install_error_handlers(app)
     app.include_router(health.router)
+    app.include_router(identity.router)
     return app

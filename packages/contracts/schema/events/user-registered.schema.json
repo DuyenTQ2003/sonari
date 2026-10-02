@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sonari.dev/schema/events/user-registered.schema.json",
+  "title": "UserRegistered",
+  "description": "Published by the identity context when an account is created. Carries no personal data: consumers get the user id and nothing else.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "occurredAt", "version", "userId"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "version": { "const": 1 },
+    "userId": { "type": "string", "minLength": 1 }
+  }
+}

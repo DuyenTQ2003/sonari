@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from opentelemetry.sdk.trace import TracerProvider
 
+from auth_fakes import AuthKit, build_auth_kit
 from fakes import AppFactory, FakeCheck
 from sonari_core.app import create_app
 from sonari_core.shared.resources import ReadinessCheck, Resources
@@ -19,6 +20,8 @@ def settings() -> Settings:
     return Settings(
         mongo_uri="mongodb://unused.invalid",
         redis_url="redis://unused.invalid",
+        jwt_secret="unit-test-jwt-secret-0123456789abcdef-xyz",
+        turnstile_secret="unit-test-turnstile-secret",
         otel_enabled=False,
         readiness_timeout_s=0.2,
     )
@@ -48,3 +51,8 @@ def make_app(settings: Settings) -> AppFactory:
 def client(make_app: AppFactory) -> TestClient:
     # Unhandled errors must come back as the 500 envelope, not be re-raised into the test.
     return TestClient(make_app(), raise_server_exceptions=False)
+
+
+@pytest.fixture
+def auth(settings: Settings) -> AuthKit:
+    return build_auth_kit(settings)

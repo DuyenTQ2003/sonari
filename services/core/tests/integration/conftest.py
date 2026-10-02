@@ -89,5 +89,15 @@ def live_settings(mongo_client: MongoClient[dict[str, Any]]) -> Settings:
     finally:
         probe.close()
     mongo_uri = env_value(URI_VARIABLE)
+    jwt_secret = env_value("JWT_SECRET")
+    turnstile_secret = env_value("TURNSTILE_SECRET_KEY")
     assert mongo_uri is not None
-    return Settings(mongo_uri=mongo_uri, redis_url=redis_url, otel_enabled=False)
+    if jwt_secret is None or turnstile_secret is None:
+        pytest.skip("JWT_SECRET or TURNSTILE_SECRET_KEY is missing: copy them from .env.example")
+    return Settings(
+        mongo_uri=mongo_uri,
+        redis_url=redis_url,
+        jwt_secret=jwt_secret,
+        turnstile_secret=turnstile_secret,
+        otel_enabled=False,
+    )

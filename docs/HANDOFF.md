@@ -10,14 +10,14 @@ Last updated: 2026-10-02
 - **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, 3 speeds + dialogue, RTF 0.35-0.41.
 - **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Tag counts
   are leads, not supply; pre-fix counts void. 34/100 usable lv-4 pages are `language_learning`.
-- **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0, a speaking-only
-  Part 1 starter (hometown, home, family; no passage). Films and TV is the one reserve; a
-  second failed unit at M5 leaves 7. Record: `docs/level4-units-proposal.md`.
-- **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo 7 `rs0` with auth, Redis 7 AOF, 7 context
-  DBs, users `core` and `speech` only. `make infra && make test-core`; `make dev` blocks.
-- **P13 done** (PR open). `sonari_core.shared` + 5 context packages, `/readyz`, error envelope,
-  JSON logs, OTel. `make check-imports` (in `make lint-core`) fails on any cross-context
-  import. P12 skipped, not needed. Tests needing `make infra` run only locally.
+- **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0 (speaking-only Part 1
+  starter, no passage); Films and TV is the one reserve. Record: `docs/level4-units-proposal.md`.
+- **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`.
+- **P13 done** (#19): `sonari_core.shared`, 5 context packages, `/readyz`, OTel. `make check-imports`
+  (in `make lint-core`) fails on cross-context imports. P12 skipped, not needed.
+- **P14 done** (stacked on #19): `/v1/auth`, rotating refresh cookie with reuse detection, Turnstile,
+  Redis rate limit. `.env` needs `JWT_SECRET`, `TURNSTILE_SECRET_KEY`. Deploy must run uvicorn
+  `--proxy-headers`, or all users share one rate limit (P35/P72). Mongo/Redis tests: local only.
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
@@ -27,7 +27,7 @@ Last updated: 2026-10-02
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P21/P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. P14 auth. 2. Design A6 → P12 contracts. 3. P20 speech runtime (int8 vs fp32 first).
+1. P15 event bus. 2. Design A6 → P12 contracts. 3. P20 speech runtime (int8 vs fp32 first).
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
