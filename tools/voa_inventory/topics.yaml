@@ -1,195 +1,301 @@
-# Keyword lists for the level 4 candidate topics of PLAN-v7 section 4.1.
+# Topic definitions for the level 4 candidate topics of PLAN-v7 section 4.1, plus replacement
+# candidates. One file drives two taggers, and both were fixed BEFORE the labelled sample
+# was drawn (docs/voa-inventory.md, "How the tagger was chosen"):
 #
-# An item is tagged with a topic when its score reaches `min_score`. Each distinct keyword
-# found in the title scores `title_weight`; each distinct keyword found in the first
-# paragraph scores 1. A keyword ending in `*` matches any word starting with that stem;
-# otherwise it must match a whole word or phrase. Matching ignores case.
+#   phrase     topic-specific phrases (`phrases`) with negative patterns (`stop`, global and
+#              per topic). Stop patterns are blanked out of the text before matching, so
+#              "White House" cannot supply the word "house". A topic is tagged when its
+#              score reaches `min_score`: each distinct phrase in the title scores
+#              `title_weight`, each distinct phrase in the first paragraph scores 1.
+#              A trailing `*` matches longer words; otherwise a whole word or phrase.
+#   embedding  bge-m3 embedding of title + first paragraph against the `description` of every
+#              topic and candidate and against the `other` descriptions (off-topic content).
+#              The item gets the single nearest description if it is a topic or candidate,
+#              not `other`, and its cosine similarity reaches `min_similarity`.
 #
-# Keyword tagging over-counts (a "school" story is not always about studying), so a count
-# from this file is an upper bound on topical fit. The final choice of passage for a unit
-# is made in P50/P51 after reading it. The lists are English on purpose.
+# The old bare-keyword lists are in topics_v1.yaml and are only used as a measured baseline.
 min_score: 2
 title_weight: 2
+
+embedding:
+  model: BAAI/bge-m3
+  max_tokens: 256
+  # Fixed before any label existed: a round value, not tuned on the labelled set.
+  min_similarity: 0.40
+
+stop:
+  - white house
+  - house of
+  - house speaker
+  - speaker of the house
+  - house republicans
+  - house democrats
+  - house committee
+  - house bill
+  - freedom house
+  - fuller house
+  - opera house
+  - sam cooke
+  - captain cook
+  - tim cook
+  - cook county
+  - cook islands
+  - tea party
+  - national mall
+  - supreme court
+  - state department
+  - oil for food
+  - oil-for-food
+  - food aid
+  - food security
+  - food crisis
+  - food shortage*
+  - food prices
+  - food stamps
+  - muslim brotherhood
+  - voa learning english
+  - learning english
 
 topics:
   self_hometown:
     unit: 1
     label: Self and hometown
-    keywords:
+    description: >
+      Introducing yourself: your name, your age, where you are from, your hometown and
+      country, and the story of your life.
+    phrases:
       - hometown*
       - home town
-      - introduc*
-      - yourself
-      - about me
-      - my name
+      - introduce yourself
+      - introducing yourself
+      - tell us about yourself
+      - about yourself
+      - my name is
+      - nationality
+      - birthplace
+      - grew up in
+      - growing up in
+      - born and raised
+      - native country
+      - home country
+      - life story
+      - get to know you
       - where you are from
       - where you're from
       - where are you from
-      - nationality
-      - native country
-      - birthplace
-      - born in
-      - grew up
-      - growing up
-      - my country
-      - get to know
-      - life story
-      - biography
-      - comes from
-      - come from
   study_work:
     unit: 2
     label: Study and work
-    keywords:
-      - school*
+    description: >
+      Studying at school or university, teachers and students, exams and homework, and
+      everyday work: jobs, careers, workplaces, colleagues and bosses.
+    stop:
+      - school shooting*
+      - school of thought
+    phrases:
       - student*
-      - study
-      - studies
-      - studying
+      - school*
       - universit*
       - college*
       - teacher*
       - classroom*
       - homework
-      - exam*
-      - education
+      - exam
+      - exams
+      - examination*
+      - study abroad
+      - studying
       - job
       - jobs
       - career*
-      - employ*
+      - employee*
+      - employer*
       - worker*
       - workplace
-      - office*
-      - interview*
-      - resume*
+      - co-worker*
+      - coworker*
+      - resume
       - salary
-      - boss*
-      - hire*
+      - salaries
+      - boss
       - hiring
-      - work
-      - working
+      - job interview
+      - at work
   family_friends:
     unit: 3
     label: Family and friends
-    keywords:
+    description: >
+      Family and friends: parents, children, brothers and sisters, grandparents, weddings,
+      marriage, and friendships between people.
+    stop:
+      - royal family
+      - first family
+      - crime family
+      - family planning
+    phrases:
       - family
       - families
       - parent*
       - mother*
       - father*
-      - brother*
-      - sister*
+      - brother
+      - brothers
+      - sister
+      - sisters
       - sibling*
-      - grandparent*
       - grandmother*
       - grandfather*
-      - friend*
+      - grandparent*
+      - grandchild*
+      - friend
+      - friends
+      - friendship*
       - wedding*
-      - marriage*
       - husband*
       - wife
-      - children
-      - kids
-      - baby
-      - babies
-      - neighbor*
-      - relative*
+      - daughter*
+      - son
       - cousin*
       - aunt*
       - uncle*
-      - daughter*
-      - son
+      - kids
+      - children
+      - baby
+      - babies
+      - neighbor*
   food_restaurant:
     unit: 4
     label: Food and restaurants
-    keywords:
-      - food*
+    description: >
+      Food and eating: cooking meals at home, recipes, restaurants, ordering from a menu,
+      breakfast, lunch and dinner, and the dishes people like to eat.
+    phrases:
       - restaurant*
-      - cook*
       - recipe*
-      - meal*
+      - cooking
+      - cook
+      - cooks
+      - cooked
+      - chef*
+      - meal
+      - meals
       - dinner*
       - lunch*
       - breakfast*
-      - eat
       - eating
-      - drink*
-      - coffee
-      - tea
-      - menu*
-      - chef*
-      - cafe*
+      - eat
       - kitchen*
+      - cuisine*
       - snack*
-      - vegetable*
-      - fruit*
-      - dish
-      - dishes
-      - bake*
-      - bakery
-      - pizza
-      - rice
+      - menu
+      - menus
+      - vegetarian*
+      - vegan*
+      - pizza*
       - noodle*
+      - sandwich*
+      - dessert*
+      - bakery
+      - baking
+      - street food
+      - fast food
+      - junk food
+      - comfort food
+      - food truck*
+      - local food
+      - tasty
+      - delicious
+      - grocery
+      - groceries
+      - coffee
   daily_routine:
     unit: 5
     label: Daily routine
-    keywords:
-      - daily
-      - routine*
-      - habit*
-      - every day
-      - everyday
-      - morning*
+    description: >
+      A person's daily routine: waking up, getting ready, commuting, working, eating and
+      going to sleep, and the habits and schedules that make up an ordinary day.
+    phrases:
+      - daily routine
+      - daily life
+      - morning routine
+      - everyday life
+      - day in the life
+      - a typical day
       - wake up
       - wakes up
-      - sleep*
-      - schedule*
+      - waking up
       - bedtime
-      - commut*
+      - sleep habits
+      - sleep schedule
+      - commute
+      - commuting
       - chores
-      - day in the life
-      - evening*
-      - afternoon*
+      - habit
+      - habits
+      - every morning
   hobbies_leisure:
     unit: 6
     label: Hobbies and free time
-    keywords:
+    description: >
+      Hobbies and free time: playing sports and games, music, reading, movies, crafts,
+      gardening and other leisure activities that people enjoy.
+    phrases:
       - hobby
       - hobbies
       - free time
       - spare time
       - leisure
-      - sport*
-      - game*
-      - music*
-      - movie*
-      - film*
-      - reading
-      - book*
-      - paint*
-      - danc*
-      - garden*
-      - collect*
-      - knit*
-      - fishing
-      - hik*
+      - pastime*
+      - board game*
+      - video game*
+      - gamer*
+      - gaming
+      - knitting
+      - gardening
+      - photography
+      - hiking
       - camping
-      - art
-      - craft*
-      - photograph*
       - guitar
       - piano
-      - sing*
-      - song*
       - yoga
-      - exercise*
-      - fitness
+      - painting
+      - drawing
+      - crafts
+      - collector*
+      - book club*
+      - movie
+      - movies
+      - cinema
+      - concert*
+      - music
+      - musician*
+      - song
+      - songs
+      - singing
+      - dance
+      - dancing
+      - sport
+      - sports
+      - soccer
+      - basketball
+      - baseball
+      - tennis
+      - swimming
+      - jogging
   travel_transport:
     unit: 7
     label: Travel and transport
-    keywords:
+    description: >
+      Travel and transport: trips and holidays, tourists, hotels, airports and flights,
+      trains, buses, cars and other ways of getting around.
+    stop:
+      - car bomb*
+      - suicide bomb*
+      - plane crash*
+    phrases:
       - travel*
-      - trip*
+      - traveler*
+      - traveller*
       - tourist*
       - tourism
       - vacation*
@@ -197,84 +303,269 @@ topics:
       - flight*
       - airport*
       - airline*
+      - airplane*
       - train
       - trains
+      - railway*
+      - subway
       - bus
       - buses
-      - subway
-      - metro
-      - car
-      - cars
-      - bicycle*
-      - bike*
+      - taxi*
       - ticket*
       - hotel*
       - journey*
-      - transport*
+      - trip
+      - trips
+      - road trip
       - traffic
-      - road
-      - roads
-      - ship*
-      - cruise*
-      - visit
-      - visitor*
-      - railway*
-      - taxi*
-      - plane*
+      - cruise
+      - public transport*
+      - transportation
+      - bicycle*
+      - cars
   shopping:
     unit: 8
     label: Shopping
-    keywords:
-      - shop*
-      - store*
-      - buy*
-      - bought
-      - price*
-      - sale
-      - sales
-      - market*
-      - mall*
+    description: >
+      Shopping: buying clothes and other goods in shops, markets and online, prices,
+      sales, customers and stores.
+    phrases:
+      - shopping
+      - shopper*
+      - shop
+      - shops
+      - store
+      - stores
+      - supermarket*
+      - shopping mall*
+      - mall
       - customer*
-      - cost*
-      - spend*
-      - expensive
-      - cheap*
+      - buy
+      - buying
       - discount*
+      - on sale
+      - for sale
       - clothes
       - clothing
       - fashion
       - retail*
-      - brand*
-      - purchase*
+      - black friday
+      - cyber monday
+      - online shopping
+      - price tag*
+      - bargain*
+      - coupon*
 
-# Replacement candidates for a candidate topic that lacks items. Same scoring rules. They
-# are scored only to rank what the corpus can support at level 4, and none is part of the
-# curriculum until PLAN-v7 4.1 is updated.
 candidates:
   health_body:
     label: Health and the body
-    keywords: [health*, doctor*, hospital*, medic*, sick*, disease*, diet*, nutrition*, vitamin*, dentist*, nurse*, pain*]
+    description: >
+      Health and the body: doctors, hospitals, medicine, illness, diet, nutrition, exercise
+      and staying healthy.
+    stop:
+      - health care bill
+      - affordable care act
+    phrases:
+      - health
+      - healthy
+      - doctor*
+      - hospital*
+      - medicine*
+      - sick*
+      - disease*
+      - diet
+      - nutrition*
+      - vitamin*
+      - dentist*
+      - nurse*
+      - exercise*
+      - fitness
+      - obesity
   weather_seasons:
     label: Weather and seasons
-    keywords: [weather, rain*, snow*, storm*, summer, winter, spring, autumn, season*, temperature*, sunny, cloud*, climate*]
+    description: >
+      Weather and seasons: rain, snow, storms, sunshine, temperature, and what summer,
+      winter, spring and autumn are like.
+    phrases:
+      - weather
+      - rain
+      - rainy
+      - snow
+      - snowy
+      - storm*
+      - summer
+      - winter
+      - spring
+      - autumn
+      - temperature*
+      - sunny
+      - cloud*
+      - heat wave*
   animals_pets:
     label: Animals and pets
-    keywords: [animal*, pet, pets, dog*, cat, cats, bird*, horse*, zoo*, fish, wildlife, puppy, puppies, kitten*]
+    description: >
+      Animals and pets: dogs, cats, birds, horses, zoos, and how people live with and care
+      for animals.
+    phrases:
+      - animal*
+      - pet
+      - pets
+      - dog
+      - dogs
+      - cat
+      - cats
+      - puppy
+      - puppies
+      - kitten*
+      - bird*
+      - horse*
+      - zoo*
+      - veterinar*
   technology_devices:
     label: Technology in daily life
-    keywords: [phone*, smartphone*, computer*, internet, online, app, apps, website*, social media, video game*, technology, device*, robot*, laptop*]
+    description: >
+      Technology in daily life: phones, computers, the internet, apps, social media and
+      the devices people use every day.
+    phrases:
+      - smartphone*
+      - phone
+      - phones
+      - cell phone*
+      - computer*
+      - internet
+      - online
+      - app
+      - apps
+      - website*
+      - social media
+      - laptop*
+      - tablet*
+      - robot*
+      - artificial intelligence
+      - software
+      - gadget*
+      - device*
   festivals_holidays:
     label: Festivals and celebrations
-    keywords: [festival*, holiday*, celebrat*, christmas, new year, birthday*, party, parties, tradition*, custom*, parade*, gift*]
+    description: >
+      Festivals and celebrations: holidays, birthdays, parties, parades, gifts and the
+      traditions people follow at special times of the year.
+    phrases:
+      - festival*
+      - holiday*
+      - celebrat*
+      - christmas
+      - new year
+      - birthday*
+      - party
+      - parties
+      - tradition*
+      - parade*
+      - thanksgiving
+      - halloween
+      - easter
+      - ramadan
+      - diwali
+      - lunar new year
   housing_home:
     label: Home and housing
-    keywords: [house*, home, homes, apartment*, room*, rent*, furniture, building*, moving]
+    description: >
+      Home and housing: apartments and houses, renting and buying a home, landlords,
+      furniture and the rooms people live in.
+    phrases:
+      - housing
+      - apartment*
+      - landlord*
+      - tenant*
+      - mortgage*
+      - homeowner*
+      - real estate
+      - rent
+      - rental*
+      - furniture
+      - roommate*
+      - tiny house
+      - dream house
+      - dream home
+      - house prices
+      - buying a house
+      - living room
+      - bedroom*
   nature_environment:
     label: Nature and environment
-    keywords: [nature, environment*, forest*, river*, ocean*, mountain*, tree*, plant*, recycl*, pollution, park*, beach*]
+    description: >
+      Nature and the environment: forests, rivers, oceans, mountains, national parks,
+      wildlife, pollution and protecting the planet.
+    phrases:
+      - nature
+      - environment*
+      - forest*
+      - river*
+      - ocean*
+      - mountain*
+      - national park*
+      - wildlife
+      - recycl*
+      - pollution
+      - beach*
+      - endangered
+      - conservation
   language_learning:
     label: Learning English
-    keywords: [english, language*, vocabulary, grammar, pronunciation, speaking, idiom*, expression*, phrase*, spelling]
+    description: >
+      Learning English: grammar, vocabulary, pronunciation, idioms, spelling and ways to
+      improve your English.
+    phrases:
+      - english
+      - grammar
+      - vocabulary
+      - pronunciation
+      - idiom*
+      - phrasal verb*
+      - spelling
+      - language*
+      - learn english
   money_banking:
     label: Money and banking
-    keywords: [money, bank*, saving*, budget*, income, credit, cash, debt, pay, paid]
+    description: >
+      Money and banking: bank accounts, savings, loans, budgets, income, debt, credit and
+      how people manage money.
+    stop:
+      - world bank
+    phrases:
+      - money
+      - bank
+      - banks
+      - banking
+      - saving*
+      - budget*
+      - income
+      - credit
+      - cash
+      - debt
+      - loan*
+
+# Descriptions of what the corpus is mostly about, for the embedding tagger. An item that is
+# nearest to one of these is not tagged. Written before any label existed.
+other:
+  - >
+    Politics and government: elections, presidents, parliaments, laws, and relations between
+    countries.
+  - >
+    War, terrorism, military action, violence and refugees.
+  - >
+    Science, space exploration, research and new technology or medical discoveries.
+  - >
+    Business, the economy, trade, markets and company news.
+  - >
+    Crime, courts, police and legal cases.
+  - >
+    Natural disasters, accidents and extreme weather events.
+  - >
+    Public health, disease outbreaks and medical policy.
+  - >
+    History, famous people, literature, art and museums.
+  - >
+    Climate change, energy and government environmental policy.
+  - >
+    Sports competitions, tournaments and professional athletes.

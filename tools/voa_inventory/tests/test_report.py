@@ -3,8 +3,9 @@ from pathlib import Path
 
 import pytest
 from voa_inventory.fetch import BASE, PoliteFetcher, Response
-from voa_inventory.report import COLUMNS, MIN_WORDS, load_rows, render_md, write_csv
-from voa_inventory.topics import load_candidates, load_topics
+from voa_inventory.render import render_md
+from voa_inventory.rows import COLUMNS, MIN_WORDS, load_rows, write_csv
+from voa_inventory.topics import PhraseTagger, load_catalog
 
 FIXTURES = Path(__file__).parent / "fixtures"
 PAGES = {
@@ -33,7 +34,7 @@ def cache(tmp_path: Path) -> Path:
 
 
 def test_rows_cover_every_cached_page_and_short_pages_are_never_usable(cache: Path) -> None:
-    rows = load_rows(cache, load_topics(), load_candidates())
+    rows = load_rows(cache, PhraseTagger())
     assert len(rows) == len(PAGES)
     assert all(r.item.word_count < MIN_WORDS for r in rows)  # the fixtures are short ...
     assert not any(r.usable for r in rows)  # ... so the length rule rejects all of them
@@ -42,43 +43,40 @@ def test_rows_cover_every_cached_page_and_short_pages_are_never_usable(cache: Pa
 def test_usable_needs_licence_audio_and_length(
     cache: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("voa_inventory.report.MIN_WORDS", 10)
-    rows = load_rows(cache, load_topics(), load_candidates())
-    usable = {r.item.url.rsplit("/", 1)[1] for r in rows if r.usable}
-    assert usable == {
-        "8001.html",
-        "8005.html",
-    }  # staff + lesson; not wire/photo/mention/no-audio/byline
+    monkeypatch.setattr("voa_inventory.rows.MIN_WORDS", 10)
+    usable = {r.item.url.rsplit("/", 1)[1] for r in load_rows(cache, PhraseTagger()) if r.usable}
+    # staff + lesson; not wire, photo, mention, no-audio or outside byline
+    assert usable == {"8001.html", "8005.html"}
 
 
-def test_csv_has_one_row_per_page_with_the_documented_columns(cache: Path, tmp_path: Path) -> None:
-    rows = load_rows(cache, load_topics(), load_candidates())
+def test_csv_has_one_row_per_page_and_a_usable_column(
+    cache: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("voa_inventory.rows.MIN_WORDS", 10)
+    rows = load_rows(cache, PhraseTagger())
     out = tmp_path / "out" / "inv.csv"
     write_csv(rows, out)
     with out.open(encoding="utf-8") as fh:
         read = list(csv.DictReader(fh))
     assert list(read[0]) == COLUMNS
     assert len(read) == len(PAGES)
-    staff = next(r for r in read if r["url"].endswith("8001.html"))
-    assert staff["license_ok"] == "1" and staff["has_audio"] == "1"
-    assert staff["topics"] == "food_restaurant"
-    assert staff["candidate_topics"] == "housing_home"
-    wire = next(r for r in read if r["url"].endswith("8002.html"))
-    assert wire["license_reasons"] == "wire_credit;third_party_media"
-    lesson = next(r for r in read if r["url"].endswith("8005.html"))
-    assert lesson["est_level"] == "2"
+    by = {r["url"].rsplit("/", 1)[1]: r for r in read}
+    assert by["8001.html"]["usable"] == "1" and by["8001.html"]["topics"] == "food_restaurant"
+    assert by["8002.html"]["usable"] == "0"
+    assert by["8002.html"]["license_reasons"] == "wire_credit;third_party_media"
+    assert by["8005.html"]["est_level"] == "2"
+    assert {u for u, r in by.items() if r["usable"] == "1"} == {"8001.html", "8005.html"}
 
 
 def test_markdown_names_topics_short_of_two_items_and_states_coverage(
     cache: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("voa_inventory.report.MIN_WORDS", 10)
-    rows = load_rows(cache, load_topics(), load_candidates())
-    md = render_md(rows, {"sitemap_urls": 70, "seed": 3}, load_topics(), load_candidates())
+    monkeypatch.setattr("voa_inventory.rows.MIN_WORDS", 10)
+    rows = load_rows(cache, PhraseTagger())
+    md = render_md(rows, {"sitemap_urls": 70, "seed": 3}, load_catalog(), "phrase")
     assert "**7** of them (**10.0%**)" in md
-    assert "seed 3" in md
+    assert "seed 3" in md and "**phrase** tagger" in md
     assert "fewer than 2 in sample" in md  # partial coverage never claims a firm SWAP
     assert "`shopping`" in md
-    assert "| Home and housing (`housing_home`) | 1 | 1 | 1 |" in md  # candidates are tagged too
-    full = render_md(rows, {"sitemap_urls": 7, "seed": 3}, load_topics(), load_candidates())
+    full = render_md(rows, {"sitemap_urls": 7, "seed": 3}, load_catalog(), "phrase")
     assert "| SWAP |" in full  # full coverage and still short: the topic must be swapped

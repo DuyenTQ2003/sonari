@@ -1,0 +1,280 @@
+# Keyword lists for the level 4 candidate topics of PLAN-v7 section 4.1.
+#
+# An item is tagged with a topic when its score reaches `min_score`. Each distinct keyword
+# found in the title scores `title_weight`; each distinct keyword found in the first
+# paragraph scores 1. A keyword ending in `*` matches any word starting with that stem;
+# otherwise it must match a whole word or phrase. Matching ignores case.
+#
+# Keyword tagging over-counts (a "school" story is not always about studying), so a count
+# from this file is an upper bound on topical fit. The final choice of passage for a unit
+# is made in P50/P51 after reading it. The lists are English on purpose.
+min_score: 2
+title_weight: 2
+
+topics:
+  self_hometown:
+    unit: 1
+    label: Self and hometown
+    keywords:
+      - hometown*
+      - home town
+      - introduc*
+      - yourself
+      - about me
+      - my name
+      - where you are from
+      - where you're from
+      - where are you from
+      - nationality
+      - native country
+      - birthplace
+      - born in
+      - grew up
+      - growing up
+      - my country
+      - get to know
+      - life story
+      - biography
+      - comes from
+      - come from
+  study_work:
+    unit: 2
+    label: Study and work
+    keywords:
+      - school*
+      - student*
+      - study
+      - studies
+      - studying
+      - universit*
+      - college*
+      - teacher*
+      - classroom*
+      - homework
+      - exam*
+      - education
+      - job
+      - jobs
+      - career*
+      - employ*
+      - worker*
+      - workplace
+      - office*
+      - interview*
+      - resume*
+      - salary
+      - boss*
+      - hire*
+      - hiring
+      - work
+      - working
+  family_friends:
+    unit: 3
+    label: Family and friends
+    keywords:
+      - family
+      - families
+      - parent*
+      - mother*
+      - father*
+      - brother*
+      - sister*
+      - sibling*
+      - grandparent*
+      - grandmother*
+      - grandfather*
+      - friend*
+      - wedding*
+      - marriage*
+      - husband*
+      - wife
+      - children
+      - kids
+      - baby
+      - babies
+      - neighbor*
+      - relative*
+      - cousin*
+      - aunt*
+      - uncle*
+      - daughter*
+      - son
+  food_restaurant:
+    unit: 4
+    label: Food and restaurants
+    keywords:
+      - food*
+      - restaurant*
+      - cook*
+      - recipe*
+      - meal*
+      - dinner*
+      - lunch*
+      - breakfast*
+      - eat
+      - eating
+      - drink*
+      - coffee
+      - tea
+      - menu*
+      - chef*
+      - cafe*
+      - kitchen*
+      - snack*
+      - vegetable*
+      - fruit*
+      - dish
+      - dishes
+      - bake*
+      - bakery
+      - pizza
+      - rice
+      - noodle*
+  daily_routine:
+    unit: 5
+    label: Daily routine
+    keywords:
+      - daily
+      - routine*
+      - habit*
+      - every day
+      - everyday
+      - morning*
+      - wake up
+      - wakes up
+      - sleep*
+      - schedule*
+      - bedtime
+      - commut*
+      - chores
+      - day in the life
+      - evening*
+      - afternoon*
+  hobbies_leisure:
+    unit: 6
+    label: Hobbies and free time
+    keywords:
+      - hobby
+      - hobbies
+      - free time
+      - spare time
+      - leisure
+      - sport*
+      - game*
+      - music*
+      - movie*
+      - film*
+      - reading
+      - book*
+      - paint*
+      - danc*
+      - garden*
+      - collect*
+      - knit*
+      - fishing
+      - hik*
+      - camping
+      - art
+      - craft*
+      - photograph*
+      - guitar
+      - piano
+      - sing*
+      - song*
+      - yoga
+      - exercise*
+      - fitness
+  travel_transport:
+    unit: 7
+    label: Travel and transport
+    keywords:
+      - travel*
+      - trip*
+      - tourist*
+      - tourism
+      - vacation*
+      - holiday*
+      - flight*
+      - airport*
+      - airline*
+      - train
+      - trains
+      - bus
+      - buses
+      - subway
+      - metro
+      - car
+      - cars
+      - bicycle*
+      - bike*
+      - ticket*
+      - hotel*
+      - journey*
+      - transport*
+      - traffic
+      - road
+      - roads
+      - ship*
+      - cruise*
+      - visit
+      - visitor*
+      - railway*
+      - taxi*
+      - plane*
+  shopping:
+    unit: 8
+    label: Shopping
+    keywords:
+      - shop*
+      - store*
+      - buy*
+      - bought
+      - price*
+      - sale
+      - sales
+      - market*
+      - mall*
+      - customer*
+      - cost*
+      - spend*
+      - expensive
+      - cheap*
+      - discount*
+      - clothes
+      - clothing
+      - fashion
+      - retail*
+      - brand*
+      - purchase*
+
+# Replacement candidates for a candidate topic that lacks items. Same scoring rules. They
+# are scored only to rank what the corpus can support at level 4, and none is part of the
+# curriculum until PLAN-v7 4.1 is updated.
+candidates:
+  health_body:
+    label: Health and the body
+    keywords: [health*, doctor*, hospital*, medic*, sick*, disease*, diet*, nutrition*, vitamin*, dentist*, nurse*, pain*]
+  weather_seasons:
+    label: Weather and seasons
+    keywords: [weather, rain*, snow*, storm*, summer, winter, spring, autumn, season*, temperature*, sunny, cloud*, climate*]
+  animals_pets:
+    label: Animals and pets
+    keywords: [animal*, pet, pets, dog*, cat, cats, bird*, horse*, zoo*, fish, wildlife, puppy, puppies, kitten*]
+  technology_devices:
+    label: Technology in daily life
+    keywords: [phone*, smartphone*, computer*, internet, online, app, apps, website*, social media, video game*, technology, device*, robot*, laptop*]
+  festivals_holidays:
+    label: Festivals and celebrations
+    keywords: [festival*, holiday*, celebrat*, christmas, new year, birthday*, party, parties, tradition*, custom*, parade*, gift*]
+  housing_home:
+    label: Home and housing
+    keywords: [house*, home, homes, apartment*, room*, rent*, furniture, building*, moving]
+  nature_environment:
+    label: Nature and environment
+    keywords: [nature, environment*, forest*, river*, ocean*, mountain*, tree*, plant*, recycl*, pollution, park*, beach*]
+  language_learning:
+    label: Learning English
+    keywords: [english, language*, vocabulary, grammar, pronunciation, speaking, idiom*, expression*, phrase*, spelling]
+  money_banking:
+    label: Money and banking
+    keywords: [money, bank*, saving*, budget*, income, credit, cash, debt, pay, paid]

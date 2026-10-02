@@ -7,30 +7,30 @@ counts, flags), never article text or audio.
 ## Coverage
 
 - The site's sitemaps list **67337** article URLs. This inventory parsed
-  **600** of them (**0.9%**), visited in a fixed random order
+  **6511** of them (**9.7%**), visited in a fixed random order
   (seed 1), so the sample is uniform and every count below is a lower
   bound on the whole site. "Est. whole site" divides by the coverage: a rough scale, not a
   count.
-- Pages with text of at least 100 words and audio: 169.
-  **Usable** (also licence_ok): **73**.
+- Pages with text of at least 100 words and audio: 1822.
+  **Usable** (also licence_ok): **791**.
 
 **Usable** means: VOA-staff byline, no wire credit or mention (AP, Reuters, AFP), no
 third-party image credit, an audio file on the page, and at least 100 words of body text.
 The filter is conservative on purpose (`license.py`); P50 re-checks every item it ingests.
 
-Licence outcome of the 169 pages with audio and enough text:
+Licence outcome of the 1822 pages with audio and enough text:
 
 | Reasons | Pages |
 |---|---|
-| ok | 73 |
-| wire_credit | 27 |
-| wire_credit,wire_mention | 25 |
-| wire_credit,wire_mention,third_party_media | 13 |
-| third_party_media | 11 |
-| wire_credit,third_party_media | 11 |
-| wire_mention | 6 |
-| wire_mention,third_party_media | 2 |
-| byline_not_staff | 1 |
+| ok | 791 |
+| wire_credit | 340 |
+| wire_credit,wire_mention | 245 |
+| wire_credit,third_party_media | 157 |
+| wire_credit,wire_mention,third_party_media | 125 |
+| third_party_media | 88 |
+| wire_mention | 59 |
+| wire_mention,third_party_media | 13 |
+| byline_not_staff | 4 |
 
 ## Level 4 candidate topics
 
@@ -41,26 +41,20 @@ level 6, above level 7). Topics are keyword tags on title and first paragraph
 
 | Unit | Topic | Level 4 | Levels 4-5 | Any level | Est. whole site, level 4 | Verdict |
 |---|---|---|---|---|---|---|
-| 1 | Self and hometown (`self_hometown`) | 0 | 0 | 0 | 0 | fewer than 2 in sample |
-| 2 | Study and work (`study_work`) | 2 | 4 | 6 | 224 | enough |
-| 3 | Family and friends (`family_friends`) | 1 | 4 | 4 | 112 | fewer than 2 in sample |
-| 4 | Food and restaurants (`food_restaurant`) | 0 | 0 | 0 | 0 | fewer than 2 in sample |
-| 5 | Daily routine (`daily_routine`) | 1 | 1 | 1 | 112 | fewer than 2 in sample |
-| 6 | Hobbies and free time (`hobbies_leisure`) | 0 | 2 | 2 | 0 | fewer than 2 in sample |
-| 7 | Travel and transport (`travel_transport`) | 1 | 3 | 3 | 112 | fewer than 2 in sample |
-| 8 | Shopping (`shopping`) | 0 | 1 | 1 | 0 | fewer than 2 in sample |
+| 1 | Self and hometown (`self_hometown`) | 0 | 1 | 2 | 0 | fewer than 2 in sample |
+| 2 | Study and work (`study_work`) | 13 | 46 | 76 | 134 | enough |
+| 3 | Family and friends (`family_friends`) | 11 | 26 | 33 | 114 | enough |
+| 4 | Food and restaurants (`food_restaurant`) | 12 | 18 | 21 | 124 | enough |
+| 5 | Daily routine (`daily_routine`) | 2 | 2 | 2 | 21 | enough |
+| 6 | Hobbies and free time (`hobbies_leisure`) | 12 | 30 | 34 | 124 | enough |
+| 7 | Travel and transport (`travel_transport`) | 10 | 20 | 31 | 103 | enough |
+| 8 | Shopping (`shopping`) | 3 | 9 | 19 | 31 | enough |
 
 ### Topics with fewer than 2 usable items with audio at level 4
 
 - `self_hometown`
-- `family_friends`
-- `food_restaurant`
-- `daily_routine`
-- `hobbies_leisure`
-- `travel_transport`
-- `shopping`
 
-**Partial crawl.** Only 0.9% of the site is sampled. "Fewer than 2 in
+**Partial crawl.** Only 9.7% of the site is sampled. "Fewer than 2 in
 sample" therefore does not show that the corpus lacks items, only that this sample is too
 small to show them; "SWAP" appears only at 100% coverage. Continue with `make voa-crawl`.
 
@@ -69,27 +63,27 @@ scored the same way (usable items in the sample; examples are level 4, else any 
 
 | Candidate | Level 4 | Levels 4-5 | Any level | Examples |
 |---|---|---|---|---|
-| Home and housing (`housing_home`) | 1 | 3 | 3 | [Floodwaters Threaten Famous American Home](https://learningenglish.voanews.com/a/floodweaters-threaten-famous-american-home/2857059.html) |
-| Nature and environment (`nature_environment`) | 1 | 2 | 2 | [Oil Company Pays for Pollution in Nigeria](https://learningenglish.voanews.com/a/oil-company-pay-for-pollution-in-nigeria/2670686.html) |
-| Animals and pets (`animals_pets`) | 1 | 1 | 1 | ['Dog or Bread?' Question Takes Over Twitter](https://learningenglish.voanews.com/a/dog-or-bread/3232407.html) |
-| Money and banking (`money_banking`) | 1 | 1 | 1 | [Will the US Pay Workers for Family Leave?](https://learningenglish.voanews.com/a/will-the-us-pay-workers-for-family-leave/2670749.html) |
-| Health and the body (`health_body`) | 0 | 1 | 2 | [Climate Change May Affect Dengue and Malaria Disease Risks](https://learningenglish.voanews.com/a/climate-change-may-affect-dengue-and-malaria-disease-risks/5583044.html)<br>[NASA Paints Pluto Wild With Color](https://learningenglish.voanews.com/a/nasa-paints-pluto-wild-with-color/3065467.html) |
-| Learning English (`language_learning`) | 0 | 1 | 2 | [African Schools Debate Whether to Teach in Local Languages](https://learningenglish.voanews.com/a/african-schools-debate-whether-to-teach-in-local-languages/4160694.html)<br>[2000 UTC Hourly Newscast in English](https://learningenglish.voanews.com/a/hourly-newscast-in-english/3359299.html) |
-| Technology in daily life (`technology_devices`) | 0 | 0 | 2 | [Developments in Exoskeleton Technology Could Help Some Walk ](https://learningenglish.voanews.com/a/developments-in-exoskeleton-technology-could-help-some-walk-again/4425559.html)<br>[Islamic State Widow Shames IS Leaders Online](https://learningenglish.voanews.com/a/islamic-state-widow-shames-is-leaders/3177161.html) |
-| Weather and seasons (`weather_seasons`) | 0 | 1 | 2 | [Climate Change May Affect Dengue and Malaria Disease Risks](https://learningenglish.voanews.com/a/climate-change-may-affect-dengue-and-malaria-disease-risks/5583044.html)<br>[Fighting Climate Change Important to Obama](https://learningenglish.voanews.com/a/fighting-climate-change-important-to-obama/2935124.html) |
-| Festivals and celebrations (`festivals_holidays`) | 0 | 0 | 0 |  |
+| Learning English (`language_learning`) | 20 | 28 | 41 | [VOA Learning English Presents 'A Visit from St. Nicholas'](https://learningenglish.voanews.com/a/a-visit-from-st-nicholas/4174093.html)<br>[Are ‘Me and My Friends’ Breaking Grammar Rules?](https://learningenglish.voanews.com/a/are-me-and-my-friends-breaking-grammar-rules-/5809299.html) |
+| Home and housing (`housing_home`) | 6 | 13 | 15 | [Building a Truly American Instrument](https://learningenglish.voanews.com/a/building-a-truly-american-instrument/4729582.html)<br>[Building Boats Helps At-Risk Young Adults Improve Their Live](https://learningenglish.voanews.com/a/building-boats-helps-at-risk-young-adults-improve-their-lives-/4681946.html) |
+| Technology in daily life (`technology_devices`) | 4 | 16 | 35 | [What is the Difference between Call, Phone and Ring?](https://learningenglish.voanews.com/a/ask-a-teacher-what-is-the-difference-between-call-phone-and-ring-/4886824.html)<br>[Will Robots Replace Humans in Food Industry?](https://learningenglish.voanews.com/a/food-robots/3617642.html) |
+| Animals and pets (`animals_pets`) | 4 | 10 | 12 | ['Dog or Bread?' Question Takes Over Twitter](https://learningenglish.voanews.com/a/dog-or-bread/3232407.html)<br>[Mia the Beagle Acts Like a Real Dog at Westminster Dog Show ](https://learningenglish.voanews.com/a/trending-today-mia-the-beagle-westminster-dog-show/3724348.html) |
+| Health and the body (`health_body`) | 3 | 11 | 20 | [Artist Shows Effect of Doctors’ Strike in Kenya](https://learningenglish.voanews.com/a/artist-shows-effect-of-doctors-strike-in-kenya/3701864.html)<br>[Electric Shocks, Not Drugs, Help A Brain Disease. ](https://learningenglish.voanews.com/a/electric-shocks-not-drugs-help-a-brain-disease-/1938856.html) |
+| Nature and environment (`nature_environment`) | 3 | 13 | 17 | [Crater Lake National Park: A Blue Jewel](https://learningenglish.voanews.com/a/americas-national-parks-crater-lake/3462291.html)<br>[Oil Company Pays for Pollution in Nigeria](https://learningenglish.voanews.com/a/oil-company-pay-for-pollution-in-nigeria/2670686.html) |
+| Weather and seasons (`weather_seasons`) | 3 | 9 | 15 | [When It Rains, Make Beer](https://learningenglish.voanews.com/a/dutch-rain-water-beer/3446032.html)<br>['It Was a Dark and Stormy Night'](https://learningenglish.voanews.com/a/words-and-their-stories-it-was-a-dark-and-stormy-night/4084016.html) |
+| Money and banking (`money_banking`) | 3 | 7 | 12 | [When It Comes to Money, Black Is Better Than Red](https://learningenglish.voanews.com/a/when-it-comes-to-money-black-is-better-than-red/2733393.html)<br>[Wildcats: Congressmen, Money, Oil Wells and Strikers](https://learningenglish.voanews.com/a/wildcat-congressmen-money-oil-wells-and-strikers/1455413.html) |
+| Festivals and celebrations (`festivals_holidays`) | 1 | 5 | 8 | [New Year's Traditions Around the World](https://learningenglish.voanews.com/a/new-years-traditions-around-the-world/4183351.html) |
 
 ## Level by topic (usable items)
 
 | Level | self_hometown | study_work | family_friends | food_restaurant | daily_routine | hobbies_leisure | travel_transport | shopping | no topic | Total |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |
+| 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 | 3 |
 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 4 | 0 | 2 | 1 | 0 | 1 | 0 | 1 | 0 | 13 | 17 |
-| 5 | 0 | 2 | 3 | 0 | 0 | 2 | 2 | 1 | 27 | 37 |
-| 6 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 14 | 16 |
-| 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 2 |
+| 4 | 0 | 13 | 11 | 12 | 2 | 12 | 10 | 3 | 175 | 230 |
+| 5 | 1 | 33 | 15 | 6 | 0 | 18 | 10 | 6 | 233 | 316 |
+| 6 | 1 | 28 | 6 | 3 | 0 | 4 | 11 | 9 | 159 | 217 |
+| 7 | 0 | 2 | 1 | 0 | 0 | 0 | 0 | 1 | 21 | 25 |
 | unknown | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 An item can carry several topics, so a row can sum to more than its total.
@@ -98,21 +92,21 @@ An item can carry several topics, so a row can sum to more than its total.
 
 | Programme | Pages | Usable |
 |---|---|---|
-| As It Is | 181 | 39 |
-| (none) | 122 | 9 |
-| VOA Learning English Podcast | 67 | 0 |
-| Science & Technology | 53 | 4 |
-| Arts & Culture | 24 | 1 |
-| Health & Lifestyle | 21 | 4 |
-| The Day in Photos | 15 | 0 |
-| Words and Their Stories | 14 | 2 |
-| Education | 13 | 2 |
-| Everyday Grammar | 11 | 3 |
-| Education Report | 10 | 1 |
-| U.S. History | 9 | 0 |
-| What's Trending Today? | 8 | 3 |
-| Word of the Day | 7 | 0 |
-| Health Report | 7 | 0 |
+| As It Is | 2003 | 328 |
+| (none) | 1254 | 106 |
+| VOA Learning English Podcast | 644 | 0 |
+| Science & Technology | 507 | 41 |
+| Arts & Culture | 302 | 33 |
+| The Day in Photos | 227 | 0 |
+| Health & Lifestyle | 209 | 39 |
+| Education | 206 | 44 |
+| Words and Their Stories | 168 | 45 |
+| What's Trending Today? | 101 | 41 |
+| U.S. History | 89 | 8 |
+| Education Report | 88 | 3 |
+| Health Report | 82 | 3 |
+| Environment & Science | 81 | 2 |
+| Everyday Grammar | 81 | 31 |
 
 ## Reproduce
 
