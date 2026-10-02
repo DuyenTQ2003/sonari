@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     mongo_server_selection_timeout_ms: int = 5000
     redis_url: str = Field(validation_alias="REDIS_URL")
 
+    # How often each context's outbox relay looks for unsent events (ADR-0007). This is
+    # the worst-case delay between a commit and its event reaching Redis.
+    outbox_relay_interval_s: float = 0.5
+
     # How long one readiness check may take before that dependency counts as down.
     readiness_timeout_s: float = 2.0
 

@@ -16,7 +16,9 @@ from sonari_core.identity.wiring import IdentityRuntime, build_identity
 from sonari_core.shared import health
 from sonari_core.shared.contexts import ContextSpec, init_contexts
 from sonari_core.shared.errors import install_error_handlers
+from sonari_core.shared.events import RedisStreamPublisher
 from sonari_core.shared.logging import configure_logging
+from sonari_core.shared.outbox import OutboxRelays
 from sonari_core.shared.request_context import RequestIdMiddleware
 from sonari_core.shared.resources import Resources, build_resources
 from sonari_core.shared.settings import Settings
@@ -52,14 +54,25 @@ def create_app(
         active = resources or build_resources(settings)
         app.state.resources = active
         identity_runtime: IdentityRuntime | None = None
+        relays: OutboxRelays | None = None
         try:
             if active.mongo is not None:
                 await init_contexts(active.mongo, CONTEXTS)
+                if active.redis is not None:
+                    relays = OutboxRelays(
+                        active.mongo,
+                        CONTEXTS,
+                        RedisStreamPublisher(active.redis),
+                        settings.outbox_relay_interval_s,
+                    )
+                    await relays.start()
             if auth_service is None and active.redis is not None:
                 identity_runtime = build_identity(settings, active.redis)
                 app.state.auth = identity_runtime.service
             yield
         finally:
+            if relays is not None:
+                await relays.stop()
             shutdown_telemetry()
             if identity_runtime is not None:
                 await identity_runtime.aclose()

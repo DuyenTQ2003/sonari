@@ -101,3 +101,9 @@ def live_settings(mongo_client: MongoClient[dict[str, Any]]) -> Settings:
         turnstile_secret=turnstile_secret,
         otel_enabled=False,
     )
+
+
+@pytest.fixture
+def run_id() -> str:
+    """Prefix of everything a test creates, so it can be found and deleted afterwards."""
+    return f"it-{uuid.uuid4().hex[:10]}"

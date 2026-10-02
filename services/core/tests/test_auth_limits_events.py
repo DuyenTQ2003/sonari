@@ -1,12 +1,10 @@
 """Rate limits on register and login, and the UserRegistered event."""
 
 import json
-import logging
 from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
-import pytest
 from jsonschema import Draft202012Validator
 
 from auth_fakes import AuthKit
@@ -82,11 +80,13 @@ def test_refused_attempts_do_not_extend_the_lockout(auth: AuthKit) -> None:
 # --- UserRegistered ----------------------------------------------------------------------
 
 
-def test_registration_publishes_one_valid_event_without_personal_data(auth: AuthKit) -> None:
+def test_registration_writes_one_valid_event_without_personal_data(auth: AuthKit) -> None:
     response = register(auth.client())
 
-    ((event_type, payload),) = auth.publisher.events
-    assert event_type == "UserRegistered"
+    (event,) = auth.outbox.entries
+    payload = event.payload
+    assert event.event_type == "UserRegistered"
+    assert event.event_id == payload["eventId"]  # consumers deduplicate on it
     assert payload["userId"] == response.json()["user"]["id"]
     assert Draft202012Validator(json.loads(SCHEMA.read_text())).is_valid(payload)
     UUID(payload["eventId"])
@@ -99,20 +99,14 @@ def test_logging_in_publishes_nothing(auth: AuthKit) -> None:
     register(auth.client())
     login(auth.client())
 
-    assert len(auth.publisher.events) == 1
+    assert len(auth.outbox.entries) == 1
 
 
-def test_a_failed_publish_does_not_undo_the_registration(
-    auth: AuthKit, caplog: pytest.LogCaptureFixture
-) -> None:
-    auth.publisher.fail = True
+def test_a_taken_email_writes_no_event(auth: AuthKit) -> None:
+    register(auth.client())
 
-    with caplog.at_level(logging.ERROR):
-        response = register(auth.client())
-
-    assert response.status_code == 201
-    assert login(auth.client()).status_code == 200
-    assert any("could not publish UserRegistered" in r.getMessage() for r in caplog.records)
+    assert register(auth.client()).status_code == 409
+    assert len(auth.outbox.entries) == 1
 
 
 def test_the_hand_written_model_matches_the_contract_schema() -> None:
@@ -126,7 +120,8 @@ def test_the_hand_written_model_matches_the_contract_schema() -> None:
 
 def test_the_schema_rejects_extra_fields_and_missing_ones(auth: AuthKit) -> None:
     register(auth.client())
-    ((_, payload),) = auth.publisher.events
+    (event,) = auth.outbox.entries
+    payload = dict(event.payload)
     validator = Draft202012Validator(json.loads(SCHEMA.read_text()))
 
     assert not validator.is_valid({**payload, "email": "learner@example.com"})

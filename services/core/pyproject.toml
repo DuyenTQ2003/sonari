@@ -25,6 +25,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "fakeredis>=2.26",
     "import-linter>=2.0",
     "jsonschema>=4.21",
     "mypy>=1.11",

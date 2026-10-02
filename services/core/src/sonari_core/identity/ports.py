@@ -4,10 +4,13 @@ The service depends on these protocols, not on Beanie, so its rules (rotation, r
 detection) are tested in CI against in-memory stores and against MongoDB locally.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
+
+from sonari_core.shared.events import EventMessage
 
 
 @dataclass(frozen=True)
@@ -48,9 +51,15 @@ class EmailTaken(Exception):
     """An account with this email exists."""
 
 
+Announce = Callable[[UserRecord], EventMessage]
+
+
 class UserStore(Protocol):
-    async def create(self, email: str, password_hash: str, now: datetime) -> UserRecord:
-        """Raises EmailTaken. The check and the insert must be one atomic step."""
+    async def create(
+        self, email: str, password_hash: str, now: datetime, announce: Announce
+    ) -> UserRecord:
+        """Insert the user and the outbox entry `announce` builds, atomically: both or
+        neither. Raises EmailTaken. The check and the insert must be one atomic step."""
         ...
 
     async def find_by_email(self, email: str) -> UserRecord | None: ...
