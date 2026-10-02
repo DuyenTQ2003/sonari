@@ -15,8 +15,15 @@ make voa-report                              # offline: parse the cache, rewrite
 
 - **Polite.** `robots.txt` is fetched and honoured with its `*` and `$` wildcards
   (`robots.py`; `urllib.robotparser` does not understand them). One request per second,
-  an identifying User-Agent with a contact address, no retries on 429 or 503 (the crawl
-  stops), a short backoff on other errors.
+  an identifying User-Agent with a contact address. Retries count towards the limit.
+- **Survives failures.** Timeouts, connection reset or refused, HTTP 429 and 5xx are retried
+  (4 attempts, backoff 5, 10, 20 s times a 0.5-1.5 jitter, `Retry-After` honoured; one
+  longer than 5 minutes ends the attempts). A URL that still fails, or fails with another
+  status such as 403, is written to `index.jsonl` as `{"failed": true, "error": <class>}`
+  with no cache file, and the crawl moves on. The next run asks for it again; cached pages
+  are still never requested twice. After `--max-consecutive-failures` URLs in a row fail
+  (default 20) the run stops with a message and exit code 2: the network or the site is
+  down. Every run ends with a summary of fetched, cached, gone, failed and the failure classes.
 - **Sitemap, not archive pages.** `robots.txt` disallows the paginated archives, so the
   article list comes from the site's own sitemaps (about 67,000 article URLs).
 - **Random order.** URLs are visited in a seeded random order. Any prefix of the crawl is a
