@@ -14,6 +14,10 @@ import pytest
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.errors import ServerSelectionTimeoutError
+from redis import Redis as SyncRedis
+from redis.exceptions import ConnectionError as RedisConnectionError
+
+from sonari_core.shared.settings import Settings
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 URI_VARIABLE = "MONGO_URI_CORE"
@@ -21,23 +25,23 @@ URI_VARIABLE = "MONGO_URI_CORE"
 Documents = Collection[dict[str, Any]]
 
 
-def _core_uri() -> str | None:
-    """The core service's connection string: the environment first, then the repo `.env`."""
-    from_environment = os.environ.get(URI_VARIABLE)
+def env_value(variable: str) -> str | None:
+    """A setting from the environment first, then from the repo `.env`."""
+    from_environment = os.environ.get(variable)
     if from_environment:
         return from_environment
     env_file = REPO_ROOT / ".env"
     if env_file.is_file():
         for line in env_file.read_text().splitlines():
             name, separator, value = line.partition("=")
-            if separator and name.strip() == URI_VARIABLE:
+            if separator and name.strip() == variable:
                 return value.strip()
     return None
 
 
 @pytest.fixture(scope="session")
 def mongo_client() -> Iterator[MongoClient[dict[str, Any]]]:
-    uri = _core_uri()
+    uri = env_value(URI_VARIABLE)
     if uri is None:
         pytest.skip(f"{URI_VARIABLE} is not set: copy .env.example to .env and run `make infra`")
     client: MongoClient[dict[str, Any]] = MongoClient(uri, serverSelectionTimeoutMS=2000)
@@ -66,3 +70,24 @@ def scratch_collections(
     yield progress, review_log
     progress.drop()
     review_log.drop()
+
+
+@pytest.fixture
+def live_settings(mongo_client: MongoClient[dict[str, Any]]) -> Settings:
+    """Settings for the real dev MongoDB and Redis; skips when Redis is not reachable.
+
+    Depending on `mongo_client` means the test is skipped first when MongoDB is down.
+    """
+    redis_url = env_value("REDIS_URL")
+    if redis_url is None:
+        pytest.skip("REDIS_URL is not set: copy .env.example to .env and run `make infra`")
+    probe = SyncRedis.from_url(redis_url, socket_connect_timeout=2)
+    try:
+        probe.ping()
+    except RedisConnectionError:
+        pytest.skip("Redis is not reachable on the dev port: start it with `make infra`")
+    finally:
+        probe.close()
+    mongo_uri = env_value(URI_VARIABLE)
+    assert mongo_uri is not None
+    return Settings(mongo_uri=mongo_uri, redis_url=redis_url, otel_enabled=False)

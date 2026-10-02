@@ -9,7 +9,7 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
 .PHONY: dev infra infra-reset lint typecheck test test-core test-speech test-scripts test-tools \
-	check-phoneset fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
+	check-phoneset check-imports fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
 # Local settings. Created once from the example and never overwritten.
 .env:
@@ -28,7 +28,7 @@ infra-reset: .env
 # the databases (for example `make infra && make test-core`).
 dev: infra
 	@trap 'kill 0' INT TERM; \
-	$(UV_RUN) services/core uvicorn sonari_core.main:app --reload --port 8000 & \
+	$(UV_RUN) services/core --env-file $(CURDIR)/.env uvicorn sonari_core.main:app_factory --factory --reload --port 8000 & \
 	$(UV_RUN) services/speech uvicorn sonari_speech.main:app --reload --port 8001 & \
 	wait
 
@@ -37,6 +37,13 @@ lint: $(LINT_TARGETS) lint-scripts
 $(LINT_TARGETS): lint-%:
 	$(UV_RUN) services/$* ruff check .
 	$(UV_RUN) services/$* ruff format --check .
+
+# ADR-0001 rule 1: fails on any import between bounded contexts. Part of lint-core, so CI
+# runs it.
+check-imports:
+	$(UV_RUN) services/core lint-imports
+
+lint-core: check-imports
 
 lint-scripts:
 	uv run --no-project --with ruff ruff check scripts tools spikes

@@ -1,0 +1,10 @@
+{
+  "errors": {
+    "internal": "Hệ thống gặp sự cố. Bạn hãy thử lại sau ít phút.",
+    "not_found": "Không tìm thấy nội dung này.",
+    "method_not_allowed": "Thao tác này không được hỗ trợ.",
+    "validation": "Thông tin bạn gửi chưa hợp lệ. Hãy kiểm tra lại các ô đã nhập.",
+    "not_ready": "Hệ thống đang khởi động. Bạn hãy thử lại sau ít phút.",
+    "http": "Yêu cầu không thể xử lý. Bạn hãy thử lại."
+  }
+}

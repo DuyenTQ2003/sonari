@@ -5,19 +5,19 @@ Last updated: 2026-10-02
 ## Done
 - Docs (PLAN-v7, ADR-0001/0004/0006, design-system, BUILD-PROMPTS, eval-data); P10 scaffold.
 - **P01/P02 done, GATE G0 PASS.** `spikes/gop/`: θ|correct +3.89, t|substituted −5.71.
-- **P03 done.** `spikes/gop/phoneset/`: ARPAbet→espeak table; 200 NGSL words vs espeak-ng
-  88.0% strict, 93.0% after fold rules. `make check-phoneset`.
-- **P04 done.** `spikes/gop/onnx/BENCH.md`: fp32 matches torch; int8 (355 vs 1264 MB) keeps
-  the G0 verdict. 3 s p50 at 1/2/4 threads: fp32 1336/797/568 ms, int8 609/372/280 ms (laptop).
+- **P03 done.** `spikes/gop/phoneset/`: ARPAbet→espeak table, 93.0% match. `make check-phoneset`.
+- **P04 done.** `spikes/gop/onnx/BENCH.md`: int8 keeps G0 (355 vs 1264 MB); 280 ms p50, laptop.
 - **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, 3 speeds + dialogue, RTF 0.35-0.41.
-- **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Plan-topic
-  P 0.37, R 0.32: tag counts are leads, not supply. Pre-fix counts void. 34/100 usable lv-4
-  pages are `language_learning`.
+- **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Tag counts
+  are leads, not supply; pre-fix counts void. 34/100 usable lv-4 pages are `language_learning`.
 - **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0, a speaking-only
   Part 1 starter (hometown, home, family; no passage). Films and TV is the one reserve; a
   second failed unit at M5 leaves 7. Record: `docs/level4-units-proposal.md`.
 - **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo 7 `rs0` with auth, Redis 7 AOF, 7 context
-  DBs, users `core` and `speech` only. `make infra && make test-core` (10 pass); `make dev` blocks.
+  DBs, users `core` and `speech` only. `make infra && make test-core`; `make dev` blocks.
+- **P13 done** (PR open). `sonari_core.shared` + 5 context packages, `/readyz`, error envelope,
+  JSON logs, OTel. `make check-imports` (in `make lint-core`) fails on any cross-context
+  import. P12 skipped, not needed. Tests needing `make infra` run only locally.
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
@@ -27,7 +27,7 @@ Last updated: 2026-10-02
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P21/P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P20 speech runtime (int8 vs fp32 first).
+1. P14 auth. 2. Design A6 → P12 contracts. 3. P20 speech runtime (int8 vs fp32 first).
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
