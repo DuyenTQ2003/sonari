@@ -21,6 +21,9 @@ make infra-reset   # stop and delete this project's volumes (other Docker projec
 init script (`infra/mongo/mongo-init.js`) runs once on an empty volume: after changing it,
 run `make infra-reset`.
 
+`make check-imports` fails on any import between bounded contexts (ADR-0001). It is part of
+`make lint-core`, so CI runs it.
+
 Sonari is not affiliated with IELTS, British Council, IDP or Cambridge.
 English source texts come from VOA Learning English (public domain, VOA-staff items
 only) and Tatoeba (CC-BY).

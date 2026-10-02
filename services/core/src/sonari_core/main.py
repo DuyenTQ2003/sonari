@@ -1,27 +1,12 @@
-"""FastAPI entry point for the core service."""
+"""ASGI entry point: `uvicorn sonari_core.main:app_factory --factory`.
+
+A factory, not a module-level `app`, so importing this module needs no environment.
+"""
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
-SERVICE_NAME = "core"
-
-
-class HealthResponse(BaseModel):
-    """Liveness probe payload."""
-
-    status: str
-    service: str
+from sonari_core.app import create_app
 
 
-def create_app() -> FastAPI:
-    """Build the FastAPI application."""
-    app = FastAPI(title="sonari-core")
-
-    @app.get("/healthz", response_model=HealthResponse)
-    def healthz() -> HealthResponse:
-        return HealthResponse(status="ok", service=SERVICE_NAME)
-
-    return app
-
-
-app = create_app()
+def app_factory() -> FastAPI:
+    return create_app()
