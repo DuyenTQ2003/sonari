@@ -33,7 +33,7 @@ Last updated: 2026-10-02
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl (`--limit 30000`) running at 12.2%; then `make voa-evaluate voa-report`. Owner:
-  find a shopping passage by reading, or swap unit 8. Branch docs/level4-topic-swap cites the
-  void pre-fix counts ("5 usable items"); re-word from `labels/evaluation.md` before merge.
+- P06: crawl still running (17%); when done, `make voa-evaluate voa-report`.
+- P06/units: owner reads `docs/level4-units-proposal.md` (8 units from the corpus, each 10+
+  title-confirmed items; hometown/home/family not covered), then PLAN-v7 4.1 is rewritten.
 - P05: owner fills `spikes/tts/CHECKLIST.md` by ear; no quality verdict yet.

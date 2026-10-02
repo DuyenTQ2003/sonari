@@ -18,3 +18,7 @@ PR description.
 - Topic labels: a second labeller on the same 100 pages (agreement is unmeasured), and a
   stratified top-up sample for topics with fewer than 10 labelled pages, so per-topic
   precision and recall can be reported for them. Raised by the P06 tagger evaluation.
+- Part 1 starter (speaking only, no VOA passage): examiner-style questions on hometown,
+  home/accommodation and family, which open most IELTS Part 1 tests but have no level 4
+  VOA source. Questions are scaffolding under ADR-0006. Raised by
+  `docs/level4-units-proposal.md`.
