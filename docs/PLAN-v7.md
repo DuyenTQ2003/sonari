@@ -111,14 +111,22 @@ carries over directly.
 
 | # | Topic (VI) | Grammar point | Pronunciation focus |
 |---|---|---|---|
-| 1 | Bản thân & quê quán | Present simple vs "to be" (VI has no copula agreement) | Final /s/ /z/ |
+| 1 | Công nghệ trong đời sống | Present simple vs "to be" (VI has no copula agreement) | Final /s/ /z/ |
 | 2 | Học tập & công việc | Present continuous for current activity | /ʃ/ vs /s/ |
 | 3 | Gia đình & bạn bè | Possessives, "have got" | /θ/ /ð/ |
 | 4 | Đồ ăn & nhà hàng | Countable/uncountable + "Would you like" | /æ/ vs /e/ |
-| 5 | Thói quen hằng ngày | Frequency adverbs, word order | Final clusters /st/ /ks/ |
+| 5 | Thiên nhiên & môi trường | Frequency adverbs, word order | Final clusters /st/ /ks/ |
 | 6 | Sở thích & thời gian rảnh | like/enjoy + V-ing | Word stress, 2-syllable words |
 | 7 | Du lịch & phương tiện | Past simple (VI marks time with "đã", not inflection) | -ed endings /t/ /d/ /ɪd/ |
 | 8 | Mua sắm | Comparatives | /ɪ/ vs /iː/ |
+
+Units 1 and 5 were swapped after the P06 inventory: the tagger found no level-4 items
+for "self and hometown" or "daily routine", and reading the sample confirmed they are
+textbook topics, not news topics. Technology and nature/environment replaced them,
+chosen by reading titles, not by tagger counts: the tagger measures at P 0.37 / R 0.32
+on 100 owner-labelled pages (`tools/voa_inventory/labels/evaluation.md`), so its counts
+locate pages to read and do not state how many usable items exist. ADR-0006: swap the
+topic, never write the text.
 
 The topic list and grammar column are **candidates**. Under source-first authoring
 (§5.4) the final grammar point is whichever candidate the chosen VOA passage actually
