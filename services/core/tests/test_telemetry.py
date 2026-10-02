@@ -61,7 +61,12 @@ def test_probe_endpoints_are_not_traced(
 
 
 def test_spans_are_exported_only_when_an_otlp_endpoint_is_configured() -> None:
-    base = Settings(mongo_uri="mongodb://x", redis_url="redis://x")  # type: ignore[call-arg]
+    base = Settings(
+        mongo_uri="mongodb://x",
+        redis_url="redis://x",
+        jwt_secret="x" * 32,
+        turnstile_secret="unit-test-turnstile-secret",
+    )  # type: ignore[call-arg]
 
     without_endpoint = build_tracer_provider(base)
     with_endpoint = build_tracer_provider(

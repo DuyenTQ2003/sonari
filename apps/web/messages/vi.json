@@ -5,6 +5,16 @@
     "method_not_allowed": "Thao tác này không được hỗ trợ.",
     "validation": "Thông tin bạn gửi chưa hợp lệ. Hãy kiểm tra lại các ô đã nhập.",
     "not_ready": "Hệ thống đang khởi động. Bạn hãy thử lại sau ít phút.",
-    "http": "Yêu cầu không thể xử lý. Bạn hãy thử lại."
+    "http": "Yêu cầu không thể xử lý. Bạn hãy thử lại.",
+    "auth": {
+      "invalid_credentials": "Email hoặc mật khẩu chưa đúng.",
+      "email_taken": "Email này đã được dùng để đăng ký. Bạn hãy đăng nhập hoặc dùng email khác.",
+      "token_expired": "Phiên làm việc đã hết hạn.",
+      "token_invalid": "Phiên làm việc không hợp lệ. Bạn hãy đăng nhập lại.",
+      "session_invalid": "Phiên đăng nhập đã kết thúc. Bạn hãy đăng nhập lại.",
+      "rate_limited": "Bạn đã thử quá nhiều lần. Hãy chờ một lúc rồi thử lại.",
+      "captcha_failed": "Chưa xác minh được bạn là người thật. Hãy thử lại.",
+      "captcha_unavailable": "Chưa thể xác minh lúc này. Bạn hãy thử lại sau ít phút."
+    }
   }
 }
