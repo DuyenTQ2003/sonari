@@ -1,20 +1,27 @@
-"""MongoDB-backed stores (Beanie). The atomic steps are single MongoDB operations."""
+"""MongoDB-backed stores (Beanie).
+
+The atomic steps are single MongoDB operations, except registration, which commits the
+user and its UserRegistered outbox entry in one transaction (ADR-0007).
+"""
 
 from datetime import datetime
 from typing import Any
 
 from beanie import PydanticObjectId
 from pymongo import ReturnDocument
+from pymongo.asynchronous.client_session import AsyncClientSession
 from pymongo.errors import DuplicateKeyError
 
 from sonari_core.identity.models import RefreshTokenDocument, User
 from sonari_core.identity.ports import (
+    Announce,
     ConsumeOutcome,
     ConsumeResult,
     EmailTaken,
     TokenRecord,
     UserRecord,
 )
+from sonari_core.shared.outbox import MongoOutbox, run_in_transaction
 
 
 def _user(document: User) -> UserRecord:
@@ -39,13 +46,23 @@ def _token(document: RefreshTokenDocument) -> TokenRecord:
 
 
 class MongoUserStore:
-    async def create(self, email: str, password_hash: str, now: datetime) -> UserRecord:
-        document = User(email=email, password_hash=password_hash, created_at=now)
+    async def create(
+        self, email: str, password_hash: str, now: datetime, announce: Announce
+    ) -> UserRecord:
+        database = User.get_pymongo_collection().database
+        outbox = MongoOutbox(database)
+
+        async def insert(session: AsyncClientSession) -> UserRecord:
+            document = User(email=email, password_hash=password_hash, created_at=now)
+            await document.insert(session=session)
+            user = _user(document)
+            await outbox.add(announce(user), now, session)
+            return user
+
         try:
-            await document.insert()
+            return await run_in_transaction(database.client, insert)
         except DuplicateKeyError as error:  # the unique index decides, so there is no race
             raise EmailTaken(email) from error
-        return _user(document)
 
     async def find_by_email(self, email: str) -> UserRecord | None:
         document = await User.find_one(User.email == email)

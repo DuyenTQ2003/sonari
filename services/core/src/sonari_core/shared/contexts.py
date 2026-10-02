@@ -40,10 +40,12 @@ MongoClient = AsyncMongoClient[dict[str, Any]]
 
 @dataclass(frozen=True)
 class ContextSpec:
-    """What a context registers with the application: its name and its Beanie documents."""
+    """What a context registers with the application: its name, its Beanie documents, and
+    whether it publishes events through an outbox in its database (ADR-0007)."""
 
     context: Context
     document_models: Sequence[type[Document]] = ()
+    outbox: bool = False
 
     def database(self, client: MongoClient) -> AsyncDatabase[dict[str, Any]]:
         """The database handle of this context, and no other."""

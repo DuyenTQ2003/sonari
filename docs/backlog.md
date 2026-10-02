@@ -27,3 +27,6 @@ PR description.
 - MongoDB users for the later processes: `ai-gateway` (owns `tutor`, no user exists yet)
   and `worker` (ADR-0001 does not say which databases it writes). Add them, with the
   matching `.env.example` entries, when those processes are created. Raised by P11.
+- Event bus follow-ups (P15): a CLI to inspect and replay `dead.events.*` entries, and
+  W3C `traceparent` carried in the stream entry so a consumer span joins the producer's
+  trace. Raised by ADR-0007.

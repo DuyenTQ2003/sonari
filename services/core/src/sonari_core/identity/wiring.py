@@ -10,7 +10,6 @@ from sonari_core.identity.passwords import PasswordHasher
 from sonari_core.identity.service import AuthConfig, AuthService
 from sonari_core.identity.stores import MongoTokenStore, MongoUserStore
 from sonari_core.identity.tokens import AccessTokenCodec
-from sonari_core.shared.events import RedisStreamPublisher
 from sonari_core.shared.ratelimit import RedisSlidingWindowLimiter
 from sonari_core.shared.settings import Settings
 
@@ -37,7 +36,6 @@ def build_identity(settings: Settings, redis: Redis) -> IdentityRuntime:
         captcha=TurnstileVerifier(
             settings.turnstile_secret.get_secret_value(), settings.turnstile_verify_url, http
         ),
-        publisher=RedisStreamPublisher(redis),
         config=AuthConfig(
             access_ttl_s=settings.access_token_ttl_s,
             refresh_ttl_s=settings.refresh_token_ttl_s,

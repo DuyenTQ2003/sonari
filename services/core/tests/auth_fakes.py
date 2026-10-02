@@ -5,19 +5,19 @@ tests/integration/test_auth_live.py exercises for real.
 """
 
 from collections import defaultdict, deque
-from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 from argon2 import PasswordHasher as Argon2
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from event_fakes import InMemoryOutbox
 from sonari_core.app import create_app
 from sonari_core.identity.captcha import CaptchaUnavailable
 from sonari_core.identity.passwords import PasswordHasher
 from sonari_core.identity.ports import (
+    Announce,
     ConsumeOutcome,
     ConsumeResult,
     EmailTaken,
@@ -43,14 +43,21 @@ class FakeClock:
 
 
 class InMemoryUserStore:
-    def __init__(self) -> None:
-        self.by_email: dict[str, UserRecord] = {}
+    """Writes the user and its outbox entry together, as the Mongo store's transaction does."""
 
-    async def create(self, email: str, password_hash: str, now: datetime) -> UserRecord:
+    def __init__(self, outbox: InMemoryOutbox) -> None:
+        self.by_email: dict[str, UserRecord] = {}
+        self.outbox = outbox
+
+    async def create(
+        self, email: str, password_hash: str, now: datetime, announce: Announce
+    ) -> UserRecord:
         if email in self.by_email:
             raise EmailTaken(email)
         user = UserRecord(f"user-{len(self.by_email) + 1}", email, password_hash, now)
+        message = announce(user)  # built first: if it raises, neither write happens
         self.by_email[email] = user
+        self.outbox.add(message)
         return user
 
     async def find_by_email(self, email: str) -> UserRecord | None:
@@ -123,17 +130,6 @@ class FakeCaptcha:
         return self.passes
 
 
-class RecordingPublisher:
-    def __init__(self) -> None:
-        self.events: list[tuple[str, dict[str, Any]]] = []
-        self.fail = False
-
-    async def publish(self, event_type: str, payload: Mapping[str, Any]) -> None:
-        if self.fail:
-            raise ConnectionError("redis is down")
-        self.events.append((event_type, dict(payload)))
-
-
 class CountingHasher(PasswordHasher):
     """Cheap argon2id parameters for speed, and a count of decoy checks."""
 
@@ -156,7 +152,7 @@ class AuthKit:
     tokens: InMemoryTokenStore
     limiter: FakeLimiter
     captcha: FakeCaptcha
-    publisher: RecordingPublisher
+    outbox: InMemoryOutbox
     hasher: CountingHasher
     settings: Settings
 
@@ -172,9 +168,10 @@ class AuthKit:
 
 def build_auth_kit(settings: Settings) -> AuthKit:
     clock = FakeClock()
-    users, tokens = InMemoryUserStore(), InMemoryTokenStore()
+    outbox = InMemoryOutbox()
+    users, tokens = InMemoryUserStore(outbox), InMemoryTokenStore()
     limiter, captcha = FakeLimiter(clock), FakeCaptcha()
-    publisher, hasher = RecordingPublisher(), CountingHasher()
+    hasher = CountingHasher()
     service = AuthService(
         users=users,
         tokens=tokens,
@@ -184,7 +181,6 @@ def build_auth_kit(settings: Settings) -> AuthKit:
         ),
         limiter=limiter,
         captcha=captcha,
-        publisher=publisher,
         config=AuthConfig(
             access_ttl_s=settings.access_token_ttl_s,
             refresh_ttl_s=settings.refresh_token_ttl_s,
@@ -201,4 +197,4 @@ def build_auth_kit(settings: Settings) -> AuthKit:
         resources=Resources(readiness={}),
         auth_service=service,
     )
-    return AuthKit(app, clock, users, tokens, limiter, captcha, publisher, hasher, settings)
+    return AuthKit(app, clock, users, tokens, limiter, captcha, outbox, hasher, settings)

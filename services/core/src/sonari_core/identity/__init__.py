@@ -10,6 +10,6 @@ from sonari_core.identity.models import RefreshTokenDocument, User
 from sonari_core.identity.router import router
 from sonari_core.shared.contexts import Context, ContextSpec
 
-SPEC = ContextSpec(Context.IDENTITY, document_models=[User, RefreshTokenDocument])
+SPEC = ContextSpec(Context.IDENTITY, document_models=[User, RefreshTokenDocument], outbox=True)
 
 __all__ = ["SPEC", "router"]

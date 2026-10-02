@@ -25,7 +25,7 @@ from sonari_core.identity.tokens import (
     utc_now,
 )
 from sonari_core.shared.errors import AppError
-from sonari_core.shared.events import EventPublisher
+from sonari_core.shared.events import EventMessage
 from sonari_core.shared.message_keys import MessageKey
 from sonari_core.shared.ratelimit import RateLimiter
 
@@ -73,7 +73,6 @@ class AuthService:
         codec: AccessTokenCodec,
         limiter: RateLimiter,
         captcha: CaptchaVerifier,
-        publisher: EventPublisher,
         config: AuthConfig,
         clock: Clock = utc_now,
     ) -> None:
@@ -83,7 +82,6 @@ class AuthService:
         self._codec = codec
         self._limiter = limiter
         self._captcha = captcha
-        self._publisher = publisher
         self._config = config
         self._clock = clock
 
@@ -105,11 +103,11 @@ class AuthService:
 
         password_hash = await self._hasher.hash(password)
         try:
-            user = await self._users.create(email, password_hash, self._clock())
+            user = await self._users.create(
+                email, password_hash, self._clock(), announce=self._registered
+            )
         except EmailTaken:
             raise AppError(409, "email_taken", MessageKey.AUTH_EMAIL_TAKEN) from None
-
-        await self._announce(user)
         return await self._start_session(user, family_id=None)
 
     async def login(self, email: str, password: str, client_ip: str) -> Session:
@@ -200,13 +198,12 @@ class AuthService:
                 {"Retry-After": str(decision.retry_after_s)},
             )
 
-    async def _announce(self, user: UserRecord) -> None:
-        """Best effort: the account exists either way. The outbox (P15) makes this reliable."""
-        try:
-            event = UserRegistered.now(user.id, self._clock())
-            await self._publisher.publish(EVENT_TYPE, event.model_dump(mode="json", by_alias=True))
-        except Exception:
-            logger.exception("could not publish UserRegistered", extra={"user_id": user.id})
+    def _registered(self, user: UserRecord) -> EventMessage:
+        """The UserRegistered event; the store commits it to the outbox with the user."""
+        event = UserRegistered.now(user.id, self._clock())
+        return EventMessage(
+            str(event.event_id), EVENT_TYPE, event.model_dump(mode="json", by_alias=True)
+        )
 
 
 def _invalid_credentials() -> AppError:
