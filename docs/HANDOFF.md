@@ -15,8 +15,7 @@ Last updated: 2026-10-02
 - **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`.
 - **P13 done** (#19): `sonari_core.shared`, 5 context packages, `/readyz`, OTel. `make check-imports`
   (in `make lint-core`) fails on cross-context imports. P12 skipped, not needed.
-- **P14 done** (#20): `/v1/auth`, rotating refresh cookie, Turnstile, Redis rate limit. Deploy
-  must run uvicorn `--proxy-headers`, or all users share one rate limit (P35/P72).
+- **P14 done** (#20): `/v1/auth`, refresh rotation, Turnstile, rate limit. Deploy: uvicorn `--proxy-headers`.
 - **P15 done** (ADR-0007): `shared/outbox.py` (txn outbox + relay), `shared/consumer.py` (group,
   dead letter, dedupe). UserRegistered rides the outbox. Live Mongo/Redis tests: local only.
 
