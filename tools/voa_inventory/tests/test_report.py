@@ -33,6 +33,15 @@ def cache(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def test_failed_fetches_in_the_index_do_not_reach_the_report(cache: Path) -> None:
+    def down(url: str, agent: str) -> Response:
+        raise TimeoutError("timed out")
+
+    broken = PoliteFetcher(cache, "test", 0.0, get=down, sleep=lambda _s: None)
+    assert broken.fetch(f"{BASE}/a/9999.html").error == "TimeoutError"
+    assert len(load_rows(cache, PhraseTagger())) == len(PAGES)
+
+
 def test_rows_cover_every_cached_page_and_short_pages_are_never_usable(cache: Path) -> None:
     rows = load_rows(cache, PhraseTagger())
     assert len(rows) == len(PAGES)

@@ -31,7 +31,7 @@ Last updated: 2026-10-02
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl still running (17%); then `make voa-evaluate voa-report`.
+- P06: crawl (17%) runs the old fetcher; restart it once the retry fix merges, then `make voa-evaluate voa-report`.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry
