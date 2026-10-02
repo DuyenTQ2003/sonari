@@ -105,8 +105,6 @@ Rules:
 - Work only in `~/sonari` (WSL). Never open or edit the repo from a Windows path.
 - Stacked PR whose base was squash-merged: `git rebase --onto origin/main <old-base-tip>`.
   Never merge main into it, and never use GitHub's web conflict editor on code files.
-- Stacked PR whose base was squash-merged: `git rebase --onto origin/main <old-base-tip>`.
-  Never merge main into it, and never use GitHub's web conflict editor on code files.
 - No AI attribution in commit messages or PR bodies.
 
 ### Session automation
