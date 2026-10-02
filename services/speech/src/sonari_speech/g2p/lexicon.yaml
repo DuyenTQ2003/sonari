@@ -1,0 +1,44 @@
+# Words whose pronunciation g2p_en gets wrong for scoring. Checked BEFORE CMUdict.
+#
+# Key: the word, lower case, straight apostrophe, quoted (YAML reads a bare on/off as a
+# boolean). Fields:
+#   arpabet  CMUdict-style phones with stress digits; mapped to espeak tokens at runtime
+#   espeak   the tokens espeak-ng gives for the word; the unit tests check that the
+#            table maps `arpabet` to exactly this
+#   why      the evidence
+#
+# What belongs here: words where g2p_en takes CMUdict's FIRST variant and that variant
+# has a syllable espeak-ng (the source of the model's training labels) does not. Native
+# speech then looks like a deleted `ɚ`. In each entry below a later CMUdict variant
+# agrees with espeak-ng exactly (spikes/gop/phoneset/REPORT.md, "different" and "every",
+# plus a probe of other words on 2026-10-03).
+#
+# What does not belong here: accent variants where both forms are correct English (weak
+# vs citation forms of "a", "and", "than", "into"; LOT vs CLOTH in "on", "want"; the
+# vowel of "because"). Those are G1's question (best-of-class scoring), not a lexicon's.
+version: 1
+
+"every":
+  arpabet: EH1 V R IY0
+  espeak: ɛ v ɹ i
+  why: CMUdict variant 1 (EH1 V ER0 IY0) has three syllables, espeak-ng two.
+
+"different":
+  arpabet: D IH1 F R AH0 N T
+  espeak: d ɪ f ɹ ə n t
+  why: CMUdict variant 1 (D IH1 F ER0 AH0 N T) has three syllables, espeak-ng two.
+
+"restaurant":
+  arpabet: R EH1 S T R AA2 N T
+  espeak: ɹ ɛ s t ɹ ɑː n t
+  why: CMUdict variant 1 (R EH1 S T ER0 AA2 N T) has an extra ER0 syllable.
+
+"camera":
+  arpabet: K AE1 M R AH0
+  espeak: k æ m ɹ ə
+  why: CMUdict variant 1 (K AE1 M ER0 AH0) has three syllables, espeak-ng two.
+
+"average":
+  arpabet: AE1 V R IH0 JH
+  espeak: æ v ɹ ɪ dʒ
+  why: CMUdict variant 1 (AE1 V ER0 IH0 JH) has three syllables, espeak-ng two.
