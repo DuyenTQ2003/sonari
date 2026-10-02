@@ -22,3 +22,8 @@ PR description.
   home/accommodation and family, which open most IELTS Part 1 tests but have no level 4
   VOA source. Questions are scaffolding under ADR-0006. Raised by
   `docs/level4-units-proposal.md`.
+- CI integration tests: add a MongoDB replica-set service to the `core` job so the P11
+  transaction and access tests run in CI; today they skip there because CI has no MongoDB.
+- MongoDB users for the later processes: `ai-gateway` (owns `tutor`, no user exists yet)
+  and `worker` (ADR-0001 does not say which databases it writes). Add them, with the
+  matching `.env.example` entries, when those processes are created. Raised by P11.

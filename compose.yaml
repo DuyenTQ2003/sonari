@@ -1,0 +1,67 @@
+# Local infrastructure: MongoDB (single-node replica set, so transactions work) and Redis.
+# `make infra` starts it, `make infra-reset` wipes it. Credentials come from .env, which
+# `make infra` creates from .env.example. Dev only: both ports are bound to loopback.
+name: sonari
+
+services:
+  mongo:
+    image: mongo:7.0
+    # The wrapper writes the replica-set keyfile that --auth requires and installs
+    # mongo-init.js, then hands over to the image's own entrypoint, which runs the init
+    # script on first start only.
+    entrypoint: ["sh", "/infra/entrypoint.sh"]
+    command:
+      - mongod
+      - --replSet=rs0
+      - --keyFile=/tmp/mongo-keyfile
+      - --auth
+      - --bind_ip_all
+      - --wiredTigerCacheSizeGB=0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_CORE_PASSWORD: ${MONGO_CORE_PASSWORD}
+      MONGO_SPEECH_PASSWORD: ${MONGO_SPEECH_PASSWORD}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      # The image declares /data/configdb as a volume; naming it stops every container
+      # re-creation from leaving an anonymous volume behind.
+      - mongo-config:/data/configdb
+      # The directory, not its files: Docker Desktop pins a single-file bind mount to its
+      # inode, so a `git pull` that rewrites the file would break the next restart.
+      - ./infra/mongo:/infra:ro
+    healthcheck:
+      # Initiates the replica set when it does not exist yet, then passes only once this
+      # node is the writable primary. It fails harmlessly while the init scripts run on
+      # the temporary standalone mongod.
+      test:
+        - CMD-SHELL
+        - >-
+          mongosh --quiet -u "$$MONGO_INITDB_ROOT_USERNAME" -p "$$MONGO_INITDB_ROOT_PASSWORD"
+          --authenticationDatabase admin --eval
+          'try { rs.status() } catch (e) { rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]}) };
+          quit(db.hello().isWritablePrimary ? 0 : 1)'
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mongo-data:
+  mongo-config:
+  redis-data:

@@ -8,10 +8,25 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # NOTE: make skips implicit (%) rule search for phony targets, so per-service targets
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
-.PHONY: dev lint typecheck test test-core test-speech test-scripts test-tools check-phoneset fmt \
-	lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
+.PHONY: dev infra infra-reset lint typecheck test test-core test-speech test-scripts test-tools \
+	check-phoneset fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
-dev:
+# Local settings. Created once from the example and never overwritten.
+.env:
+	cp .env.example .env
+
+# MongoDB (single-node replica set rs0) and Redis; returns once both are healthy.
+infra: .env
+	docker compose up -d --wait
+
+# Stops the stack and deletes its named volumes. Scoped to the compose project "sonari",
+# so volumes of other projects are untouched.
+infra-reset: .env
+	docker compose down --volumes --remove-orphans
+
+# Starts the infra, then the apps in the foreground. Use `make infra` when you only need
+# the databases (for example `make infra && make test-core`).
+dev: infra
 	@trap 'kill 0' INT TERM; \
 	$(UV_RUN) services/core uvicorn sonari_core.main:app --reload --port 8000 & \
 	$(UV_RUN) services/speech uvicorn sonari_speech.main:app --reload --port 8001 & \
