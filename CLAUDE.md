@@ -103,6 +103,11 @@ Rules:
 - Squash merge only; the branch is deleted on merge.
 - A PR body states what changed and the command that proves it.
 - Work only in `~/sonari` (WSL). Never open or edit the repo from a Windows path.
+- Stacked PR whose base was squash-merged: `git rebase --onto origin/main <old-base-tip>`.
+  Never merge main into it, and never use GitHub's web conflict editor on code files.
+- Stacked PR whose base was squash-merged: `git rebase --onto origin/main <old-base-tip>`.
+  Never merge main into it, and never use GitHub's web conflict editor on code files.
+- No AI attribution in commit messages or PR bodies.
 
 ### Session automation
 
