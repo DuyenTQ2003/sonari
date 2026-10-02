@@ -33,7 +33,9 @@ make voa-report                              # offline: parse the cache, rewrite
 | `parse.py` | One page to one `Item`: title, programme, date, byline, audio, word count |
 | `license.py` | VOA-staff byline, no wire or third-party credit (ADR-0006), conservative |
 | `levels.py` | Readability numbers and a coarse level (a sizing heuristic, replaced by P51) |
-| `topics.py`, `topics.yaml` | Keyword lists for the eight level 4 topics and replacement candidates |
+| `topics.py`, `topics.yaml` | Phrase lists for the eight level 4 topics and replacement candidates; `topics_v1.yaml` is the old keyword baseline |
+| `embed.py` | bge-m3 embedding tagger (measured, not used by the report) |
+| `sample.py`, `evaluate.py`, `evaluate_render.py` | Labelled sample, tagger scoring, `labels/evaluation.md` |
 | `report.py` | CSV plus the Markdown summary |
 
 ## Known limits
