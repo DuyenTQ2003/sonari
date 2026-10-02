@@ -18,6 +18,9 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: services/${{ matrix.service }}/uv.lock
+      - name: Install ffmpeg (decodes the recordings the speech tests upload)
+        if: matrix.service == 'speech'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: uv sync --frozen --directory services/${{ matrix.service }}
       - run: make lint-${{ matrix.service }} typecheck-${{ matrix.service }} test-${{ matrix.service }}
 
