@@ -16,6 +16,13 @@ CREDIT_VERB = re.compile(
 )
 SEPARATOR = re.compile(r"^_{5,}$")
 MP3 = re.compile(r"\.mp3(\?|$)")
+# The player's "No media source currently available" overlay, the MP3 download line and
+# "Broadcast: <date>" are all <p> tags inside the article container and all short.
+MIN_LEAD_WORDS = 20
+# Lesson-page boilerplate that is long enough to pass MIN_LEAD_WORDS.
+LEAD_BOILERPLATE = re.compile(
+    r"^(Read and listen to the article\.|What do you think of this lesson\?)", re.IGNORECASE
+)
 
 
 @dataclass
@@ -147,6 +154,13 @@ def _credit_paragraphs(paragraphs: list[str]) -> list[str]:
     ]
 
 
+def _lead_paragraph(body: list[str]) -> str:
+    """First real body paragraph (MIN_LEAD_WORDS+ words, not boilerplate), or "" if none."""
+    return next(
+        (p for p in body if len(p.split()) >= MIN_LEAD_WORDS and not LEAD_BOILERPLATE.match(p)), ""
+    )
+
+
 def parse_item(html: str, url: str) -> Item:
     parser = _ArticleParser()
     parser.feed(html)
@@ -181,7 +195,7 @@ def parse_item(html: str, url: str) -> Item:
         word_count=words,
         avg_sentence_len=round(per_sentence, 2),
         fk_grade=None if fk is None else round(fk, 2),
-        first_paragraph=body[0] if body else "",
+        first_paragraph=_lead_paragraph(body),
         license_ok=verdict.license_ok,
         license_reasons=verdict.reasons,
     )

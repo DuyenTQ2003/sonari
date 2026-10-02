@@ -25,6 +25,37 @@ def test_staff_article_is_extracted_and_accepted() -> None:
     assert item.license_reasons == ()
 
 
+def test_first_paragraph_skips_player_placeholder_and_short_lead_lines() -> None:
+    item = load("player_placeholder_article.html")
+    assert item.first_paragraph.startswith("Street markets are common in many cities")
+    assert "No media source" not in item.first_paragraph
+
+
+@pytest.mark.parametrize(
+    "boilerplate",
+    [
+        # Both are 20+ words, so the length floor alone does not catch them.
+        "Read and listen to the article. Then open the activities on the right side of the page "
+        "to improve your English!",
+        "What do you think of this lesson? We want to hear from you. We have a new comment "
+        "system. Here is how it works:",
+    ],
+)
+def test_first_paragraph_skips_long_site_boilerplate(boilerplate: str) -> None:
+    real = "Street markets are common in many cities around the world. " * 3
+    paragraphs = f"<p>{boilerplate}</p><p>{real}</p>"
+    html = f'<div id="article-content"><div class="wsw">{paragraphs}</div></div>'
+    assert parse_item(html, "u").first_paragraph == real.strip()
+
+
+def test_first_paragraph_is_empty_when_no_paragraph_is_long_enough() -> None:
+    html = (
+        '<div id="article-content"><div class="wsw"><p>No media source currently available</p>'
+        "<p>Too short to be a body paragraph.</p></div></div>"
+    )
+    assert parse_item(html, "u").first_paragraph == ""
+
+
 def test_word_count_skips_credit_glossary_and_page_chrome() -> None:
     item = load("staff_article.html")
     # 3 body paragraphs + "I'm Ana Lopez."; not the credit, glossary, nav or script text.
