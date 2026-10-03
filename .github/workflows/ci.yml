@@ -27,12 +27,12 @@ jobs:
       # CI is set, so a test that cannot reach either fails instead of skipping.
       - name: Start MongoDB (replica set rs0) and Redis
         if: matrix.service == 'core'
-        run: echo "proof branch: infra deliberately NOT started"
+        run: echo "proof branch - infra deliberately NOT started"
       # The real g2p backend reads the cmudict corpus from $DATA_DIR/nltk_data; CI uses the
       # copy vendored in the repo (services/speech/tests/data/README.md), with no download.
       - name: Use the vendored NLTK data
         if: matrix.service == 'speech'
-        run: echo "proof branch: DATA_DIR deliberately NOT set"
+        run: echo "proof branch - DATA_DIR deliberately NOT set"
       - run: make lint-${{ matrix.service }} typecheck-${{ matrix.service }} test-${{ matrix.service }}
       - name: Service logs
         if: failure() && matrix.service == 'core'
