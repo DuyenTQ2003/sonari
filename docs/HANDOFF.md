@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-10-02
+Last updated: 2026-10-03
 
 ## Done
 - Docs (PLAN-v7, ADR-0001/0004/0006, design-system, BUILD-PROMPTS, eval-data); P10 scaffold.
@@ -12,7 +12,7 @@ Last updated: 2026-10-02
   are leads, not supply; pre-fix counts void. 34/100 usable lv-4 pages are `language_learning`.
 - **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0 (speaking-only Part 1
   starter, no passage); Films and TV is the one reserve. Record: `docs/level4-units-proposal.md`.
-- **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`.
+- **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`. New clone: `make setup` (git hooks).
 - **P13 done** (#19): `sonari_core.shared`, 5 context packages, `/readyz`, OTel. `make check-imports`
   (in `make lint-core`) fails on cross-context imports. P12 skipped, not needed.
 - **P14 done** (#20): `/v1/auth`, refresh rotation, Turnstile, rate limit. Deploy: uvicorn `--proxy-headers`.

@@ -8,8 +8,14 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # NOTE: make skips implicit (%) rule search for phony targets, so per-service targets
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
-.PHONY: dev infra infra-reset lint typecheck test test-core test-speech test-scripts test-tools \
-	check-phoneset check-imports fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
+.PHONY: setup dev infra infra-reset lint typecheck test test-core test-speech test-scripts \
+	test-tools check-phoneset check-imports fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
+
+# One-time setup per clone: the pre-commit hook and the commit-msg hook (strips AI trailers).
+# Git worktrees of the clone share these hooks.
+setup:
+	uvx pre-commit install
+	uvx pre-commit install --hook-type commit-msg
 
 # Local settings. Created once from the example and never overwritten.
 .env:
