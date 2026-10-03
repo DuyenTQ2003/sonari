@@ -16,6 +16,7 @@ CREDIT_VERB = re.compile(
 )
 SEPARATOR = re.compile(r"^_{5,}$")
 MP3 = re.compile(r"\.mp3(\?|$)")
+DOWNLOAD = re.compile(r"\.mp3\b", re.IGNORECASE)  # also ".Mp3", which MP3 above does not match
 # The player's "No media source currently available" overlay, the MP3 download line and
 # "Broadcast: <date>" are all <p> tags inside the article container and all short.
 MIN_LEAD_WORDS = 20
@@ -23,6 +24,14 @@ MIN_LEAD_WORDS = 20
 LEAD_BOILERPLATE = re.compile(
     r"^(Read and listen to the article\.|What do you think of this lesson\?)", re.IGNORECASE
 )
+# Pages from 2012-2014 keep the body as bare text in `div.wsw`, lines separated by <br />, with no
+# <p>. Inside that container, text outside `<p>`/headings is read as paragraphs, except what sits in
+# a player, quiz, list, table or script.
+BODY_CLASS = "wsw"
+SKIP_TAGS = {"ul", "ol", "li", "table", "script", "style", "noscript", "h1", "h4", "h5", "h6"}
+SKIP_CLASS = ("wsw__embed", "c-mmp", "quiz", "content-redirect")  # class prefixes: player, quiz
+RUN_BREAKS = SKIP_TAGS | {"div", "blockquote"}  # a run of bare text does not cross these
+VOID = {"br", "img", "meta", "link", "input", "hr", "source", "area", "base", "col", "embed", "wbr"}
 
 
 @dataclass
@@ -44,6 +53,10 @@ class _ArticleParser(HTMLParser):
         self._depth = 0  # div depth inside #article-content, 0 = outside
         self._buf: list[str] | None = None
         self._kind = ""
+        self._open: list[tuple[str, str]] = []  # (tag, "body" | "skip" | "link" | "") per element
+        self._run: list[str] = []  # bare text: inside a body container, outside p/headings
+        self._run_text = False  # the run holds text that is not only link text
+        self._run_mp3 = False  # the run is a download line ("Or download MP3 (Right-click ...)")
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         a = {k: v or "" for k, v in attrs}
@@ -54,9 +67,18 @@ class _ArticleParser(HTMLParser):
                 self._depth = 1
                 self.article.has_container = True
             return
+        if tag == "br" and self._buf is None:
+            self._flush_run()
+        if tag == "a" and self._buf is None and DOWNLOAD.search(a.get("href", "")):
+            self._run_mp3 = True
+        if tag not in VOID:
+            self._open.append((tag, self._tag_kind(tag, a.get("class", ""))))
+        if tag in RUN_BREAKS:
+            self._flush_run()
         if tag == "div":
             self._depth += 1
         elif tag in ("p", "h2", "h3", "figcaption"):
+            self._flush_run()
             self._flush()
             self._buf, self._kind = [], tag
         elif tag == "br" and self._buf is not None:
@@ -71,14 +93,40 @@ class _ArticleParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if self._depth == 0:
             return
+        for i in range(len(self._open) - 1, -1, -1):
+            if self._open[i][0] == tag:
+                del self._open[i:]
+                break
+        if tag in RUN_BREAKS:
+            self._flush_run()
         if tag == "div":
             self._depth -= 1
+            if self._depth == 0:
+                self._open.clear()
         elif tag in ("p", "h2", "h3", "figcaption"):
             self._flush()
 
     def handle_data(self, data: str) -> None:
         if self._buf is not None:
             self._buf.append(data)
+        elif self._depth:
+            kinds = {kind for _, kind in self._open}
+            if "body" in kinds and "skip" not in kinds:
+                self._run.append(data)
+                self._run_text = self._run_text or (bool(data.strip()) and "link" not in kinds)
+
+    @staticmethod
+    def _tag_kind(tag: str, classes: str) -> str:
+        names = classes.split()
+        if tag in SKIP_TAGS or any(n.startswith(SKIP_CLASS) for n in names):
+            return "skip"
+        return "body" if BODY_CLASS in names else "link" if tag == "a" else ""
+
+    def _flush_run(self) -> None:
+        text = re.sub(r"\s+", " ", "".join(self._run)).strip()
+        if text and self._run_text and not self._run_mp3:  # not "Download PDF", not an MP3 line
+            self.article.paragraphs.append(text)
+        self._run, self._run_text, self._run_mp3 = [], False, False
 
     def _flush(self) -> None:
         if self._buf is None:

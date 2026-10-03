@@ -27,11 +27,11 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Parser fix for bare-text pages (backlog, +942 passages).
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Boilerplate filter (what to cut; thresholds unchanged so far).
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` measured it: 76 passages usable as-is at level 4, 1,080 if host lines may be cut (`docs/reports/voa-corpus.md`). `make voa-evaluate voa-report` still to run. Text-less pages (`make voa-missing`): the 27,118 are audio/widgets (0 of 40 sampled are articles), but 942 of the 1,768 short pages are articles the parser misses (bare text in `div.wsw`); fix in backlog, `docs/reports/voa-missing-pages.md`.
+- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` measured it: 98 passages usable as-is at level 4, 1,165 if host lines may be cut (`docs/reports/voa-corpus.md`). `make voa-evaluate voa-report` still to run. Parser now reads bare-text bodies (`voa-missing-pages.md`): 98 usable as-is (was 76), 19,918 passages (was 18,968); `make voa-missing` only reproduces on 62b6669.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry

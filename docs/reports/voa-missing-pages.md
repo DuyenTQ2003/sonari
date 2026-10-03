@@ -5,6 +5,11 @@
 fixed-seed sample of the cached HTML, then counting what the parser cannot read across the whole
 cache. Read-only on `~/sonari-data`; no network, no LLM; the sample is drawn by `SEED = 20261003`.
 
+**Status.** This is the picture before the fix (parser at `62b6669`). The parser now reads the bare text,
+see "The fix" below and the before/after table in `voa-corpus.md`. The sample is drawn from the pages'
+word counts, which the fix changed, so `make voa-missing` no longer reproduces the draw: to re-run this
+report, check out `62b6669`.
+
 ## Finding
 
 - **The parser misses real articles.** 942 of the 1,768 pages with 1-99 words (53%) hold an article of
@@ -163,17 +168,24 @@ A page from 2012-2014 (`/a/johnny-appleseed-american-frontier/1248938.html`):
 Special English scripts. Of the 9 sampled misses, 7 have the text straight in `div.wsw` and 2 inside
 `div.wordclick`.
 
-## The fix (not implemented)
+## The fix
 
-In `_ArticleParser`: inside `#article-content`, treat text outside `p`, `h2`, `h3`, `figcaption` as
-paragraph text, split on `<br />` (a pair is a paragraph break), and skip the same boxes the census
-skips (`c-mmp`, quiz, share, comment, lists, links, forms, scripts). It must keep document order so
-a page that mixes `<p>` and bare text reads in order. About 30 lines in one file. Then:
+The plan was to read text outside `p`, `h2`, `h3`, `figcaption` inside `#article-content`, split on
+`<br />`, keep document order and skip the boxes the census skips. It is in `voa_inventory/parse.py`
+(about 45 lines with comments). Where it differs from the plan, because of what the pages contain:
 
-- test with the 9 missed sample pages, and check that the 18,968 current passages keep the same
-  paragraphs except the 40 with unread text (run old and new parser over the cache and diff);
-- `make voa-corpus` again, and update the summary figures of `voa-corpus.md` (passages 18,968 to about
-  19,910; text-less 60% to about 58%).
+- The text is read only inside `div.wsw`, the body container. The census rule (anything in
+  `#article-content` outside the skipped boxes) would have read the page title, the related-item blocks, the
+  share widgets and the gallery lightbox text, which sit in the same container but outside `div.wsw`.
+- Skipped inside the body: `wsw__embed` and `c-mmp` (the player), `quiz`, `content-redirect` ("We are sorry, but
+  this feature is currently not available", 191 pages), lists, tables, `<h1>` and `<h4>`-`<h6>`, scripts. A
+  line that is only link text ("Download PDF of this story") or that holds an MP3 link ("Or download MP3
+  (Right-click ...)", 244 pages, link written `.Mp3`) is dropped; a link inside a sentence stays.
+- Every `<br />` ends a paragraph, not only a pair: 4.5% of the line breaks are single.
+- A bare `____` line now starts the glossary, so on 14 pages the "Words in This Story" entries leave the body.
+
+Checked against the cache: the parser's output changes on 2,436 pages; every page the census listed with 100
+or more unread words now reads 100 or more words, and 7 more do (short lines the census ignored).
 
 ## Effect on the level 4 count
 
@@ -189,7 +201,8 @@ measure and `blockers` unchanged. The 942 pages become passages (925 pass the li
 | two or more of the above | 696 |
 
 So "as is" goes from 76 to about 110. It is approximate: nodes under 40 characters are left out and
-copies are not removed. The 26 partly read passages are not in it. Rerun after the fix.
+copies are not removed. The 26 partly read passages are not in it. **Measured after the fix: 98**, not 110,
+because the lines under 40 characters carry most of the script boilerplate (`voa-corpus.md`).
 
 ## What the sample can and cannot support
 
@@ -219,3 +232,5 @@ copies are not removed. The 26 partly read passages are not in it. Rerun after t
 make voa-missing                   # about 4 minutes; two runs are byte-identical
 make voa-missing ARGS=--skeleton   # the drawn sample as an empty labels file
 ```
+
+Both work only on the parser of `62b6669`: after the fix the draw differs from the labels file.
