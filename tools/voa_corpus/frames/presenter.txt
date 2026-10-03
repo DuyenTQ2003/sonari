@@ -1,0 +1,73 @@
+# Closed list of frame sentences (presenter). One normalised sentence per line (see
+# boilerplate.normalise): lower case, '<p>' for a name in staff.txt, no commas, no final
+# punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
+# kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
+# Adding an entry needs the evidence of ADR-0008 section 5.
+<p> has details
+<p> has her report
+<p> has more
+<p> has more on the story
+<p> has our report
+<p> has our story
+<p> has the story
+<p> has this report
+<p> tells us about a few of them
+<p> tells us about her
+<p> tells us about him
+<p> tells us about it
+<p> tells us about them
+<p> tells us more
+<p> tells us more about her
+<p> will be back next week
+<p> will be here tomorrow with another edition of <prog>
+and i'm <p>
+and i'm <p> in washington
+and i'm <p> with <prog> - a program in special english by the voice of america
+and i'm <p> with <prog> from voa special english
+and i'm <p> with <prog> in voa special english
+and i'm <p> with the special english program <prog>
+and i'm <p> with the voa special english program <prog>
+and this is <p>
+and this is <p> with <prog> - a voa special english program about the history of the united states
+and this is <p> with <prog> a v-o-a special english program about the history of the united states
+and this is <p> with <prog> a voa special english program about recent developments in science
+and this is <p> with <prog> a voa special english program about the history of the united states
+and this is <p> with <prog> from voa special english
+and this is <p> with <prog> in voa special english
+and this is <p> with the special english program <prog>
+and this is <p> with the voa special english history program <prog>
+and this is <p> with the voa special english program <prog>
+for voa learning english i'm <p>
+for voa special english this is <p>
+from voa learning english i'm <p>
+hello i'm <p>
+i'm <p>
+i'm <p> and i'm <p>
+i'm <p> and that's "<prog>" on the voice of america
+i'm <p> hoping you can join us again next week for <prog> in voa special english
+i'm <p> in washington
+i'm <p> in washington with the program that helps you learn and improve your american english
+i'm <p> inviting you to join us again next week for <prog>
+i'm <p> inviting you to join us again next week for <prog> - american history in voa special english
+i'm <p> inviting you to join us next time for <prog> - american history from voa learning english
+i'm <p> reporting
+i'm <p> reporting from voa learning english headquarters in washington
+i'm <p> with <p>
+i'm <p> with <p> and this is <prog> from voa special english
+i'm <p> with <p> and this is the voa special english program <prog>
+i'm <p> with <p> in washington
+i'm <p> with <prog> a program in special english on the voice of america
+i'm <p> with <prog> in voa special english
+i'm <p> with a voa special english program for the christmas holiday
+i'm <p> with the <rep>
+i'm <p> with the special english program <prog>
+this is <p>
+this is <p> wishing you a joyous holiday season
+this is <p> with <p> in washington
+this is <p> with <prog> a program in special english on the voice of america
+this is <p> with <prog> from voa special english
+this is <p> with <prog> in voa special english
+this is <p> with a voa special english holiday program
+this is <p> with the <rep>
+this is <p> with the voa special english program <prog>
+until next time i'm <p>

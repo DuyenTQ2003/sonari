@@ -1,0 +1,264 @@
+# Closed list of frame sentences (programme). One normalised sentence per line (see
+# boilerplate.normalise): lower case, '<p>' for a name in staff.txt, no commas, no final
+# punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
+# kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
+# Adding an entry needs the evidence of ADR-0008 section 5.
+(vita.org.)
+(www.vita.org)
+<p> is away
+<p> takes the story from there
+<p> takes us there
+<p> was tars tarkas
+<prog> - a program in special english
+<prog> - a program in special english by the voice of america
+<prog> - a program in special english on the voice of america
+<prog> a program in special english by the voice of america
+<prog> a program in special english on the voice of america
+<prog> can be heard on thursdays
+<prog> can be heard thursdays
+<prog> is a production of voa learning english
+and <p> was sola
+and i hope you will join us again next week for <prog> - voa's radio magazine in special english
+and join us again next week for <prog> in voa special english
+and now <prog> from voa learning english
+and now the voa learning english program <prog>
+and that brings us to the end of <prog>
+and that brings us to the end of this <prog>
+and that is <prog>
+and that is <prog> for today
+and that is all the time we have for this <prog>
+and that is our program for today
+and that is the end of this <prog>
+and that's "<prog>." we hope you enjoyed our program today
+and that's <prog>
+and that's <prog> for this week
+and that's <prog> for today
+and that's <prog> from voa learning english
+and that's <prog> in voa special english
+and that's all for this <prog>
+and that's all the time we have for <prog>
+and that's all the time we have for this <prog>
+and that's all the time we have this <prog>
+and that's it for this <prog>
+and that's our program for today
+and that's our show for today
+and that's the <prog>
+and that's the <rep>
+and that's the <rep> for today
+and that's the <rep> from voa learning english
+and that's the end of <prog>
+and that's the end of this <prog>
+and there is world news at the beginning of the hour on voa
+and we hope you can join us again next week for <prog> in voa special english
+anna: until next time
+be sure to join us again next week for <prog> in voa special english
+developed as a radio show each weekly program is 15 minutes long
+every day on "<prog>" we explore the latest events and report on issues that concern you
+every week at this time we tell the story of words and expressions used in american english
+every week we tell about a person important in the history of the united states
+every week we tell about a person who was important in the history of the united states
+every week we tell about someone important in the history of the united states
+for earlier programs type "making of a nation" in quotation marks in the search box at the top of the page
+for english learning activities and interactive features click on the classroom at voa learning english
+for learning english <prog> i'm <p>
+for the <prog> i'm <p>
+for voa learning english this is <prog>
+for voa learning english this is the <rep>
+from voa learning english this is <prog>
+from voa learning english this is <prog> - american history in special english
+from voa learning english this is <prog> in special english
+from voa learning english this is the <prog>
+from voa learning english this is the <rep>
+from voa learning english this is the <rep> in special english
+from voa learning english welcome to <prog>
+from voa learning english welcome to <prog> - american history in special english
+from voa learning english welcome to <prog> in special english
+from voa learning english welcome to <prog> our weekly program of american history for people learning american english
+from voa learning english welcome to <prog> our weekly program of american history for people learning english
+from washington this is voa news
+hello again and welcome to <prog>
+hello again and welcome to <prog> from voa learning english
+hello and welcome back to <prog> from voa learning english
+hello and welcome once again to "<prog>" our daily show for people learning everyday american english
+hello and welcome to <prog>
+hello and welcome to <prog> from voa learning english
+hello and welcome to the voa learning english program <prog>
+here are <p>
+here is <p>
+here is <p> with more
+here is <p> with our story
+here is <p> with the final part of the story
+here is <p> with the story
+here's <p>
+here's <prog>
+i hope you enjoyed <prog>
+i hope you enjoyed our program
+i hope you enjoyed our program today
+i hope you'll join him then here on the voice of america
+it's <prog> from voa learning english
+it's voa <prog> washington dc 20237 usa
+join us again at this time next week for more news about science in special english on the voice of america
+join us again next week at this time for another <prog> program on the voice of america
+join us again next week at this time for another <prog> program on voa
+join us again next week at this time for more news about science on the voice of america
+join us again next week for <prog>
+join us again next week for <prog> - an american history series in voa special english
+join us again next week for <prog> - voa's radio magazine in special english
+join us again next week for <prog> a program in special english on the voice of america
+join us again next week for <prog> from voa learning english
+join us again next week for <prog> from voa special english
+join us again next week for <prog> in special english on the voice of america
+join us again next week for <prog> in voa special english
+join us again next week for <prog> voa's radio magazine in special english
+join us again next week for another <prog> in voa special english
+join us again next week for another <prog> program in special english on the voice of america
+join us again next week for another <prog> program in voa special english
+join us again next week for another <prog> program on the voice of america
+join us again next week for another report about life in the united states on our voa special english program <prog>
+join us again next week for another report about life in the united states on the v-o-a special english program <prog>
+join us again next week for another report about life in the united states on the voa special english program <prog>
+join us again next week for another special english program about the history of the united states
+join us again next week for another v-o-a special english program about the history of the united states
+join us again next week for another voa special english program about the history of the united states
+join us again next week for more <prog> in voa special english
+join us again next week for more news about science in special english on the voice of america
+join us again next week for more news about science in special english program on the voice of america
+join us again next week for more news about science in voa special english
+join us again next week for more news about science on the voice of america
+join us again next week for music and more on <prog> from voa learning english
+join us again next week for music and more on <prog> in voa special english
+join us again next week for the voa special english program <prog>
+join us again next week for voa's radio magazine in special english
+join us again next week to hear the second part of the history of the english language on the voa special english program <prog>
+join us again tomorrow for another <prog>
+join us again tomorrow for another <prog> from voa learning english
+join us next week at this time for more news about science on the voice of america
+join us next week for <prog> in voa special english
+join us next week for another <prog> in voa special english
+join us next week for more news about science in special english on the voice of america
+join us tomorrow for another <prog> program from voa learning english
+listen again next week at this time for more news about science in special english on the voice of america
+listen again next week for <prog> from voa special english
+listen again next week for <prog> in voa special english
+listen again next week for another <prog> in voa special english
+listen again next week for another <prog> program in special english on the voice of america
+listen again next week for another <prog> program in voa special english
+listen again next week for another <prog> program on the voice of america
+listen again next week for another people in american program on the voice of america
+listen again next week for more news about science in special english on the voice of america
+listen again next week for the final part of our story told in special english on the voice of america
+listen again next week to another <prog> program on the voice of america
+listen next week for more news about science in special english on the voice of america
+nice to have you with us on <prog>
+nice to have you with us on <prog> from voa learning english
+now <prog> - a voa special english program about american expressions
+now <prog> a program in special english by the voice of america
+now <prog> a voa special english program about american expressions
+now <prog> from voa learning english
+now a voa special english program for the christmas holiday
+now here is <p> with our story
+now it's time for <prog> - our weekly program about common everyday expressions in american english
+now it's time for <prog> a program from voa learning english
+now it's time for <prog> from voa learning english
+now it's time for the voa learning english program <prog>
+now the special english program <prog>
+now the voa learning english program <prog>
+now the voa special english program <prog>
+on our program today
+on our show this week
+on this program we explore common expressions in american english
+on this program we explore words and expressions in american english
+on this program we explore words and expressions in the english language
+or write to <prog> voa special english washington d.c. 20237 u.s.a
+or write to <prog> voa special english washington d.c. two-zero-two-three-seven u.s.a
+or write to <prog> voa special english washington d.c. two-zero-two-three-seven usa
+part two of this story will come next week
+past shows can also be found on the site
+please join us again next week for <prog> in voa special english
+please join us again next week for another <prog> in voa special english
+please join us over the next several weeks as we bring you stories about international students and the american higher education system as a whole
+please join us over the next several weeks as we bring you stories about these amazing individuals and the american higher education system as a whole
+sadly we have no more time for this program
+see you next time
+see you next time on <prog>
+some are new
+some of them are old
+special english
+special english program <prog>
+thank you for listening
+thank you for listening today
+thanks for joining us
+thanks for joining us today
+thanks for listening
+thanks for listening to <prog>
+thanks for spending time with us today
+thanks for writing to us
+that is <prog>
+that will be our story in the next program of <prog>
+that will be our story next time
+that will be our story next week
+that will be our subject next week
+that's <prog>
+that's <prog> for this week
+that's <prog> for today
+that's <prog> for today i'm <p>
+that's all for <prog> this week
+that's our show for today
+this is <prog>
+this is <prog> from voa learning english
+this is <prog> from voa special english
+this is <prog> in voa special english
+this is <prog> with voa learning english
+this is a <rep>
+this is the <rep>
+this is the voa special english program <prog>
+this is voa
+this is voa news
+this the <rep>
+this week on our program
+this week on our show
+together they form the living speech of the american people
+until next time
+voa learning english
+voa learning english presents america's presidents
+voa world news is coming up at the beginning of the hour universal time
+voa world news is coming up at the top of the hour universal time
+we hope you can join us again next week for <prog> in voa special english
+we hope you enjoyed our program of christmas music
+we hope you join us again next week for <prog> in voa special english
+we will continue our story next week
+welcome again to <prog> from voa learning english
+welcome back to <prog>
+welcome back to <prog> from voa learning english
+welcome to <prog>
+welcome to <prog> - a program in voa special english about music and american life
+welcome to <prog> - a voa special english program about music and american life
+welcome to <prog> - american history in voa special english
+welcome to <prog> - voa's radio magazine in special english
+welcome to <prog> from voa learning english
+welcome to <prog> from voa special english
+welcome to <prog> in voa special english
+welcome to <prog> the daily magazine show from voa learning english
+welcome to <prog> voa's radio magazine in special english
+welcome to <prog> with voa learning english
+welcome to let's teach english
+welcome to the voa learning english program <prog>
+well that's our program for today
+what do you think of this story?
+with <p> i'm <p>
+with <p> i'm <p> in washington
+words in this story
+you are learning english with voa learning english
+you are listening to <prog>
+you are listening to <prog> from voa learning english
+you are listening to <prog> in voa special english
+you are listening to <prog> in voa special english from washington
+you are listening to the special english program <prog> on voa
+you are listening to the voa special english program <prog>
+you have been listening to <prog> - a program in special english
+you have been listening to <prog> a program in special english
+you have been listening to the special english program <prog>
+you have been listening to the voa special english program <prog>
+you're listening to <prog> from voa learning english
+your reporters have been <p>
+your reporters were <p>

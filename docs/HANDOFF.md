@@ -27,11 +27,11 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Implement ADR-0008 (whole-line trim) once the owner approves it: tighten rules first, tests for its negative cases, re-run `make voa-corpus`.
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. ADR-0008: decide on the open-slot rules and the recall families (backlog), then the trim itself (provenance on `Source`, P50).
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` measured it: 98 passages usable as-is at level 4 (`docs/reports/voa-corpus.md`; the parser reads bare-text bodies since #34, was 76; `make voa-missing` reproduces only on 62b6669). `make voa-evaluate voa-report` still to run. **ADR-0008 (Proposed, awaiting review):** whole-line trim, cap 5%. Whole lines yield 1,006, not the report's 1,165 (159 need a speaker label stripped). Today's `boilerplate.tsv` fails its negative cases (`I'm Vietnamese and...` is removed whole), so it cannot trim yet.
+- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` (`docs/reports/voa-corpus.md`): **55 passages usable as-is at level 4, 678 if whole lines may be cut up to 5%** (ADR-0008). Boilerplate rules: closed lists + 18 anchored rules (`tools/voa_corpus/frames/`). Precision: 0 wrong in 555 added lines (`voa-trim-precision.md`, `voa-trim-recall.md`). Recall: 68% of the 678 are free of missed frame (CI 58-78%), target 90% not met; the tail is closings, teasers and blurbs (backlog). Open: keep the open-slot rules? (ADR-0008 Notes). Nothing is trimmed. `make voa-evaluate voa-report` still to run.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry

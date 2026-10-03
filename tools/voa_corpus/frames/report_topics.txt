@@ -1,0 +1,11 @@
+# The subjects of the Special English reports ("This is the VOA Special English Health Report.").
+# "<topic> report", with or without "VOA Special English" in front, becomes the slot `<rep>`.
+agriculture
+background
+development
+economics
+education
+environment
+health
+science
+technology
