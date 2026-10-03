@@ -8,6 +8,8 @@ on:
 jobs:
   service:
     runs-on: ubuntu-latest
+    # A hung container or a stuck replica-set election must not hold a runner for hours.
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -22,7 +24,22 @@ jobs:
         if: matrix.service == 'speech'
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: uv sync --frozen --directory services/${{ matrix.service }}
+      # The integration tests need the real stack. `make infra` is what a developer runs: it
+      # starts MongoDB as the single-node replica set rs0 (change streams and transactions
+      # need one) with auth and its init script, plus Redis, and waits until both are healthy.
+      # CI is set, so a test that cannot reach either fails instead of skipping.
+      - name: Start MongoDB (replica set rs0) and Redis
+        if: matrix.service == 'core'
+        run: make infra
+      # The real g2p backend reads the cmudict corpus from $DATA_DIR/nltk_data; CI uses the
+      # copy vendored in the repo (services/speech/tests/data/README.md), with no download.
+      - name: Use the vendored NLTK data
+        if: matrix.service == 'speech'
+        run: echo "DATA_DIR=$GITHUB_WORKSPACE/services/speech/tests/data" >> "$GITHUB_ENV"
       - run: make lint-${{ matrix.service }} typecheck-${{ matrix.service }} test-${{ matrix.service }}
+      - name: Service logs
+        if: failure() && matrix.service == 'core'
+        run: docker compose logs --no-color --tail 200
 
   repo:
     runs-on: ubuntu-latest

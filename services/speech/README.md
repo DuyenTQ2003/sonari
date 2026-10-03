@@ -120,3 +120,7 @@ checkout still passes:
 CI has neither the model nor the NLTK data, so those 39 tests skip there; everything else runs
 against fakes. The audio fixtures in `tests/fixtures/` are synthetic re-encodings, not device
 recordings (see `generate.py`).
+Without the data, the 35 tests that use the real backend skip on a developer machine; in CI
+(`CI` set) they fail instead, and the workflow points `DATA_DIR` at the copy vendored in
+`tests/data/` (its licence and checksums: `tests/data/README.md`). The rest run against a fake
+backend.
