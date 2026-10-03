@@ -13,11 +13,11 @@ Last updated: 2026-10-03
 - **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0 (speaking-only Part 1
   starter, no passage); Films and TV is the one reserve. Record: `docs/level4-units-proposal.md`.
 - **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`. New clone: `make setup` (git hooks).
-- **P13 done** (#19): `sonari_core.shared`, 5 context packages, `/readyz`, OTel. `make check-imports`
-  (in `make lint-core`) fails on cross-context imports. P12 skipped, not needed.
+- **P13 done** (#19): `sonari_core.shared`, 5 contexts, `/readyz`, OTel; `make check-imports` fails on cross-context imports. P12 skipped.
 - **P14 done** (#20): `/v1/auth`, refresh rotation, Turnstile, rate limit. Deploy: uvicorn `--proxy-headers`.
 - **P15 done** (ADR-0007): `shared/outbox.py`, `shared/consumer.py`. Live Mongo/Redis tests: local only.
 - **Conflict markers now fail pre-commit and CI** (`check-merge-conflict --assume-in-merge`). A clean merge still skips pre-commit hooks (backlog).
+- **P20 done** (int8): `sonari_speech.runtime`. `runtime/models.yaml` `url` is empty: host the model (owner).
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
@@ -27,7 +27,7 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P20 speech runtime (int8 vs fp32 first). 3. P17 mock speech.
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP (after P20 merges). 3. P17 mock speech.
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.

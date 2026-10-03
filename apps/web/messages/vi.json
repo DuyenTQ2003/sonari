@@ -15,6 +15,15 @@
       "rate_limited": "Bạn đã thử quá nhiều lần. Hãy chờ một lúc rồi thử lại.",
       "captcha_failed": "Chưa xác minh được bạn là người thật. Hãy thử lại.",
       "captcha_unavailable": "Chưa thể xác minh lúc này. Bạn hãy thử lại sau ít phút."
+    },
+    "audio": {
+      "undecodable": "Không đọc được bản ghi âm này. Bạn hãy ghi âm lại.",
+      "too_large": "Bản ghi âm quá nặng. Bạn hãy ghi ngắn hơn rồi gửi lại.",
+      "too_long": "Bản ghi âm dài quá 15 giây. Bạn hãy ghi ngắn hơn rồi gửi lại.",
+      "too_short": "Chưa nghe thấy giọng nói trong bản ghi. Bạn hãy nói gần micro hơn rồi ghi lại."
+    },
+    "speech": {
+      "busy": "Hệ thống chấm điểm đang bận. Bạn hãy thử lại sau vài giây."
     }
   }
 }

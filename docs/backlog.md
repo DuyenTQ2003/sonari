@@ -43,3 +43,9 @@ PR description.
   merge-conflict files only"), so a Python file that merged cleanly is not linted. CI's
   `pre-commit run --all-files` still checks everything on the PR. Option: `pre-commit install --hook-type
   pre-merge-commit` in `make setup`, with `stages: [pre-commit, pre-merge-commit]` on the hooks.
+- Speech runtime follow-ups (P20): a smaller image (the ffmpeg package is 464 MB of 1.1 GB; a
+  static ffmpeg build would be about 70 MB); the OpenTelemetry SDK, exporter and FastAPI
+  instrumentation for the speech service as core has them (the runtime already creates
+  `speech.decode` and `speech.infer` spans through the API), with the first HTTP endpoint
+  (P23); real iPhone and Chrome recordings as fixtures instead of the synthetic ones; capacity
+  numbers measured on the VPS.

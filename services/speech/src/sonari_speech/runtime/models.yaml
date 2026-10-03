@@ -1,0 +1,20 @@
+# The model files the speech service runs, pinned by SHA-256. A file whose checksum differs
+# is never loaded. G1 thresholds (P25) are calibrated on exactly this file.
+#
+# `url` is where the file is hosted. It is deliberately empty: someone has to publish the
+# 355 MB file first (a GitHub release asset or a Hugging Face repo of the project), and a
+# URL guessed here would break the first image build. Until then pass it at build time:
+#   SPEECH_MODEL_URL=https://... python -m sonari_speech.runtime.weights
+wav2vec2-lv-60-espeak-int8:
+  file: wav2vec2_int8.onnx
+  sha256: cd51f95340d31f72ffefc1b734bb6fae91f2f8b0964eb450a838ef7344a72876
+  size: 355352992
+  url: null
+  # How the file was made (P04, spikes/gop/onnx/BENCH.md), for whoever rebuilds it:
+  #   source model  facebook/wav2vec2-lv-60-espeak-cv-ft, revision
+  #                 ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4 (pytorch_model.bin sha256
+  #                 3173bde9e9ce490fa0f989e413c42f25bc1820c020adc1e6b9b87025b3cfcc5e)
+  #   export        spikes/gop/onnx/export.py (opset 20, dynamic batch and time axes)
+  #   quantise      spikes/gop/onnx/quantize.py --ops MatMul, onnxruntime 1.30.0, int8 weights
+  #   interface     input "input_values" float32 [batch, samples] (normalised), output
+  #                 "logits" float32 [batch, frames, 392]; 20 ms per frame
