@@ -1,0 +1,11 @@
+# The eight level 4 units of PLAN-v7 4.1 and the keywords that tag a page, on its title and lead
+# paragraph (tab-separated: unit, regex alternatives matched at the start of a word). Crude on
+# purpose and written before any count was looked at: they say where to look, not how many exist.
+Healthy habits	health|exercis|sleep|diet|stress|nutrition|habit|fitness|lifestyle|sugar|obes|vitamin|doctor
+Study and work	student|school|college|universit|teacher|educat|jobs?\b|career|employ|workplace|degree|exam
+Food and eating	food|eat|meal|restaurant|cook|recipe|chef|kitchen|vegetable|fruit|bread|rice|coffee|dinner
+Technology	phone|apps?\b|internet|computer|online|robot|technolog|device|social media|website|software
+Animals	animal|dogs?\b|cats?\b|bird|wildlife|zoo|elephant|whale|bears?\b|horse|insect|pets?\b
+Music	music|song|singer|band\b|album|concert|guitar|piano|jazz|orchestra|rap\b|hip.hop
+Nature and places	nature|forest|river|mountain|ocean|island|national park|lake|desert|tourist|beach|village
+Sport	sport|soccer|football|basketball|baseball|tennis|golf|olympic|athlete|coach|world cup|swim
