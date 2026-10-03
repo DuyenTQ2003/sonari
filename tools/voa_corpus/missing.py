@@ -181,7 +181,11 @@ def main() -> None:
         return
     labels = read_labels(args.labels)
     if [(g, u) for g, u, _ in labels] != [(g, u) for g, urls in sample.items() for u in urls]:
-        raise SystemExit(f"{args.labels} does not match the sample drawn with seed {SEED}")
+        raise SystemExit(
+            f"{args.labels} does not match the sample drawn with seed {SEED}. The draw depends on "
+            "the parser's word counts and the labels were made with the parser before the "
+            "bare-text fix (62b6669)."
+        )
     print(breakdown(labels, {g: len(urls) for g, urls in groups.items()}))
     print("\nWords inside #article-content that the parser never read:\n")
     print(census(rows))

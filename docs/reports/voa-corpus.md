@@ -16,30 +16,70 @@ index, so a changed corpus is visible. The code is `tools/voa_corpus/` (393 line
 `missing.py` of [voa-missing-pages.md](voa-missing-pages.md); the
 boilerplate rules, topic keywords and irregular word forms are data files beside it).
 
+## The parser changed between runs
+
+The first run of this report (parser at `62b6669`, PR #32) read only `<p>`, `<h2>`, `<h3>` and
+`<figcaption>`. [voa-missing-pages.md](voa-missing-pages.md) found that 942 short pages and 40 passages
+keep their body as bare text in `div.wsw` / `div.wordclick`, and `voa_inventory.parse` now reads it. The
+filter, its thresholds and the boilerplate rules are untouched, so the change below is the parser alone.
+Everything after this section is from the run after the fix.
+
+| | before | after |
+|---|---|---|
+| article pages with no text (0 words) | 27,118 | 25,962 |
+| pages with 1-99 words | 1,768 | 1,974 |
+| passages (100 words or more) | 18,968 | 19,918 |
+| - exact copies of an earlier page | 74 | 80 |
+| - VOA-staff byline, no wire text | 11,527 | 12,444 |
+| passages left after length / grade / boilerplate | 16,313 / 2,331 / 80 | 16,944 / 2,472 / 102 |
+| **usable as is for level 4 (after licence)** | **76** | **98** |
+| usable if at most 5% may be cut / any amount | 1,080 / 1,847 | 1,165 / 1,986 |
+| P06's "usable level 4", for comparison | 1,618 | 1,759 |
+
+- 950 passages are new: 949 pages that read as 1-99 words and one that read as 0. Every page that the census of
+  the missing-pages report found with 100 or more unread words now reads 100 or more. 28 of the 950 are usable
+  as is.
+- The 0-word count fell by more (1,156) than the passages rose, because 1,155 pages went from 0 to 1-99 words:
+  1,130 are *The Day in Photos* pages whose short intro is bare text. 1,642 of the 1,974 short pages are now
+  that programme; the rest include video lessons.
+- Of the 40 passages the old parser read in part: 30 changed (median +1,132 words, from +52 to +1,945), 20 changed length bucket and
+  5 changed grade bucket, and none is usable as is, before or after. The other 10 did not change: 8 hold
+  gallery lightbox text (`c-lightbox__intro-text`, not the body) and 2 keep their unread text in a table or a
+  heading, which the parser skips.
+- 289 other passages changed (median +9 words: lines the old parser never saw, such as "(MUSIC)" or a presenter
+  line). 26 changed length bucket and 16 grade bucket. Of the 9 of them that were usable as is, 3 still are
+  and 6 are not: 4 now show a presenter or programme line, 2 had been read in part and are above grade 7 once
+  read in full.
+- The prototype in the missing-pages report predicted 110 usable. It left out lines under 40 characters, which
+  carry most of the script boilerplate; 98 is the measured count.
+- Not read, by design: text in lists, tables and `<h1>`/`<h4>`-`<h6>` headings, and players, quizzes and
+  scripts. Lists inside the body hold 530 lines (23,763 words) on 309 pages; 124 of the lines are the same
+  comment-box instructions and the others are real bullet points. That is a separate decision.
+
 ## Summary
 
-- **76 passages are usable as they are for level 4**, out of 18,968 passages and 47,854 article pages
-  (0.4% and 0.16%). If the passages may be cut first, it is about 14 times more. The filter and the
-  detail are in the next section. Reading the pages
-  the parser misses (below) would add about 34 to the 76.
-- **60% of the pages are not passages.** 27,118 have no article text at all (audio or photo pages) and 1,768
-  more have under 100 words: 28,886 pages in all. 18,968 pages (40%) are passages. The corpus is clean as
-  a file set: every archive reads, no HTML is cut off, and only 74 passages are exact copies of an earlier one.
-  This is not all audio and photo pages: 942 of the 1,768 short pages are real articles that the parser
-  cannot read, whereas 0 of 40 sampled text-less pages were. See [voa-missing-pages.md](voa-missing-pages.md).
+- **98 passages are usable as they are for level 4**, out of 19,918 passages and 47,854 article pages
+  (0.5% and 0.20%). If the passages may be cut first, it is about 12 times more. The filter and the
+  detail are in the next section. Before the parser fix the count was 76.
+- **58% of the pages are not passages.** 25,962 have no article text at all and 1,974 more have under 100
+  words: 27,936 pages in all. 19,918 pages (42%) are passages. The corpus is clean as a file set: every
+  archive reads, no HTML is cut off, and only 80 passages are exact copies of an earlier one. The text-less
+  pages are audio players, quiz widgets and photo galleries (0 of 40 sampled were articles; see
+  [voa-missing-pages.md](voa-missing-pages.md)); the real articles among the short pages were a parser miss
+  and are read now.
 - **The obstacle is boilerplate, not vocabulary and not length.** 96% of the passages contain broadcast
-  scaffolding: presenter lines ("I'm Bryan Lynn.") in 77.5%, programme names and sign-offs in 35.9%,
-  "VOICE ONE:" style script labels in 21.9%, calls to comment in 22.7%. Only 731 passages (3.9%) have none.
+  scaffolding: presenter lines ("I'm Bryan Lynn.") in 75.9%, programme names and sign-offs in 37.8%,
+  "VOICE ONE:" style script labels in 22.0%, calls to comment in 21.7%. Only 842 passages (4.2%) have none.
   Most of this corpus is radio script written to be read aloud, and it still carries the script's frame.
 - **Vocabulary is not the limit.** Of the tokens that are not proper nouns, 97.4% are inside the CEFR-J
-  A1-B2 list; 89.3% of passages have at least 95% of their tokens there. Beyond B2 sits 2.3% of all tokens,
+  A1-B2 list; 89.5% of passages have at least 95% of their tokens there. Beyond B2 sits 2.3% of all tokens,
   mostly current-affairs words (coronavirus, spacecraft, activists, migrants, sanctions).
-- **The grade is a limit.** Median passage: 539 words, 37 sentences, Flesch-Kincaid grade between 7 and 9.
-  Only 16.0% of passages (3,038) are below grade 7, the project's level 4 band.
+- **The grade is a limit.** Median passage: 544 words, 38 sentences, Flesch-Kincaid grade between 7 and 9.
+  Only 16.3% of passages (3,253) are below grade 7, the project's level 4 band.
 
 ## How many passages are usable as-is for level 4?
 
-**76.** The filter, with each threshold taken from a project document and fixed before any count was made:
+**98.** The filter, with each threshold taken from a project document and fixed before any count was made:
 
 | Filter | Threshold | From |
 |---|---|---|
@@ -49,54 +89,54 @@ boilerplate rules, topic keywords and irregular word forms are data files beside
 | boilerplate | no editorial boilerplate at all: no host line, programme name, script label or call to comment | "as is": nothing to cut |
 | licence | VOA-staff byline, no wire text or third-party media | ADR-0006, `license.py` |
 
-Passages left after each step: 18,894, then 16,313 (length), 2,331 (grade), 80 (boilerplate), **76** (licence).
+Passages left after each step: 19,838, then 16,944 (length), 2,472 (grade), 102 (boilerplate), **98** (licence).
 Page furniture ("Share", "Print", "No media source currently available") is not counted as boilerplate: a
-parser fix removes it and it is on 99.7% of passages. Of the 76, 18 belong to programmes about English itself
+parser fix removes it and it is on 99.7% of passages. Of the 98, 30 belong to programmes about English itself
 or to fiction (*Words and Their Stories*, *Let's Learn English*, *American Stories*), which the units
-proposal ruled out as topical sources, leaving **58**.
+proposal ruled out as topical sources, leaving **68**.
 
 **That is uncomfortably small.** Two facts make it worse than it sounds:
 
-- Only 80 passages survive the boilerplate step out of 2,331 that pass length and grade: 97% of the
+- Only 102 passages survive the boilerplate step out of 2,472 that pass length and grade: 96% of the
   otherwise suitable passages fail on boilerplate. It is usually small: allowing a cut of 5% of the words
-  brings in about a thousand more (next section), and I read ten passages blocked by under 1% of their words;
+  brings in about 1,100 more (next section), and I read ten passages blocked by under 1% of their words;
   each was blocked by a presenter sign-off ("I'm Caty Weaver."), two of them with one more line.
-- With the crude topic keywords the 76 match the eight units as: Healthy habits 3, Study and work 18,
-  Food and eating 4, Technology 10, Animals 3, Music 13, Nature and places 2, Sport 4 (57 matches: a passage
+- With the crude topic keywords the 98 match the eight units as: Healthy habits 3, Study and work 22,
+  Food and eating 6, Technology 10, Animals 3, Music 13, Nature and places 5, Sport 4 (66 matches: a passage
   can match several units or none). The proposal's rule
   was at least 3 confirmed items per unit and 6 to be comfortable. The tags are crude (see below), so some of
   these counts are too high, and a unit of 2 or 3 leaves no choice of passage and nothing to fall back on if
   the one passage turns out to be wrong on reading.
 
 An estimate for the whole site: the cache holds 71% of the 67,337 article URLs in a random order, so it is a
-uniform sample; scaled, 76 becomes about 107.
+uniform sample; scaled, 98 becomes about 138.
 
 ## What would have to change to raise the count
 
 Nothing here is implemented. The figures come from the second table of "The level 4 filter" below.
 
 1. **Cut the boilerplate (light cleaning).** The rules that find it already exist. If a passage may have its
-   editorial lines removed, the count at the same thresholds is **1,080** when the cut is at most 5% of its
-   words (host sign-offs, a programme line, a "VOICE ONE:" label), and **1,847** when any amount may be cut.
-   Per unit (crude tags): 45 to 184 passages with the 5% cut. This is removal, not writing, so it does not
+   editorial lines removed, the count at the same thresholds is **1,165** when the cut is at most 5% of its
+   words (host sign-offs, a programme line, a "VOICE ONE:" label), and **1,986** when any amount may be cut.
+   Per unit (crude tags): 51 to 199 passages with the 5% cut. This is removal, not writing, so it does not
    touch ADR-0006's ban on generated English, but it does mean the text is no longer exactly VOA's: say so in
    the ADR before building. Lengths here are as extracted; some passages near 250 words would fall under the
    limit after cutting.
-2. **A different grade ceiling.** Below grade 8 the strict count is 143 and the cleaned one 2,069 (5% cut) or
-   3,414 (any cut). But grade 7 to 8 is level 5 by the project's own bands, so this finds more level 5
-   material, not more level 4. The other readability measure argues the same way: by Coleman-Liau only 6.0%
-   of passages are below 7, against 16.0% by Flesch-Kincaid, so grade 7 is already the generous reading.
-3. **A different length window.** Small effect: 150 to 1,200 words adds 17 strict passages (93) and 33 with
-   the 5% cut (1,113); 250 to 2,000 adds 66 and 360.
+2. **A different grade ceiling.** Below grade 8 the strict count is 184 and the cleaned one 2,257 (5% cut) or
+   3,691 (any cut). But grade 7 to 8 is level 5 by the project's own bands, so this finds more level 5
+   material, not more level 4. The other readability measure argues the same way: by Coleman-Liau only 6.2%
+   of passages are below 7, against 16.3% by Flesch-Kincaid, so grade 7 is already the generous reading.
+3. **A different length window.** Small effect: 150 to 1,200 words adds 23 strict passages (121) and 39 with
+   the 5% cut (1,204); 250 to 2,000 adds 71 and 414.
 4. **A second source.** ADR-0006 allows only VOA and Tatoeba, and Tatoeba is single sentences, so a second
    source of *passages* needs a superseding ADR and its own licence check per item. The licence filter is the
-   other fixed constraint: 39% of passages (7,441 of 18,968) fail it because they carry wire text or
+   other fixed constraint: 38% of passages (7,474 of 19,918) fail it because they carry wire text or
    third-party media, and nothing short of a different rights position changes that.
 5. **Reading, not counting.** Every figure above is a count of passages that pass mechanical checks. P50
    still has to read the passage a unit uses; the topic tags are crude keywords, and none of this checks
    that a passage suits a lesson.
 
-The cheapest move is the first. It multiplies the usable set by about 14 to 24 and leaves 45 or more
+The cheapest move is the first. It multiplies the usable set by about 12 to 20 and leaves 51 or more
 passages per unit to choose from; the others add little or change the level.
 
 ## How far to trust these numbers
@@ -108,9 +148,9 @@ passages per unit to choose from; the others add little or change the level.
   what is left among the commonest repeated short paragraphs is headings ("Closing Thoughts"), not broadcast
   text. There is no labelled evaluation, so there are no precision or recall figures. One known ambiguity: a
   short "I'm Anna." in a *Let's Learn English* dialogue is content, and is classed as a presenter line.
-- **Readability** is computed on the text without boilerplate paragraphs. With them left in, 4,157 passages
-  are below grade 7 instead of 3,038: each short line without a full stop ("Share", "VOICE ONE:") counts as a
-  tiny sentence and lowers the grade, so 1,119 passages (27% of the 4,157) look easier than they are. The
+- **Readability** is computed on the text without boilerplate paragraphs. With them left in, 4,448 passages
+  are below grade 7 instead of 3,253: each short line without a full stop ("Share", "VOICE ONE:") counts as a
+  tiny sentence and lowers the grade, so 1,195 passages (27% of the 4,448) look easier than they are. The
   earlier inventory used the raw text.
 - **Vocabulary** uses the CEFR-J list (A1-B2) plus Octanove (C1/C2), which hold lemmas; inflected forms are
   matched by suffix rules and a table of 131 irregular forms, so the match is approximate. A word counts at
@@ -118,21 +158,21 @@ passages per unit to choose from; the others add little or change the level.
   `non`, `com`). Proper nouns and acronyms are recognised by capital letters and counted separately. The
   list is not copied into the repo: its terms allow use with a citation but say nothing about
   redistribution, so `make voa-wordlists` downloads it at a pinned commit and checks its SHA-256.
-- **Duplicates** are exact copies of the body text only (74). Rewrites or updates of the same story are not
+- **Duplicates** are exact copies of the body text only (80). Rewrites or updates of the same story are not
   detected, so some passages may be near-copies of each other.
 - **Topics** are keyword matches on the title and lead paragraph, written for the eight units of PLAN-v7 4.1
   before any count was looked at. They say where to look, not how many passages exist.
 - **No audio filter.** The reading and listening passages will be voiced with Kokoro, so the original
-  recording is not needed; 13,331 passages have one.
+  recording is not needed; 13,892 passages have one.
 
 ## Against the earlier inventory
 
 `docs/level4-units-proposal.md` counted **394 usable level 4 pages at about 17% of the crawl**. The same
-definition (licence, audio, raw Flesch-Kincaid below 7) gives **1,618** on the 71% crawl, which is what
-that figure predicts (394 / 0.17 x 0.71 is about 1,650). The two reports do not disagree; they count different
+definition (licence, audio, raw Flesch-Kincaid below 7) gives **1,759** on the 71% crawl, which is what
+that figure predicts (394 / 0.17 x 0.71 is about 1,650; it was 1,618 before the parser fix). The two reports do not disagree; they count different
 things. The earlier one counted pages that pass licence, audio and a grade measured on text full of
 boilerplate lines; this one asks whether the text can be used without cutting anything, and the answer is
-76. The proposal's candidate lists were read by title and its own text says P50 reads each chosen passage
+98. The proposal's candidate lists were read by title and its own text says P50 reads each chosen passage
 in full; that reading is where the boilerplate would have been found.
 
 ## Tables
@@ -149,10 +189,10 @@ Snapshot: `index.jsonl` 47860 rows (sha256 861377466176), 47854 article pages; w
 |---|---|
 | article pages in the cache | 47854 |
 | archive unreadable or HTML cut off | 0 |
-| no article text (0 words) | 27118 |
-| passages (at least 100 words) | 18968 |
-| - identical body to an earlier page (copies) | 74 |
-| - VOA-staff byline, no wire text (ADR-0006) | 11527 |
+| no article text (0 words) | 25962 |
+| passages (at least 100 words) | 19918 |
+| - identical body to an earlier page (copies) | 80 |
+| - VOA-staff byline, no wire text (ADR-0006) | 12444 |
 
 ### Length
 
@@ -160,16 +200,16 @@ Words per page, all article pages:
 
 | bucket | pages | share |
 |---|---|---|
-| <1 | 27118 | 56.7% |
-| 1-100 | 1768 | 3.7% |
-| 100-250 | 381 | 0.8% |
-| 250-500 | 7569 | 15.8% |
-| 500-750 | 6308 | 13.2% |
-| 750-1200 | 2479 | 5.2% |
-| 1200-2000 | 2170 | 4.5% |
-| >=2000 | 61 | 0.1% |
+| <1 | 25962 | 54.3% |
+| 1-100 | 1974 | 4.1% |
+| 100-250 | 386 | 0.8% |
+| 250-500 | 7796 | 16.3% |
+| 500-750 | 6468 | 13.5% |
+| 750-1200 | 2726 | 5.7% |
+| 1200-2000 | 2474 | 5.2% |
+| >=2000 | 68 | 0.1% |
 
-Passages: words p5 300, p25 422, p50 539, p75 747, p95 1431; sentences p5 20, p25 29, p50 37, p75 54, p95 113.
+Passages: words p5 303, p25 425, p50 544, p75 776, p95 1444; sentences p5 20, p25 29, p50 38, p75 57, p95 115.
 
 ### Readability
 
@@ -177,73 +217,73 @@ Flesch-Kincaid grade, without the boilerplate paragraphs (level 4 is below 7):
 
 | bucket | passages | share |
 |---|---|---|
-| <5 | 668 | 3.5% |
-| 5-7 | 2370 | 12.5% |
-| 7-9 | 7579 | 40.0% |
-| 9-11 | 7179 | 37.9% |
-| 11-13 | 1125 | 5.9% |
-| >=13 | 43 | 0.2% |
+| <5 | 725 | 3.6% |
+| 5-7 | 2528 | 12.7% |
+| 7-9 | 8064 | 40.5% |
+| 9-11 | 7401 | 37.2% |
+| 11-13 | 1152 | 5.8% |
+| >=13 | 44 | 0.2% |
 
-Below 7: 3038 passages this way, 4157 with the boilerplate left in (each short line such as "Share" or "VOICE ONE:" counts as a tiny sentence).
+Below 7: 3253 passages this way, 4448 with the boilerplate left in (each short line such as "Share" or "VOICE ONE:" counts as a tiny sentence).
 
 Coleman-Liau index (letters, not syllables):
 
 | bucket | passages | share |
 |---|---|---|
-| <5 | 237 | 1.2% |
-| 5-7 | 910 | 4.8% |
-| 7-9 | 3049 | 16.1% |
-| 9-11 | 7978 | 42.1% |
-| 11-13 | 6005 | 31.7% |
-| >=13 | 789 | 4.2% |
+| <5 | 278 | 1.4% |
+| 5-7 | 956 | 4.8% |
+| 7-9 | 3264 | 16.4% |
+| 9-11 | 8441 | 42.4% |
+| 11-13 | 6179 | 31.0% |
+| >=13 | 800 | 4.0% |
 
 ### Vocabulary
 
-12,161,926 tokens in 18968 passages, boilerplate paragraphs left out:
+13,057,323 tokens in 19918 passages, boilerplate paragraphs left out:
 
 | level | tokens | share |
 |---|---|---|
-| A1 | 7,920,039 | 65.1% |
-| A2 | 1,399,854 | 11.5% |
-| B1 | 785,607 | 6.5% |
-| B2 | 342,661 | 2.8% |
-| C1 | 19,919 | 0.2% |
-| C2 | 5,530 | 0.0% |
-| in neither list | 254,314 | 2.1% |
-| proper noun or acronym | 1,434,002 | 11.8% |
+| A1 | 8,514,026 | 65.2% |
+| A2 | 1,497,818 | 11.5% |
+| B1 | 841,014 | 6.4% |
+| B2 | 365,928 | 2.8% |
+| C1 | 21,461 | 0.2% |
+| C2 | 5,963 | 0.0% |
+| in neither list | 273,235 | 2.1% |
+| proper noun or acronym | 1,537,878 | 11.8% |
 
 Share of each passage's tokens (proper nouns aside) at A1-B2:
 
 | bucket | passages | share |
 |---|---|---|
-| <0.85 | 2 | 0.0% |
-| 0.85-0.9 | 35 | 0.2% |
-| 0.9-0.95 | 1994 | 10.5% |
-| 0.95-0.98 | 9446 | 49.8% |
-| >=0.98 | 7488 | 39.5% |
+| <0.85 | 3 | 0.0% |
+| 0.85-0.9 | 33 | 0.2% |
+| 0.9-0.95 | 2055 | 10.3% |
+| 0.95-0.98 | 9985 | 50.1% |
+| >=0.98 | 7839 | 39.4% |
 
-Commonest tokens in neither list: com (2,398), coronavirus (2,083), non (1,842), th (1,614), spacecraft (1,526), shown (1,270), re (1,251), app (1,191), activists (1,031), voaspecialenglish (1,012), al (962), co (898), bacteria (812), de (809), migrants (788), sanctions (774), reportedly (752), voanews (747), protesters (719), nominated (712)
+Commonest tokens in neither list: com (2,707), coronavirus (2,083), non (1,963), th (1,859), spacecraft (1,676), shown (1,367), re (1,356), app (1,251), activists (1,142), voaspecialenglish (1,085), al (1,040), voanews (942), co (940), de (875), bacteria (834), migrants (806), sanctions (796), reportedly (780), protesters (764), militants (759)
 
 ### Boilerplate
 
 | kind | passages carrying it | share |
 |---|---|---|
-| furniture | 18903 | 99.7% |
-| script | 4158 | 21.9% |
-| presenter | 14697 | 77.5% |
-| programme | 6818 | 35.9% |
-| call_to_action | 4310 | 22.7% |
+| furniture | 19849 | 99.7% |
+| script | 4390 | 22.0% |
+| presenter | 15115 | 75.9% |
+| programme | 7536 | 37.8% |
+| call_to_action | 4314 | 21.7% |
 
 Editorial boilerplate (all kinds but furniture), share of a passage's words:
 
 | bucket | passages | share |
 |---|---|---|
-| <0.001 | 731 | 3.9% |
-| 0.001-2 | 7626 | 40.2% |
-| 2-5 | 5103 | 26.9% |
-| 5-10 | 5047 | 26.6% |
-| 10-25 | 452 | 2.4% |
-| >=25 | 9 | 0.0% |
+| <0.001 | 842 | 4.2% |
+| 0.001-2 | 7873 | 39.5% |
+| 2-5 | 5478 | 27.5% |
+| 5-10 | 5269 | 26.5% |
+| 10-25 | 450 | 2.3% |
+| >=25 | 6 | 0.0% |
 
 Short paragraphs repeated most that no rule catches (recall check): closing thoughts (96), what can you do? (38), dear teacher, (34), for example: (29), or (29), early life (27), final thoughts (21), legacy (21)
 
@@ -251,38 +291,38 @@ Short paragraphs repeated most that no rule catches (recall check): closing thou
 
 | step | passages left | of all passages |
 |---|---|---|
-| copies removed | 18894 | 99.6% |
-| length 250-1200 words | 16313 | 86.0% |
-| Flesch-Kincaid grade below 7 | 2331 | 12.3% |
-| no editorial boilerplate (as is) | 80 | 0.4% |
-| VOA-staff byline, no wire text (ADR-0006) | 76 | 0.4% |
-| - of which an English lesson or fiction programme | 18 | 0.1% |
-| For comparison, P06's 'usable level 4' | 1618 | 8.5% |
+| copies removed | 19838 | 99.6% |
+| length 250-1200 words | 16944 | 85.1% |
+| Flesch-Kincaid grade below 7 | 2472 | 12.4% |
+| no editorial boilerplate (as is) | 102 | 0.5% |
+| VOA-staff byline, no wire text (ADR-0006) | 98 | 0.5% |
+| - of which an English lesson or fiction programme | 30 | 0.2% |
+| For comparison, P06's 'usable level 4' | 1759 | 8.8% |
 
 The same filter with other thresholds (copies removed, licence required):
 
 | editorial boilerplate | words | FK < 6 | FK < 7 | FK < 8 | FK < 9 | FK < 10 |
 |---|---|---|---|---|---|---|
-| as is | 250-1200 | 40 | 76 | 143 | 238 | 352 |
-| as is | 150-1200 | 51 | 93 | 164 | 265 | 384 |
-| as is | 250-2000 | 105 | 142 | 214 | 316 | 430 |
-| up to 5% cut | 250-1200 | 491 | 1080 | 2069 | 3341 | 4639 |
-| up to 5% cut | 150-1200 | 506 | 1113 | 2119 | 3416 | 4738 |
-| up to 5% cut | 250-2000 | 737 | 1440 | 2622 | 4117 | 5524 |
-| any amount | 250-1200 | 923 | 1847 | 3414 | 5379 | 7376 |
-| any amount | 150-1200 | 950 | 1895 | 3496 | 5507 | 7555 |
-| any amount | 250-2000 | 1211 | 2394 | 4473 | 7040 | 9396 |
+| as is | 250-1200 | 58 | 98 | 184 | 295 | 419 |
+| as is | 150-1200 | 75 | 121 | 211 | 328 | 456 |
+| as is | 250-2000 | 124 | 169 | 269 | 391 | 516 |
+| up to 5% cut | 250-1200 | 535 | 1165 | 2257 | 3647 | 5026 |
+| up to 5% cut | 150-1200 | 556 | 1204 | 2313 | 3729 | 5132 |
+| up to 5% cut | 250-2000 | 802 | 1579 | 2942 | 4631 | 6151 |
+| any amount | 250-1200 | 989 | 1986 | 3691 | 5803 | 7910 |
+| any amount | 150-1200 | 1022 | 2040 | 3779 | 5936 | 8094 |
+| any amount | 250-2000 | 1298 | 2595 | 4907 | 7710 | 10213 |
 
 ### Topics
 
 | unit (crude keywords on title and lead) | all passages | as is | up to 5% cut |
 |---|---|---|---|
-| Healthy habits | 1500 | 3 | 67 |
-| Study and work | 2866 | 18 | 184 |
-| Food and eating | 1152 | 4 | 100 |
-| Technology | 1570 | 10 | 76 |
-| Animals | 991 | 3 | 58 |
-| Music | 814 | 13 | 85 |
-| Nature and places | 1246 | 2 | 56 |
-| Sport | 610 | 4 | 45 |
+| Healthy habits | 1579 | 3 | 72 |
+| Study and work | 2983 | 22 | 199 |
+| Food and eating | 1199 | 6 | 105 |
+| Technology | 1641 | 10 | 79 |
+| Animals | 1018 | 3 | 60 |
+| Music | 883 | 13 | 94 |
+| Nature and places | 1299 | 5 | 61 |
+| Sport | 645 | 4 | 51 |
 <!-- END GENERATED -->

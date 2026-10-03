@@ -69,8 +69,11 @@ PR description.
 - A Cloudflare R2 mirror of the int8 model, as the second entry of `url` in `runtime/models.yaml` (a
   commented TODO there), so that a Hugging Face outage cannot stop an image build. The fetcher already
   tries the list in order; the CI check rejects a placeholder that is left in.
-- Make `voa_inventory.parse` read bare text in `#article-content` (`div.wsw`, `div.wordclick`, split on
-  `<br />`). 942 pages with 1-99 words are articles it misses, plus 40 passages it reads in part; the
-  fix and its test plan are in `docs/reports/voa-missing-pages.md`. Then rerun `make voa-corpus`.
+- Decide whether the parser should read bullet lists in the body. `<li>` text inside `div.wsw` holds 530
+  lines (23,763 words) on 309 pages; 124 lines are the same comment-box instructions, the rest are real
+  bullet points. The bare-text fix skips lists as instructed (`docs/reports/voa-corpus.md`).
+- `has_audio` may be wrong on some old pages: 962 pages (380 passages) have an `.mp3` link in some letter case
+  but `has_audio` is false. `parse.MP3` is case-sensitive (`.Mp3` in 2010-2012 pages) and `parse_page` only
+  looks inside `#article-content`. Not analysed further; check before relying on `has_audio`.
 - Pair the audio-only pages with their text page: 7,700 text-less pages share a title with a passage
   (more by fuzzier matching), so a passage could get its listening audio from the twin page.
