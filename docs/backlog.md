@@ -30,3 +30,8 @@ PR description.
 - Event bus follow-ups (P15): a CLI to inspect and replay `dead.events.*` entries, and
   W3C `traceparent` carried in the stream entry so a consumer span joins the producer's
   trace. Raised by ADR-0007.
+- G2P follow-ups (P21): homograph disambiguation ("read", "live"; the backend takes CMUdict's
+  first variant, g2p_en would use POS tags); generate `g2p/lexicon.yaml` entries for each
+  unit's vocabulary by comparing CMUdict variants with espeak-ng (a probe on 2026-10-03 found
+  camera, restaurant, average, every, different); download `cmudict` in CI so the 35 live g2p
+  tests run there.

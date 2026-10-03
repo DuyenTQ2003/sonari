@@ -5,7 +5,7 @@ Last updated: 2026-10-03
 ## Done
 - Docs (PLAN-v7, ADR-0001/0004/0006, design-system, BUILD-PROMPTS, eval-data); P10 scaffold.
 - **P01/P02 done, GATE G0 PASS.** `spikes/gop/`: θ|correct +3.89, t|substituted −5.71.
-- **P03 done.** `spikes/gop/phoneset/`: ARPAbet→espeak table, 93.0% match. `make check-phoneset`.
+- **P03/P21 done.** ARPAbet→espeak table (93.0%, `make check-phoneset`) now in `sonari_speech.phoneset`; `.g2p` gives per-word tokens.
 - **P04 done.** `spikes/gop/onnx/BENCH.md`: int8 keeps G0 (355 vs 1264 MB); 280 ms p50, laptop.
 - **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, 3 speeds + dialogue, RTF 0.35-0.41.
 - **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Tag counts
@@ -24,7 +24,7 @@ Last updated: 2026-10-03
   "and"); constrain alignment to the word span. Pick fp32 or int8 BEFORE calibrating.
 - One reference token per phone gives false errors on unstressed vowels (`ə ɐ ᵻ ɪ`), the
   US flap and syllabic `əl` (`phoneset/REPORT.md`). Untested on model output.
-- `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P21/P22.
+- `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
 1. Design A6 → P12 contracts. 2. P20 speech runtime (int8 vs fp32 first). 3. P17 mock speech.
