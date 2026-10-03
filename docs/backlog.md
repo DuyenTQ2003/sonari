@@ -49,3 +49,8 @@ PR description.
   `speech.decode` and `speech.infer` spans through the API), with the first HTTP endpoint
   (P23); real iPhone and Chrome recordings as fixtures instead of the synthetic ones; capacity
   numbers measured on the VPS.
+- CI follow-ups (#28): the 4 tests on the real int8 model (PR #26) will still skip in CI, because the 355 MB
+  file has no URL yet; once `runtime/models.yaml` has one, fetch it in the speech job with
+  `actions/cache` keyed on the pinned SHA-256 (the first run downloads it, later runs restore it).
+  If the core job grows (it is 42 s now, 24 s of it starting MongoDB and Redis), cache the mongo and redis
+  images, or run only `mongod` for the tests that do not need Redis.

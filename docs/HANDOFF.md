@@ -18,6 +18,7 @@ Last updated: 2026-10-03
 - **P15 done** (ADR-0007): `shared/outbox.py`, `shared/consumer.py`. Live Mongo/Redis tests: local only.
 - **Conflict markers now fail pre-commit and CI** (`check-merge-conflict --assume-in-merge`). A clean merge still skips pre-commit hooks (backlog).
 - **P20 done** (int8): `sonari_speech.runtime`. `runtime/models.yaml` `url` is empty: host the model (owner).
+- **CI runs the integration tests** (#28): `make infra` for core, vendored cmudict for speech. With `CI` set a missing service fails, not skips.
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in

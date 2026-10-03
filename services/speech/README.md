@@ -101,7 +101,6 @@ It never downloads at runtime: it raises `G2pDataMissing`, and importing g2p_en 
 uv run --directory services/speech python -m sonari_speech.g2p.backend
 ```
 
-<<<<<<< HEAD
 ## Running the tests
 
 ```bash
@@ -121,9 +120,7 @@ checkout still passes:
 CI has neither the model nor the NLTK data, so those 39 tests skip there; everything else runs
 against fakes. The audio fixtures in `tests/fixtures/` are synthetic re-encodings, not device
 recordings (see `generate.py`).
-=======
 Without the data, the 35 tests that use the real backend skip on a developer machine; in CI
 (`CI` set) they fail instead, and the workflow points `DATA_DIR` at the copy vendored in
 `tests/data/` (its licence and checksums: `tests/data/README.md`). The rest run against a fake
 backend.
->>>>>>> 0b7f807 (test: run the integration tests in CI instead of skipping them)
