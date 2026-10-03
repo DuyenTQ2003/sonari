@@ -1,0 +1,248 @@
+# Closed list of frame sentences (programme). One normalised sentence per line (see
+# boilerplate.normalise): lower case, '<p>' for a name in staff.txt, no commas, no final
+# punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
+# kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
+# Adding an entry needs the evidence of ADR-0008 section 5.
+and i hope you will join us again next week for american mosaic - voa's radio magazine in special english
+and join us again next week for this is america in voa special english
+and now the voa learning english program words and their stories
+and now words and their stories from voa learning english
+and that brings us to the end of this words and their stories
+and that brings us to the end of words and their stories
+and that is all the time we have for this words and their stories
+and that is the end of this words and their stories
+and that's all for this words and their stories
+and that's all the time we have for this words and their stories
+and that's all the time we have for words and their stories
+and that's all the time we have this words and their stories
+and that's ask a teacher
+and that's ask a teacher for this week
+and that's everyday grammar
+and that's in the news from voa learning english
+and that's in the news in voa special english
+and that's it for this words and their stories
+and that's our program for today
+and that's our show for today
+and that's the economics report
+and that's the economics report from voa learning english
+and that's the education report
+and that's the end of this words and their stories
+and that's the end of words and their stories
+and that's the health & lifestyle report
+and that's the health and lifestyle report
+and that's the health report
+and that's the health report from voa learning english
+and that's the voa learning english economics report
+and that's the voa learning english education report for today
+and that's the voa special english agriculture report
+and that's the voa special english development report
+and that's the voa special english economics report
+and that's the voa special english education report
+and that's the voa special english health report
+and that's the voa special english technology report
+and that's what's trending today
+and that's wordmaster for this week
+and that's words and their stories
+and that's words and their stories for this week
+and that's words and their stories from voa learning english
+as it is is a production of voa learning english
+be sure to join us again next week for this is america in voa special english
+every week we tell about a person important in the history of the united states
+every week we tell about a person who was important in the history of the united states
+every week we tell about someone important in the history of the united states
+explorations - a program in special english by the voice of america
+for voa learning english this is everyday grammar
+for voa learning english this is the education report
+from voa learning english this is american stories
+from voa learning english this is as it is
+from voa learning english this is everyday grammar
+from voa learning english this is in the news
+from voa learning english this is in the news in special english
+from voa learning english this is science in the news
+from voa learning english this is science in the news in special english
+from voa learning english this is the agriculture report in special english
+from voa learning english this is the economics report
+from voa learning english this is the economics report in special english
+from voa learning english this is the education report
+from voa learning english this is the education report in special english
+from voa learning english this is the health & lifestyle report
+from voa learning english this is the health and lifestyle report
+from voa learning english this is the health report
+from voa learning english this is the health report in special english
+from voa learning english this is the making of a nation
+from voa learning english this is the making of a nation - american history in special english
+from voa learning english this is the technology report
+from voa learning english this is the technology report in special english
+from voa learning english this is words and their stories
+from voa learning english welcome to as it is
+from voa learning english welcome to the making of a nation our weekly program of american history for people learning american english
+from voa learning english welcome to the making of a nation our weekly program of american history for people learning english
+from voa learning english welcome to this is america
+from voa learning english welcome to this is america in special english
+from washington this is voa news
+hello again and welcome to as it is from voa learning english
+hello and welcome back to as it is from voa learning english
+hello and welcome to as it is from voa learning english
+hello and welcome to the voa learning english program words and their stories
+hello and welcome to words and their stories from voa learning english
+i hope you enjoyed american mosaic
+i hope you enjoyed our program
+i hope you enjoyed our program today
+i hope you'll join him then here on the voice of america
+it's as it is from voa learning english
+it's voa wordmaster washington dc 20237 usa
+join us again at this time next week for more news about science in special english on the voice of america
+join us again next week at this time for another explorations program on the voice of america
+join us again next week at this time for another people in america program on the voice of america
+join us again next week at this time for more news about science on the voice of america
+join us again next week for american mosaic - voa's radio magazine in special english
+join us again next week for american mosaic from voa learning english
+join us again next week for american mosaic voa's radio magazine in special english
+join us again next week for another explorations in voa special english
+join us again next week for another explorations program in special english on the voice of america
+join us again next week for another explorations program in voa special english
+join us again next week for another explorations program on the voice of america
+join us again next week for another people in america in voa special english
+join us again next week for another people in america program in special english on the voice of america
+join us again next week for another people in america program in voa special english
+join us again next week for another people in america program on the voice of america
+join us again next week for another report about life in the united states on our voa special english program this is america
+join us again next week for another report about life in the united states on the v-o-a special english program this is america
+join us again next week for another report about life in the united states on the voa special english program this is america
+join us again next week for another special english program about the history of the united states
+join us again next week for another v-o-a special english program about the history of the united states
+join us again next week for another voa special english program about the history of the united states
+join us again next week for explorations a program in special english on the voice of america
+join us again next week for explorations in special english on the voice of america
+join us again next week for explorations in voa special english
+join us again next week for more explorations in voa special english
+join us again next week for more news about science in special english on the voice of america
+join us again next week for more news about science in special english program on the voice of america
+join us again next week for more news about science in voa special english
+join us again next week for more news about science on the voice of america
+join us again next week for music and more on american mosaic from voa learning english
+join us again next week for music and more on american mosaic in voa special english
+join us again next week for people in america from voa special english
+join us again next week for people in america in voa special english
+join us again next week for science in the news in voa special english
+join us again next week for the making of a nation - an american history series in voa special english
+join us again next week for the voa special english program this is america
+join us again next week for this is america from voa learning english
+join us again next week for this is america in voa special english
+join us again next week for voa's radio magazine in special english
+join us again next week to hear the second part of the history of the english language on the voa special english program explorations
+join us again tomorrow for another as it is from voa learning english
+join us next week at this time for more news about science on the voice of america
+join us next week for more news about science in special english on the voice of america
+join us tomorrow for another as it is program from voa learning english
+listen again next week at this time for more news about science in special english on the voice of america
+listen again next week for another explorations in voa special english
+listen again next week for another explorations program on the voice of america
+listen again next week for another people in america in voa special english
+listen again next week for another people in america program on the voice of america
+listen again next week for another people in american program on the voice of america
+listen again next week for another words and their stories program in special english on the voice of america
+listen again next week for more news about science in special english on the voice of america
+listen again next week for people in america in voa special english
+listen again next week for the final part of our story told in special english on the voice of america
+listen again next week for this is america in voa special english
+listen again next week to another people in america program on the voice of america
+listen next week for more news about science in special english on the voice of america
+nice to have you with us on as it is from voa learning english
+now it's time for the voa learning english program words and their stories
+now it's time for words and their stories - our weekly program about common everyday expressions in american english
+now it's time for words and their stories a program from voa learning english
+now it's time for words and their stories from voa learning english
+now the special english program american stories
+now the special english program words and their stories
+now the voa learning english program words and their stories
+now the voa special english program american stories
+now the voa special english program explorations
+now the voa special english program people in america
+now the voa special english program words and their stories
+now words and their stories - a voa special english program about american expressions
+now words and their stories a program in special english by the voice of america
+now words and their stories a voa special english program about american expressions
+now words and their stories from voa learning english
+on our program today
+on our show this week
+or write to american mosaic voa special english washington d.c. 20237 u.s.a
+or write to american mosaic voa special english washington d.c. two-zero-two-three-seven u.s.a
+or write to american mosaic voa special english washington d.c. two-zero-two-three-seven usa
+people in america - a program in special english by the voice of america
+people in america - a program in special english on the voice of america
+people in america a program in special english by the voice of america
+people in america a program in special english on the voice of america
+please join us again next week for this is america in voa special english
+special english
+special english program american stories
+thanks for joining us
+thanks for joining us today
+thanks for listening
+that will be our story in the next program of the making of a nation
+that will be our story next week
+that's ask a teacher for this week
+that's wordmaster for this week
+the making of a nation - a program in special english
+the making of a nation - a program in special english by the voice of america
+the making of a nation - a program in special english on the voice of america
+this is a voa special english background report
+this is as it is from voa learning english
+this is everyday grammar
+this is in the news in voa special english
+this is science in the news from voa special english
+this is science in the news in voa special english
+this is the making of a nation from voa learning english
+this is the making of a nation with voa learning english
+this is the voa special english agriculture report
+this is the voa special english development report
+this is the voa special english economics report
+this is the voa special english education report
+this is the voa special english environment report
+this is the voa special english health report
+this is the voa special english program in the news
+this is the voa special english science report
+this is the voa special english technology report
+this is voa
+this is voa news
+this is what's trending today
+this the voa special english agriculture report
+this week on our program
+this week on our show
+until next time
+voa learning english
+voa learning english presents america's presidents
+we hope you can join us again next week for this is america in voa special english
+we hope you join us again next week for this is america in voa special english
+welcome again to as it is from voa learning english
+welcome back to everyday grammar from voa learning english
+welcome to american mosaic - a program in voa special english about music and american life
+welcome to american mosaic - a voa special english program about music and american life
+welcome to american mosaic - voa's radio magazine in special english
+welcome to american mosaic from voa learning english
+welcome to american mosaic in voa special english
+welcome to american mosaic voa's radio magazine in special english
+welcome to as it is from voa learning english
+welcome to as it is the daily magazine show from voa learning english
+welcome to the making of a nation - american history in voa special english
+welcome to this is america from voa learning english
+welcome to this is america from voa special english
+welcome to this is america in voa special english
+welcome to this is america with voa learning english
+welcome to words and their stories from voa learning english
+what do you think of this story?
+with <p> i'm <p>
+with <p> i'm <p> in washington
+words in this story
+you are listening to as it is
+you are listening to as it is from voa learning english
+you are listening to science in the news in voa special english
+you are listening to science in the news in voa special english from washington
+you are listening to the special english program science in the news on voa
+you are listening to the voa special english program science in the news
+you have been listening to the making of a nation a program in special english
+you have been listening to the special english program explorations
+you have been listening to the special english program people in america
+you have been listening to the special english program the making of a nation
+you have been listening to the voa special english program words and their stories
+you're listening to as it is from voa learning english

@@ -77,3 +77,14 @@ PR description.
   looks inside `#article-content`. Not analysed further; check before relying on `has_audio`.
 - Pair the audio-only pages with their text page: 7,700 text-less pages share a title with a passage
   (more by fuzzier matching), so a passage could get its listening audio from the twin page.
+- ADR-0008 recall (raised by `docs/reports/voa-trim-precision.md`): the closed lists keep precision but miss
+  one-off frame lines, so about 4 in 10 of the passages a 5% cut makes usable still hold one. Families by
+  count in the sample of what the old rules removed and the new ones keep: stage directions and cues with a
+  title (`(MUSIC: "...")`, `((CUT 3: ...))`, `(SOUND: ...)`), calls to comment with a question about the story
+  first, credits with unlisted names or two names, greetings and closings that differ by a word. Each family
+  needs the evidence of ADR-0008 section 5 (matches listed and read, negative tests, effect). The grade is
+  computed with these lines still in, so recompute it as recall improves (below grade 7 went from 3,253 to
+  3,335 passages partly for this reason).
+- `make voa-precision`: the sampler and summariser behind `voa-trim-precision.md` were one-off scripts (seed
+  20261003; populations and strata are in the report). Make them a target that draws the samples, writes the
+  TSV to label and prints the counts with exact intervals, so every change to the lists can be re-measured.

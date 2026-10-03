@@ -1,0 +1,21 @@
+# Closed list of frame sentences (script). One normalised sentence per line (see
+# boilerplate.normalise): lower case, '<p>' for a name in staff.txt, no commas, no final
+# punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
+# kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
+# Adding an entry needs the evidence of ADR-0008 section 5.
+<p>
+aa
+anncr
+announcer
+answer
+host
+narrator
+question
+reader
+rs
+storyteller
+voice 1
+voice 2
+voice one
+voice three
+voice two

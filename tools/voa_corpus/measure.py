@@ -72,6 +72,8 @@ def measure(entry: tuple[str, str]) -> Passage:
         hit = classify(para)
         if hit:
             p.boiler[hit[0]] = p.boiler.get(hit[0], 0) + hit[1]
+            if hit[0] != "furniture" and hit[1] < len(para.split()):
+                p.kept += hit[1]  # frame words on a line that stays whole: a trim cannot cut them
         else:
             if len(para.split()) <= LOOSE_WORDS:
                 loose.append(re.sub(r"\s+", " ", para.strip().lower()))

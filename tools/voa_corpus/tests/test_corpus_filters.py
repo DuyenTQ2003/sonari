@@ -60,6 +60,29 @@ def test_a_tolerance_lets_a_little_boilerplate_through_and_no_more() -> None:
     assert blockers(many, cut_share=0.05) == ["boilerplate"]
 
 
+def test_frame_words_on_a_line_that_stays_can_never_be_cut() -> None:
+    """A label before speech, or a sign-off glued to content, stays in the text (ADR-0008)."""
+    stays = passage(boiler={"script": 2}, kept=2)
+    assert blockers(stays, cut_share=0.05) == ["boilerplate"]
+    assert blockers(stays, cut_share=1.0) == ["boilerplate"]
+
+
+def test_only_words_on_lines_that_can_go_count_against_the_cut() -> None:
+    mixed = passage(boiler={"presenter": 20, "script": 2}, kept=2)  # 20 words can go, 2 stay
+    assert mixed.removable == 20
+    assert blockers(passage(boiler={"presenter": 20}), cut_share=0.05) == []  # 4% of 500
+    assert blockers(mixed, cut_share=0.05) == ["boilerplate"]  # the 2 that stay still block
+
+
+def test_length_is_measured_on_the_text_that_is_left_after_the_cut() -> None:
+    short = passage(words=MIN_WORDS + 5, boiler={"presenter": 10})  # 255 words, 245 after the cut
+    assert "length" in blockers(short, cut_share=0.05)
+    assert "length" not in blockers(short)  # as is nothing is cut
+    long = passage(words=MAX_WORDS + 10, boiler={"presenter": 12})  # 1,210 words, 1,198 after
+    assert blockers(long, cut_share=0.05) == []
+    assert "length" in blockers(long)
+
+
 def test_a_passage_without_the_licence_is_blocked() -> None:
     assert blockers(passage(licence_ok=False)) == ["licence"]
 

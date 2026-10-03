@@ -127,8 +127,12 @@ def boilerplate(text: list[Passage]) -> str:
     for p in text:
         loose.update(set(p.loose))
     editorial = hist([100 * p.editorial_words / p.words for p in text], (0.001, 2, 5, 10, 25))
+    stays = sum(p.kept > 0 for p in text)
     return (
         md(["kind", "passages carrying it", "share"], kinds)
+        + "\n\nFrame words on a line that stays whole (a speaker label before speech, a sign-off"
+        f" glued to content; ADR-0008 never cuts these): {stays} passages"
+        f" ({pct(stays, len(text))})."
         + "\n\nEditorial boilerplate (all kinds but furniture), share of a passage's words:\n\n"
         + editorial
         + f"\n\nShort paragraphs repeated most that no rule catches (recall check): {top(loose, 8)}"
@@ -146,7 +150,8 @@ def funnel(text: list[Passage]) -> tuple[str, list[Passage]]:
         p.licence_ok and p.has_audio and estimate_level(p.program, p.fk_raw) == 4 for p in text
     )
     steps.append(row("For comparison, P06's 'usable level 4'", p06, len(text)))
-    limits = [(0.0, "as is"), (0.05, "up to 5% cut"), (1.0, "any amount")]
+    limits = [(0.0, "as is")] + [(c / 100, f"up to {c}% cut") for c in (2, 5, 10)]
+    limits.append((1.0, "any amount"))
     grid = [
         [
             tag,

@@ -39,6 +39,7 @@ class Passage:
     digest: str = ""
     duplicate: bool = False
     boiler: dict[str, int] = field(default_factory=dict)  # kind -> words
+    kept: int = 0  # editorial words on lines that stay whole (ADR-0008): a label before speech
     vocab: tuple[int, ...] = (0,) * 8
     units: tuple[int, ...] = ()
     unlisted: dict[str, int] = field(default_factory=dict)
@@ -47,6 +48,11 @@ class Passage:
     @property
     def editorial_words(self) -> int:
         return sum(n for kind, n in self.boiler.items() if kind != "furniture")
+
+    @property
+    def removable(self) -> int:
+        """Editorial words on lines a trim could remove whole."""
+        return self.editorial_words - self.kept
 
     @property
     def coverage(self) -> float | None:
@@ -69,12 +75,18 @@ def blockers(
     max_fk: float = MAX_FK,
     cut_share: float = 0.0,
 ) -> list[str]:
-    """Why a passage is not usable as is at level 4; empty when it is. Order = the funnel's."""
+    """Why a passage is not usable at level 4; empty when it is. Order = the funnel's.
+
+    `cut_share` is the most that may be cut, as a share of the words, by removing whole lines
+    (ADR-0008): frame words on a line that stays can never be cut, and the length window applies
+    to the text that is left after the cut. At 0 nothing is cut: "as is".
+    """
+    left = p.words - (p.removable if cut_share > 0 else 0)
     checks = (
         ("not a passage", p.words < MIN_PASSAGE_WORDS or p.duplicate),
-        ("length", not words[0] <= p.words <= words[1]),
+        ("length", not words[0] <= left <= words[1]),
         ("readability", p.fk is None or p.fk >= max_fk),
-        ("boilerplate", p.editorial_words > cut_share * p.words),
+        ("boilerplate", p.kept > 0 or p.removable > cut_share * p.words),
         ("licence", not p.licence_ok),
     )
     return [name for name, failed in checks if failed]
