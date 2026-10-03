@@ -7,6 +7,15 @@ vocabulary and grammar.
 
 Status: pre-M0. See `docs/PLAN-v7.md` for the plan and `docs/adr/` for decisions.
 
+## Setup
+
+Once per clone, install the git hooks (ruff, the no-Vietnamese-in-Python check, and the
+commit-msg cleanup):
+
+```bash
+make setup         # uvx pre-commit install, plus the commit-msg hook
+```
+
 ## Local infrastructure
 
 MongoDB (single-node replica set `rs0`, so transactions work) and Redis, in Docker:
