@@ -4,8 +4,13 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # The two whitespace hooks skip the vendored third-party data in services/speech/tests/data,
+      # which is kept byte for byte (see its README.md): its licence file has a spare blank line
+      # at the end and one line of trailing spaces.
       - id: end-of-file-fixer
+        exclude: ^services/speech/tests/data/
       - id: trailing-whitespace
+        exclude: ^services/speech/tests/data/
       # Fails on a line that starts with a conflict marker. Without --assume-in-merge the hook
       # does nothing unless a merge is in progress, so it would miss an ordinary commit and
       # CI's `pre-commit run --all-files`. Keep it free of files/exclude/types/stages.
