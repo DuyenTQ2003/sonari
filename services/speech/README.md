@@ -41,12 +41,18 @@ calibrated on exactly this file, so it is pinned by SHA-256 in `runtime/models.y
 different file is never loaded.
 
 ```bash
-SPEECH_MODEL_URL=https://... uv run python -m sonari_speech.runtime.weights   # fetch + verify
-uv run python -m sonari_speech.runtime.weights --check                         # verify only
+uv run python -m sonari_speech.runtime.weights --dir ~/sonari-data/onnx   # fetch + verify
+uv run python -m sonari_speech.runtime.weights --check                    # verify only
+SPEECH_MODEL_URL=https://... uv run python -m sonari_speech.runtime.weights   # only this URL
 ```
 
-The `url` in `models.yaml` is empty: the 355 MB file has to be published somewhere first
-(open question in the PR).
+`url` in `models.yaml` lists the mirrors in order. The first is the model's Hugging Face repo,
+pinned to a commit ([model card](https://huggingface.co/duyentq/sonari-wav2vec2-phoneme-int8));
+a Cloudflare R2 mirror is a TODO there. The fetcher keeps the first mirror whose download matches
+the pinned size and SHA-256, skips one that is down or serves another file, and fails when none
+matches. Fetching from Hugging Face took 14 s on the laptop (355,352,992 bytes). A CI check
+(`scripts/tests/test_models_manifest.py`) fails when an entry has a null, empty or placeholder
+`url`.
 
 ### Image
 
@@ -107,20 +113,18 @@ uv run --directory services/speech python -m sonari_speech.g2p.backend
 make test-speech
 ```
 
-It takes about 8 s with everything below available (the budget is 10 s) and about 4 s without the
-model and the NLTK data, as in CI. A test that needs something this machine lacks skips, so a bare
-checkout still passes:
+It takes about 8 s with everything below available (the budget is 10 s) and about 4 s in CI. A
+test that needs something this machine lacks skips, so a bare checkout still passes:
 
 | Missing | Skipped | Where it comes from |
 |---|---|---|
 | `ffmpeg` | the audio decode and upload tests | the CI speech job installs it; with `CI` set, a missing `ffmpeg` fails instead of skipping |
+| `cmudict` in `$DATA_DIR/nltk_data` | 35 tests on the real g2p backend | `python -m sonari_speech.g2p.backend` (see "NLTK data"); CI uses the copy vendored in `tests/data/` (licence and checksums in `tests/data/README.md`) and, with `CI` set, fails instead of skipping |
 | `wav2vec2_int8.onnx` in `SPEECH_MODEL_DIR` | 4 tests on the real model | `python -m sonari_speech.runtime.weights` (see "The model file") |
-| `cmudict` in `$DATA_DIR/nltk_data` | 35 tests on the real g2p backend | `python -m sonari_speech.g2p.backend` (see "NLTK data") |
 
-CI has neither the model nor the NLTK data, so those 39 tests skip there; everything else runs
-against fakes. The audio fixtures in `tests/fixtures/` are synthetic re-encodings, not device
-recordings (see `generate.py`).
-Without the data, the 35 tests that use the real backend skip on a developer machine; in CI
-(`CI` set) they fail instead, and the workflow points `DATA_DIR` at the copy vendored in
-`tests/data/` (its licence and checksums: `tests/data/README.md`). The rest run against a fake
-backend.
+**The 4 real-model tests still skip in CI, on purpose.** They need the 355 MB model file, and CI
+does not download it: that would add a 355 MB transfer to every run (14 s on the laptop, more on a
+runner). They run on a developer machine that has the file. To run them in CI, fetch it with
+`actions/cache` keyed on the pinned SHA-256 (backlog). Everything else in CI runs against fakes,
+the vendored dictionary or the real stack. The audio fixtures in `tests/fixtures/` are synthetic
+re-encodings, not device recordings (see `generate.py`).
