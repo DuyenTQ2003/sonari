@@ -1,5 +1,6 @@
 """The g2p_en backend. The live tests need NLTK data in DATA_DIR and skip without it."""
 
+import os
 import statistics
 import time
 from pathlib import Path
@@ -19,8 +20,12 @@ from sonari_speech.g2p.backend import (
 from sonari_speech.g2p.pronouncer import Pronouncer, WordPron
 
 DATA_DIR = default_nltk_dir()
+# On a developer machine the tests of the real backend skip when the NLTK data is absent. In CI
+# (`CI` is set) they run anyway and fail loudly: the workflow points DATA_DIR at the vendored copy
+# in tests/data, so missing data there is a broken pipeline, and a skip would hide it.
 needs_data = pytest.mark.skipif(
-    bool(missing_nltk_data(DATA_DIR)), reason=f"NLTK data not in {DATA_DIR} (see g2p/backend.py)"
+    bool(missing_nltk_data(DATA_DIR)) and not os.environ.get("CI"),
+    reason=f"NLTK data not in {DATA_DIR} (see g2p/backend.py)",
 )
 
 

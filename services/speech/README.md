@@ -35,5 +35,7 @@ It never downloads at runtime: it raises `G2pDataMissing`, and importing g2p_en 
 uv run --directory services/speech python -m sonari_speech.g2p.backend
 ```
 
-Without the data, the 35 tests that use the real backend skip (as they do in CI today); the
-rest run against a fake backend.
+Without the data, the 35 tests that use the real backend skip on a developer machine; in CI
+(`CI` set) they fail instead, and the workflow points `DATA_DIR` at the copy vendored in
+`tests/data/` (its licence and checksums: `tests/data/README.md`). The rest run against a fake
+backend.

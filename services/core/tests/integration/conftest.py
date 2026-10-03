@@ -1,14 +1,17 @@
-"""Fixtures for integration tests that need the dev MongoDB from compose.yaml.
+"""Fixtures for integration tests that need the dev MongoDB and Redis from compose.yaml.
 
-The tests skip, with the reason, when MongoDB is not set up or not reachable (CI has no
-MongoDB). They fail when MongoDB answers but refuses the core service user.
+On a developer machine the tests skip, with the reason, when MongoDB or Redis is not set up
+or not reachable. In CI (`CI` is set) the same condition fails the test: the workflow starts
+both with `make infra`, so an unreachable service is broken infrastructure, and a skip would
+let the transactional outbox go unverified while the pipeline stays green. They also fail
+when MongoDB answers but refuses the core service user.
 """
 
 import os
 import uuid
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import pytest
 from pymongo import MongoClient
@@ -23,6 +26,15 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 URI_VARIABLE = "MONGO_URI_CORE"
 
 Documents = Collection[dict[str, Any]]
+
+
+def unavailable(reason: str) -> NoReturn:
+    """Skip the test on a developer machine; fail it in CI, which must provide the service."""
+    if os.environ.get("CI"):
+        pytest.fail(
+            f"{reason} (CI must start the services: see .github/workflows/ci.yml)", pytrace=False
+        )
+    pytest.skip(reason)
 
 
 def env_value(variable: str) -> str | None:
@@ -43,13 +55,13 @@ def env_value(variable: str) -> str | None:
 def mongo_client() -> Iterator[MongoClient[dict[str, Any]]]:
     uri = env_value(URI_VARIABLE)
     if uri is None:
-        pytest.skip(f"{URI_VARIABLE} is not set: copy .env.example to .env and run `make infra`")
+        unavailable(f"{URI_VARIABLE} is not set: copy .env.example to .env and run `make infra`")
     client: MongoClient[dict[str, Any]] = MongoClient(uri, serverSelectionTimeoutMS=2000)
     try:
         client.admin.command("ping")
     except ServerSelectionTimeoutError:
         client.close()
-        pytest.skip("MongoDB is not reachable on the dev port: start it with `make infra`")
+        unavailable("MongoDB is not reachable on the dev port: start it with `make infra`")
     yield client
     client.close()
 
@@ -80,12 +92,12 @@ def live_settings(mongo_client: MongoClient[dict[str, Any]]) -> Settings:
     """
     redis_url = env_value("REDIS_URL")
     if redis_url is None:
-        pytest.skip("REDIS_URL is not set: copy .env.example to .env and run `make infra`")
+        unavailable("REDIS_URL is not set: copy .env.example to .env and run `make infra`")
     probe = SyncRedis.from_url(redis_url, socket_connect_timeout=2)
     try:
         probe.ping()
     except RedisConnectionError:
-        pytest.skip("Redis is not reachable on the dev port: start it with `make infra`")
+        unavailable("Redis is not reachable on the dev port: start it with `make infra`")
     finally:
         probe.close()
     mongo_uri = env_value(URI_VARIABLE)
@@ -93,7 +105,7 @@ def live_settings(mongo_client: MongoClient[dict[str, Any]]) -> Settings:
     turnstile_secret = env_value("TURNSTILE_SECRET_KEY")
     assert mongo_uri is not None
     if jwt_secret is None or turnstile_secret is None:
-        pytest.skip("JWT_SECRET or TURNSTILE_SECRET_KEY is missing: copy them from .env.example")
+        unavailable("JWT_SECRET or TURNSTILE_SECRET_KEY is missing: copy them from .env.example")
     return Settings(
         mongo_uri=mongo_uri,
         redis_url=redis_url,
