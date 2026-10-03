@@ -12,17 +12,21 @@ make voa-wordlists && PYTHONPATH=tools uv run --no-project --with pyyaml \
 ```
 
 Two runs give byte-identical output (checked). The snapshot line in the tables fingerprints the crawl
-index, so a changed corpus is visible. The code is `tools/voa_corpus/` (393 lines of code; the
+index, so a changed corpus is visible. The code is `tools/voa_corpus/` (393 lines of code, not counting
+`missing.py` of [voa-missing-pages.md](voa-missing-pages.md); the
 boilerplate rules, topic keywords and irregular word forms are data files beside it).
 
 ## Summary
 
 - **76 passages are usable as they are for level 4**, out of 18,968 passages and 47,854 article pages
   (0.4% and 0.16%). If the passages may be cut first, it is about 14 times more. The filter and the
-  detail are in the next section.
+  detail are in the next section. Reading the pages
+  the parser misses (below) would add about 34 to the 76.
 - **60% of the pages are not passages.** 27,118 have no article text at all (audio or photo pages) and 1,768
   more have under 100 words: 28,886 pages in all. 18,968 pages (40%) are passages. The corpus is clean as
   a file set: every archive reads, no HTML is cut off, and only 74 passages are exact copies of an earlier one.
+  This is not all audio and photo pages: 942 of the 1,768 short pages are real articles that the parser
+  cannot read, whereas 0 of 40 sampled text-less pages were. See [voa-missing-pages.md](voa-missing-pages.md).
 - **The obstacle is boilerplate, not vocabulary and not length.** 96% of the passages contain broadcast
   scaffolding: presenter lines ("I'm Bryan Lynn.") in 77.5%, programme names and sign-offs in 35.9%,
   "VOICE ONE:" style script labels in 21.9%, calls to comment in 22.7%. Only 731 passages (3.9%) have none.
