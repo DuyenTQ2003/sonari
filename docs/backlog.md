@@ -35,3 +35,11 @@ PR description.
   unit's vocabulary by comparing CMUdict variants with espeak-ng (a probe on 2026-10-03 found
   camera, restaurant, average, every, different); download `cmudict` in CI so the 35 live g2p
   tests run there.
+- Hooks skipped in merge commits (found while fixing `check-merge-conflict`, measured 2026-10-03
+  in a throwaway repo; none fixed yet): (1) a merge that git commits by itself (no conflicts) runs
+  only the commit-msg hook, because `make setup` installs `pre-commit` and `commit-msg` but not
+  `pre-merge-commit`, so a file with trailing whitespace or unused imports comes in unchecked; (2) a merge
+  with conflicts runs the pre-commit hooks on the conflicted files only (pre-commit's own rule, "Checking
+  merge-conflict files only"), so a Python file that merged cleanly is not linted. CI's
+  `pre-commit run --all-files` still checks everything on the PR. Option: `pre-commit install --hook-type
+  pre-merge-commit` in `make setup`, with `stages: [pre-commit, pre-merge-commit]` on the hooks.

@@ -6,6 +6,11 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      # Fails on a line that starts with a conflict marker. Without --assume-in-merge the hook
+      # does nothing unless a merge is in progress, so it would miss an ordinary commit and
+      # CI's `pre-commit run --all-files`. Keep it free of files/exclude/types/stages.
+      - id: check-merge-conflict
+        args: [--assume-in-merge]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.6
     hooks:
