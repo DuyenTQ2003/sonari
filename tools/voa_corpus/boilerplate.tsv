@@ -1,0 +1,10 @@
+# Paragraphs that are not the passage. Tab-separated: kind, longest paragraph in words that the
+# rule may match (0 = no limit), flags (i = ignore case), regex. First match wins. <NAME> and
+# <SPEAKERS> are expanded by boilerplate.py. The rules come from the paragraphs that repeat across
+# thousands of pages (recall is printed by analyze.py).
+furniture	0	i	^(no media source currently available|follow us|print|share|see comments|return to main page|play audio file|click arrow to hear this program:?|download this story as a pdf|have an e-reader\? download this story as a pdf|or download mp3.*|correction attached|download activities to help you understand this story here\.?|end of file|<!-- image -->|[-_]+)$
+script	6		^(?i:<SPEAKERS>)\s*:?$|^<NAME>:$
+presenter	18		^(?:[Aa]nd )?(?:I['’]m|[Tt]his is) <NAME>\.?(?: .*)?$
+presenter	8	i	^(?:and )?i['’]m [\w.\- ]+ reporting\.?$
+programme	30	i	\b(?:special english|voa learning english|(?:by|on) the voice of america|voa.s radio magazine)\b|^(?:and )?that.s (?:what.s trending today|ask a teacher|everyday grammar|the .{3,40}report)|^(?:from washington, )?this is (?:what.s trending|ask a teacher|everyday grammar|voa news)|words and their stories|^join us again next week|^until next time|^that will be our story|\bon our (?:program|show) (?:today|this week)|\bthis week:$|\bwrote this (?:lesson|story|report|article|program)\b|\b(?:program|show|report|lesson) was (?:written|produced)\b|^(?:contributing|words in this story)\b
+call_to_action	40	i	we want to hear from you|write to us in the comments|share your thoughts in the comments|send us an email|what question do you have|have a question about american english|visit our facebook page|pause the audio

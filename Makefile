@@ -79,12 +79,28 @@ test-tools:
 
 # VOA inventory (P06): a polite, resumable crawl into DATA_DIR/voa_cache, then an offline
 # report. The crawl needs VOA_CONTACT_EMAIL (it goes into the User-Agent). Not part of CI.
-.PHONY: voa-crawl voa-report voa-sample voa-evaluate
+.PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-wordlists
 voa-crawl:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.crawl $(ARGS)
 
 voa-report:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.report $(ARGS)
+
+# The CEFR word lists of tools/voa_corpus: CEFR-J 1.5 and Octanove C1/C2, pinned to a commit of
+# openlanguageprofiles/olp-en-cefrj and checked against tools/voa_corpus/wordlists.sha256. Not
+# copied into the repo (the CEFR-J terms say nothing about redistribution).
+WORDLIST_DIR ?= $(HOME)/.cache/sonari/wordlists
+WORDLIST_URL := https://raw.githubusercontent.com/openlanguageprofiles/olp-en-cefrj/d4e45b75b38f27b30dfc5c44d8c571aec7e7092f
+voa-wordlists:
+	mkdir -p $(WORDLIST_DIR)
+	for f in $$(awk '{print $$2}' tools/voa_corpus/wordlists.sha256); do \
+	  [ -f $(WORDLIST_DIR)/$$f ] || curl -fsSL -o $(WORDLIST_DIR)/$$f $(WORDLIST_URL)/$$f; done
+	cd $(WORDLIST_DIR) && sha256sum -c $(CURDIR)/tools/voa_corpus/wordlists.sha256
+
+# Measures the whole cached corpus (read only) and rewrites the generated block of
+# docs/reports/voa-corpus.md. About 90 s.
+voa-corpus: voa-wordlists
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.analyze --report docs/reports/voa-corpus.md $(ARGS)
 
 # Topic-tagger evaluation (needs the owner's labels in tools/voa_inventory/labels/). The
 # sample step is cheap; the evaluate step loads bge-m3 (2.3 GB download, ~3 GB RAM).

@@ -165,7 +165,15 @@ def _lead_paragraph(body: list[str]) -> str:
     )
 
 
-def parse_item(html: str, url: str) -> Item:
+@dataclass
+class Body:
+    """The article's text as `parse_item` judged it."""
+
+    paragraphs: list[str]  # the body, credit lines removed
+    glossary: list[str]  # "Words in This Story": what follows the separator line
+
+
+def parse_page(html: str, url: str) -> tuple[Item, Body]:
     parser = _ArticleParser()
     parser.feed(html)
     article = parser.article
@@ -175,9 +183,11 @@ def parse_item(html: str, url: str) -> Item:
     title = unescape(str(ld.get("headline") or _meta(html, "og:title") or _title_tag(html)))
 
     main: list[str] = []
-    for p in article.paragraphs:
+    glossary: list[str] = []
+    for i, p in enumerate(article.paragraphs):
         if SEPARATOR.match(p):
-            break  # everything after is the "Words in This Story" glossary
+            glossary = article.paragraphs[i + 1 :]  # the "Words in This Story" glossary
+            break
         main.append(p)
     credits = _credit_paragraphs(main)
     body = [p for p in main if p not in credits]
@@ -187,7 +197,7 @@ def parse_item(html: str, url: str) -> Item:
         iter(article.audio or (article.page_audio if not article.has_container else [])), ""
     )
     verdict = judge(byline, " ".join(credits), body, article.image_credits)
-    return Item(
+    item = Item(
         url=url,
         title=title,
         program=unescape(str(ld.get("articleSection") or _fallback_program(html))),
@@ -204,3 +214,8 @@ def parse_item(html: str, url: str) -> Item:
         license_reasons=verdict.reasons,
         prefix_first_paragraph=body[0] if body else "",
     )
+    return item, Body(body, glossary)
+
+
+def parse_item(html: str, url: str) -> Item:
+    return parse_page(html, url)[0]

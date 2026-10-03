@@ -1,0 +1,86 @@
+# base: its irregular forms. The word lists hold lemmas only, so "went" is looked up as "go".
+be: am is are was were been being
+have: has had having
+do: does did done
+go: goes went gone
+say: said
+make: made
+take: took taken
+come: came
+see: saw seen
+get: got gotten
+give: gave given
+find: found
+think: thought
+tell: told
+become: became
+leave: left
+feel: felt
+bring: brought
+begin: began begun
+keep: kept
+hold: held
+write: wrote written
+stand: stood
+hear: heard
+mean: meant
+meet: met
+run: ran
+pay: paid
+sit: sat
+speak: spoke spoken
+lead: led
+grow: grew grown
+lose: lost
+fall: fell fallen
+send: sent
+build: built
+draw: drew drawn
+break: broke broken
+spend: spent
+rise: rose risen
+drive: drove driven
+buy: bought
+wear: wore worn
+choose: chose chosen
+eat: ate eaten
+know: knew known
+teach: taught
+catch: caught
+sell: sold
+win: won
+bear: bore born
+forget: forgot forgotten
+fly: flew flown
+sing: sang sung
+sleep: slept
+steal: stole stolen
+throw: threw thrown
+hide: hid hidden
+fight: fought
+lend: lent
+seek: sought
+shoot: shot
+child: children
+man: men
+woman: women
+person: people
+foot: feet
+life: lives
+good: better best
+bad: worse worst
+can: could cannot
+will: would
+four: fourth
+five: fifth
+six: sixth
+seven: seventh
+eight: eighth
+nine: ninth
+ten: tenth
+I: me my mine
+he: him his
+she: her hers
+we: us our ours
+they: them their
+you: your
