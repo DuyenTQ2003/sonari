@@ -54,3 +54,15 @@ PR description.
   `actions/cache` keyed on the pinned SHA-256 (the first run downloads it, later runs restore it).
   If the core job grows (it is 42 s now, 24 s of it starting MongoDB and Redis), cache the mongo and redis
   images, or run only `mongod` for the tests that do not need Redis.
+- check-merge-conflict does not fire on commits created during a rebase; markers
+  were pushed twice today (#26, #28) through that gap. Add a CI step that greps
+  for markers in tracked text files. CI is the surer place: it covers every path
+  into main, regardless of which git command created the commit.
+- `make setup` does not install the pre-merge-commit hook, so a clean merge that
+  git commits itself runs only commit-msg hooks. Add
+  `pre-commit install --hook-type pre-merge-commit` to `make setup`.
+- Add a CI check that fails when any models.yaml entry has a null or empty url.
+  PR #26 merged with `url: null`; draft status is a convention, not an
+  enforcement.
+- Cap PR size going forward. #26 was 38 files / 2392 lines in one commit, past
+  the point where review is real. Split prompts by layer, target under 500 lines.
