@@ -27,11 +27,11 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Implement ADR-0008 (whole-line trim) once the owner approves it: tighten rules first, tests for its negative cases, re-run `make voa-corpus`.
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. ADR-0008 recall: add the frame families the lists miss (backlog), each with its §5 evidence, then the trim itself (provenance on `Source`, P50).
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` measured it: 98 passages usable as-is at level 4 (`docs/reports/voa-corpus.md`; the parser reads bare-text bodies since #34, was 76; `make voa-missing` reproduces only on 62b6669). `make voa-evaluate voa-report` still to run. **ADR-0008 (Proposed, awaiting review):** whole-line trim, cap 5%. Whole lines yield 1,006, not the report's 1,165 (159 need a speaker label stripped). Today's `boilerplate.tsv` fails its negative cases (`I'm Vietnamese and...` is removed whole), so it cannot trim yet.
+- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` (`docs/reports/voa-corpus.md`): **72 passages usable as-is at level 4, 784 if whole lines may be cut up to 5%** (ADR-0008, accepted). The boilerplate rules are now closed lists (`tools/voa_corpus/frames/`); precision measured, 0 wrong lines in 1,334 and 450 (`docs/reports/voa-trim-precision.md`), but recall is the gap: ~38% of the 784 still hold a frame line the lists miss. `make voa-evaluate voa-report` still to run. Nothing is trimmed yet.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry

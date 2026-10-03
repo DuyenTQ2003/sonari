@@ -1,0 +1,77 @@
+# Closed list of frame sentences (call_to_action). One normalised sentence per line (see
+# boilerplate.normalise): lower case, '<p>' for a name in staff.txt, no commas, no final
+# punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
+# kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
+# Adding an entry needs the evidence of ADR-0008 section 5.
+and be sure to tell us what country you are from
+and our e-mail address is word@voanews.com
+and please include where you are from in your email too
+and please let us know where you are from too
+and we answer your questions
+and you can find us on facebook and youtube at voa learning english
+and you can find us on twitter facebook and youtube at voa learning english
+be sure to download the lesson plan
+be sure to list your country
+do you have a question about american english?
+do you have a question for ask a teacher?
+do you have a question for the teacher?
+follow us on facebook linkedin itunes twitter and on our youtube channel all at voa learning english
+follow us on facebook twitter youtube and itunes at voa learning english
+follow us on facebook youtube and twitter at voa learning english
+if you would like you can also tell us one thing about yourself
+in the comments section you can also practice using any of the expressions from the story
+let us know in the comments section
+let us know what you think of this story
+next our e-mail address
+now it's your turn
+or send us an email at learningenglish@voanews.com
+or write us at voa wordmaster washington dc 20237 usa
+our comment policy is here
+our e-mail address is word@voa.gov
+our e-mail address is word@voanews.com
+our e-mail address is word@voanews.com and our web site is voanews.com/wordmaster
+pause the audio to consider your answer
+please include your full name and mailing address
+please include your full name and where you live
+please include your name and mailing address
+post your message in the comments section or on our facebook page
+send us an email at learningenglish@voanews.com
+send us an email if you have comments on this course or questions
+send us an email or write to us in the comments section below or on our facebook page to let us know what you think of this lesson
+send your questions about american life to mosaic@voanews.com
+share your thoughts in the comments section below or on our facebook page
+share your thoughts in the comments section or on our facebook page
+share your thoughts in the comments section or post a message on facebook page
+tell us about it in the comments section and visit our facebook page
+tell us how you did
+tell us in the comments section and visit our facebook page
+to send us e-mail write to special@voanews.com
+visit our facebook page too for more stories
+visit us at voaspecialenglish.com where you can find transcripts and mp3s of our reports
+we want to hear from you
+we want to know
+we'd like to hear from you
+what question do you have about american english?
+what questions do you have about american english?
+what questions do you have about english?
+write to us in the comments
+write to us in the comments area
+write to us in the comments area and tell us your name and country
+write to us in the comments section
+write to us in the comments section and find us on our facebook page
+write to us in the comments section and on our facebook page
+write to us in the comments section and post on our facebook page
+write to us in the comments section and share your views on our facebook page
+write to us in the comments section and visit our facebook page
+write to us in the comments section and visit us on facebook
+write to us in the comments section and visit us on our facebook page
+write to us in the comments section below
+write to us in the comments section or on our facebook page
+write to us in the comments section or share your views on our facebook page
+write to us in the comments section or visit our facebook page
+write to us in the comments section or visit our facebook page: https://www.facebook.com/voalearningenglish
+write to us in the comments section to let us know which you like best
+write your thoughts in the comments section
+you can also find us on facebook twitter and youtube at voa learning english
+you can also follow us on facebook and twitter at voa learning english
+you can also post comments
