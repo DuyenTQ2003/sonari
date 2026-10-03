@@ -1,0 +1,21 @@
+# Titles of VOA programmes and series, as they appear in opening and closing lines. A title in a
+# sentence becomes the slot `<prog>`. Each is the name of a programme found in the corpus's frame
+# lines, in at least 3 passages. Lower case, straight quotes.
+words and their stories
+words to the wise
+as it is
+everyday grammar
+ask a teacher
+american mosaic
+this is america
+people in america
+the making of a nation
+explorations
+science in the news
+in the news
+what's trending today
+education tips
+american stories
+wordmaster
+health & lifestyle report
+health and lifestyle report

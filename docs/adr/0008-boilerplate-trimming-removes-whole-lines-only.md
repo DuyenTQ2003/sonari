@@ -174,3 +174,17 @@ Two facts shape the decision:
 - **A cap above 10%, or none.** The passages it adds are the ones whose frame is part of
   the text, and the removed lines grow longer, so the risk grows with them.
 - **Trim without storing the original.** Nothing could be audited or undone.
+
+## Notes
+
+- **Labelling.** The precision labels ([voa-trim-precision.md](../reports/voa-trim-precision.md)) and the recall
+  labels ([voa-trim-recall.md](../reports/voa-trim-recall.md)) were each made by one reader, who also wrote the
+  lists and rules they judge, so neither is an independent measurement. Every line and passage read is in
+  `docs/reports/voa-trim-precision-labels.tsv` and `docs/reports/voa-trim-recall-labels.tsv`, for a second reader
+  to re-label.
+- **Open slots in section 5.3.** Since the recall round, `frames/patterns.tsv` holds rules whose variable part is
+  a bounded open slot (a cue title, the topic of a report, what a reader is asked) between closed anchors, not a
+  closed list. Section 5.3 does not allow that form. They carry the evidence of section 5; whether to keep them
+  is the maintainer's call, and keeping them is a superseding ADR.
+- **The cap at 5%** is 678 passages after the recall round (784 after the closed lists), measured by
+  `make voa-corpus`; 462 of them are free of frame the rules miss, by a sample of 120.

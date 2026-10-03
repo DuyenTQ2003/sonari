@@ -3,56 +3,71 @@
 # punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
 # kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
 # Adding an entry needs the evidence of ADR-0008 section 5.
+<p> has details
+<p> has her report
 <p> has more
+<p> has more on the story
+<p> has our report
 <p> has our story
+<p> has the story
+<p> has this report
+<p> tells us about a few of them
+<p> tells us about her
+<p> tells us about him
+<p> tells us about it
+<p> tells us about them
 <p> tells us more
-<p> will be here tomorrow with another edition of as it is
+<p> tells us more about her
+<p> will be back next week
+<p> will be here tomorrow with another edition of <prog>
 and i'm <p>
 and i'm <p> in washington
-and i'm <p> with explorations in voa special english
-and i'm <p> with people in america in voa special english
-and i'm <p> with the special english program people in america
-and i'm <p> with the voa special english program people in america
+and i'm <p> with <prog> - a program in special english by the voice of america
+and i'm <p> with <prog> from voa special english
+and i'm <p> with <prog> in voa special english
+and i'm <p> with the special english program <prog>
+and i'm <p> with the voa special english program <prog>
 and this is <p>
-and this is <p> with explorations in voa special english
-and this is <p> with science in the news a voa special english program about recent developments in science
-and this is <p> with the making of a nation - a voa special english program about the history of the united states
-and this is <p> with the making of a nation a v-o-a special english program about the history of the united states
-and this is <p> with the making of a nation a voa special english program about the history of the united states
-and this is <p> with the voa special english program explorations
+and this is <p> with <prog> - a voa special english program about the history of the united states
+and this is <p> with <prog> a v-o-a special english program about the history of the united states
+and this is <p> with <prog> a voa special english program about recent developments in science
+and this is <p> with <prog> a voa special english program about the history of the united states
+and this is <p> with <prog> from voa special english
+and this is <p> with <prog> in voa special english
+and this is <p> with the special english program <prog>
+and this is <p> with the voa special english history program <prog>
+and this is <p> with the voa special english program <prog>
 for voa learning english i'm <p>
 for voa special english this is <p>
 from voa learning english i'm <p>
+hello i'm <p>
 i'm <p>
 i'm <p> and i'm <p>
-i'm <p> and that's "as it is" on the voice of america
+i'm <p> and that's "<prog>" on the voice of america
+i'm <p> hoping you can join us again next week for <prog> in voa special english
 i'm <p> in washington
-i'm <p> inviting you to join us next time for the making of a nation - american history from voa learning english
+i'm <p> in washington with the program that helps you learn and improve your american english
+i'm <p> inviting you to join us again next week for <prog>
+i'm <p> inviting you to join us again next week for <prog> - american history in voa special english
+i'm <p> inviting you to join us next time for <prog> - american history from voa learning english
 i'm <p> reporting
 i'm <p> reporting from voa learning english headquarters in washington
 i'm <p> with <p>
-i'm <p> with <p> and this is the voa special english program science in the news
+i'm <p> with <p> and this is <prog> from voa special english
+i'm <p> with <p> and this is the voa special english program <prog>
 i'm <p> with <p> in washington
+i'm <p> with <prog> a program in special english on the voice of america
+i'm <p> with <prog> in voa special english
 i'm <p> with a voa special english program for the christmas holiday
-i'm <p> with in the news in voa special english
-i'm <p> with the special english program words and their stories
-i'm <p> with the voa special english agriculture report
-i'm <p> with the voa special english development report
-i'm <p> with the voa special english economics report
-i'm <p> with the voa special english education report
-i'm <p> with the voa special english health report
-i'm <p> with words and their stories a program in special english on the voice of america
+i'm <p> with the <rep>
+i'm <p> with the special english program <prog>
 this is <p>
 this is <p> wishing you a joyous holiday season
 this is <p> with <p> in washington
+this is <p> with <prog> a program in special english on the voice of america
+this is <p> with <prog> from voa special english
+this is <p> with <prog> in voa special english
 this is <p> with a voa special english holiday program
-this is <p> with in the news from voa special english
-this is <p> with in the news in voa special english
-this is <p> with the voa special english agriculture report
-this is <p> with the voa special english development report
-this is <p> with the voa special english economics report
-this is <p> with the voa special english education report
-this is <p> with the voa special english health report
-this is <p> with the voa special english program in the news
-this is <p> with words and their stories a program in special english on the voice of america
+this is <p> with the <rep>
+this is <p> with the voa special english program <prog>
 until next time i'm <p>

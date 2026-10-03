@@ -71,3 +71,15 @@ def test_a_fused_separator_does_not_hide_a_sentence() -> None:
 def test_a_sentence_does_not_end_before_a_lower_case_word() -> None:
     assert sentences("Mario Ritter, Jr. was the editor.") == ["Mario Ritter, Jr. was the editor."]
     assert boilerplate.classify("Mario Ritter, Jr. was the editor.") == ("programme", 6)
+
+
+def test_every_structural_rule_is_anchored_at_both_ends() -> None:
+    """ADR-0008 5.3 for frames/patterns.tsv, after its fragments are expanded."""
+    rules = [*boilerplate.SENTENCE_RULES, *boilerplate.LINE_RULES]
+    assert rules
+    loose = [
+        rx.pattern[:60]
+        for _, rx in rules
+        if not (rx.pattern.startswith("^") and rx.pattern.endswith("$"))
+    ]
+    assert loose == []

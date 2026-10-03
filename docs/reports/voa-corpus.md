@@ -61,52 +61,79 @@ the numbers in this section are from the rules of that run; the next section is 
 ADR-0008 lets a trim remove whole lines only, and only lines that are frame, so the rules that find
 boilerplate had to stop matching by pattern. The ones of PR #32 (regular expressions over a line, written to
 count) removed "I'm Vietnamese and I live in Hanoi...", "DOUG JOHNSON: I'm Vietnamese..." together with its
-speech, and any short sentence that names the Voice of America. They are replaced by closed lists: a line is
-boilerplate only when every one of its sentences is on a list taken from the corpus, with staff names from a
-second list (`tools/voa_corpus/frames/`; [voa-trim-precision.md](voa-trim-precision.md) measures them). The
-parser, the thresholds and the Flesch-Kincaid formula are untouched. The cut is counted as ADR-0008 says: only
-words on lines that can be removed whole count against the cap, frame words on a line that stays (a speaker
-label before speech, a sign-off glued to a sentence of content) can never be cut, and the length window applies
-to the text left after the cut. Everything after this section is from the run with the new rules.
+speech, and any short sentence that names the Voice of America. They were replaced in two rounds. **Round
+one** (`cd47994`) made them closed lists: a line is boilerplate only when every one of its sentences is on a
+list taken from the corpus, with staff names from a second list (`tools/voa_corpus/frames/`;
+[voa-trim-precision.md](voa-trim-precision.md) measures them). **Round two** raised recall
+([voa-trim-recall.md](voa-trim-recall.md)): more sentences and names on the lists, programme titles and report
+topics as slots, and 18 structural rules (`frames/patterns.tsv`) for the families the lists could not hold:
+cue lines, comment invitations with a question first, credits, openers, VITA contact blocks, glossary entries.
+The parser, the thresholds and the Flesch-Kincaid formula are untouched. The cut is counted as ADR-0008 says:
+only words on lines that can be removed whole count against the cap, frame words on a line that stays (a
+speaker label before speech, a sign-off glued to a sentence of content) can never be cut, and the length
+window applies to the text left after the cut. Everything after this section is from the run with the
+round-two rules.
 
-| | rules of PR #32 | closed lists |
-|---|---|---|
-| passages left after length / grade / boilerplate | 16,944 / 2,472 / 102 | 16,944 / 2,538 / 76 |
-| **usable as is for level 4 (after licence)** | **98** | **72** |
-| cut at most 2% of the words, whole lines only | 535 | 484 |
-| cut at most 5% | 1,006 | **784** |
-| cut at most 10% | 1,596 | 1,153 |
-| cut any amount | 1,715 | 1,191 |
-| the old count of a 5% cut (label words counted as cuttable) | 1,165 | not produced any more |
+| | rules of PR #32 | round one: closed lists | round two: more recall |
+|---|---|---|---|
+| passages left after length / grade / boilerplate | 16,944 / 2,472 / 102 | 16,944 / 2,538 / 76 | 16,944 / 2,432 / 59 |
+| **usable as is for level 4 (after licence)** | **98** | **72** | **55** |
+| cut at most 2% of the words, whole lines only | 535 | 484 | 368 |
+| cut at most 5% | 1,006 | 784 | **678** |
+| cut at most 10% | 1,596 | 1,153 | 1,123 |
+| cut any amount | 1,715 | 1,191 | 1,227 |
+| the old count of a 5% cut (label words counted as cuttable) | 1,165 | not produced any more | not produced any more |
+| lines removed whole (of up to 150 words) | 73,556 | 68,257 | 74,965 |
 
 The whole-line figures of the old rules are the ones in ADR-0008, measured with the code of `87a8c4d` and a
-one-off script; the same script on the new code gives 782 at 5% (784 here: the length window now applies after
-the cut, so two passages just over 1,200 words come in).
+one-off script; the same script on round one's code gives 782 at 5% (784 here: the length window now applies
+after the cut, so two passages just over 1,200 words come in).
 
-- **39 of the 98 are no longer usable as is, and 13 passages are new.** 38 of the 39 hold a sign-off glued to
+**The usable count goes down in round two because it is measured more strictly, not because less is clean.**
+The lists now recognise frame lines that earlier counted as text, so a passage that looked usable as is, or
+at 2%, now shows a line to cut. Of the 72 passages usable as is after round one, all 55 that remain were in it
+(none is new) and 17 left: 10 of them lesson or fiction passages (*Let's Learn English* 7, *American Stories*
+3). At 5%, 628 of the 784 stay, 156 leave and 50 come in (the text left after a longer cut is measured again:
+its grade, its length and the share of words cut). At 10%, 993 stay, 160 leave and 130 come in. What is
+gained is that the passages left are mostly clean: the share of the 5% set that still holds a frame line
+fell from about 48% to about 32% ([voa-trim-recall.md](voa-trim-recall.md)).
+
+**Round one**
+
+- **39 of the 98 are no longer usable as is, and 13 passages were new.** 38 of the 39 hold a sign-off glued to
   another sentence on one line ("Hi, and welcome to As It Is. I'm Kelly Jean Kelly.") that the old rules did
   not see at all, so they had counted as clean; the 39th has a whole line that the old rules missed. The 13
   new ones were blocked by lines the old rules took for frame by mistake: the headings "Journalist:" and
   "Doctor:", the stage direction "(At the mailbox)" in a lesson dialogue, "This is Lady Gaga's new single,
   “Born This Way.”".
-- **What the old rules removed and the new ones keep.** 5,626 lines, 7.6% of the 73,556 the old rules removed
-  whole. A seeded sample of 150 of them: 119 are frame that the lists do not cover (a stage direction with a
-  song title such as `(MUSIC: "Let's Go Get Stoned")`, a call to comment with a question about the story, a
-  credit with names that are not on the staff list), so the new rules lose that recall; 24 join a frame
-  sentence to a sentence of content ("I'm Steve Ember. Today we tell about developments in pain control."); 7
-  are content ("This is Gene Autry, the singing cowboy, singing..."; "RONALD REAGAN:"; "This is Xie Xiaoyan.",
-  which introduces a speaker in a newscast). By that sample the old rules removed about 1,160 lines they should
-  not have, 1.6% of their removals.
-- **The grade moved.** Below grade 7 went from 3,253 passages to 3,335. The lists are narrower, so a frame
-  line they miss stays in the text and counts as a short sentence, which lowers the grade (see "How far to
-  trust"). Part of the 82 is that artefact.
+- **What the old rules removed and the new ones kept.** 5,626 lines, 7.6% of the 73,556 the old rules removed
+  whole. A seeded sample of 150 of them: 119 are frame that the round-one lists did not cover (a stage
+  direction with a song title such as `(MUSIC: "Let's Go Get Stoned")`, a call to comment with a question
+  about the story, a credit with names that are not on the staff list), so round one lost that recall; 24 join
+  a frame sentence to a sentence of content ("I'm Steve Ember. Today we tell about developments in pain
+  control."); 7 are content ("This is Gene Autry, the singing cowboy, singing..."; "RONALD REAGAN:"; "This is
+  Xie Xiaoyan.", which introduces a speaker in a newscast). By that sample the old rules removed about 1,160
+  lines they should not have, 1.6% of their removals. Round two recovers 2,370 of the 5,626 and removes 4,665
+  lines the old rules did not; 3,256 old removals are still not removed (4.4% of 73,556), and that remainder
+  was not re-read.
+
+**Round two**
+
+- Round two removes 6,708 more lines than round one and none fewer: 1,935 programme, 1,923 glossary, 1,878
+  call to comment, 737 script, 235 presenter. The precision of what it added is in
+  [voa-trim-recall.md](voa-trim-recall.md): none wrong in a random 555 of them, and two content lines found and
+  removed from a rule while it was being written.
+- **The grade moved.** Below grade 7 was 3,253 passages with the old rules, 3,335 with round one and 3,214
+  now. A frame line the lists miss stays in the text and counts as a short sentence, which lowers the grade
+  (see "How far to trust"); the more of it is recognised, the less of that artefact is left.
 
 ## Summary
 
-- **72 passages are usable as they are for level 4**, out of 19,918 passages and 47,854 article pages
-  (0.4% and 0.15%). If the passages may have whole lines cut first (ADR-0008, at most 5% of the words), it is
-  about 11 times more: 784. The filter and the detail are in the next section. The count was 76 before the
-  parser fix and 98 with the old boilerplate rules.
+- **55 passages are usable as they are for level 4**, out of 19,918 passages and 47,854 article pages
+  (0.28% and 0.11%). If the passages may have whole lines cut first (ADR-0008, at most 5% of the words), it is
+  about 12 times more: 678. The filter and the detail are in the next section. The count was 76 before the
+  parser fix, 98 with the old boilerplate rules and 72 with the first closed lists; it falls as the lists
+  recognise more frame, so it is the strictest of them, not the smallest corpus.
 - **58% of the pages are not passages.** 25,962 have no article text at all and 1,974 more have under 100
   words: 27,936 pages in all. 19,918 pages (42%) are passages. The corpus is clean as a file set: every
   archive reads, no HTML is cut off, and only 80 passages are exact copies of an earlier one. The text-less
@@ -114,20 +141,20 @@ the cut, so two passages just over 1,200 words come in).
   [voa-missing-pages.md](voa-missing-pages.md)); the real articles among the short pages were a parser miss
   and are read now.
 - **The obstacle is boilerplate, not vocabulary and not length.** 97% of the passages contain broadcast
-  scaffolding: presenter lines ("I'm Bryan Lynn.") in 77.7%, programme names and sign-offs in 38.4%,
-  "VOICE ONE:" style script labels in 21.6%, calls to comment in 22.8%. Only 680 passages (3.4%) have none.
-  Most of this corpus is radio script written to be read aloud, and it still carries the script's frame. In
-  32.4% of the passages some of that frame sits on a line that also holds speech or content, where a
-  whole-line cut cannot reach it.
+  scaffolding: presenter lines ("I'm Bryan Lynn.") in 77.4%, programme names and sign-offs in 39.9%,
+  "VOICE ONE:" style script labels in 21.6%, calls to comment in 26.8%, glossary entries in 1.7%. Only 580
+  passages (2.9%) have none. Most of this corpus is radio script written to be read aloud, and it still
+  carries the script's frame. In 26.7% of the passages some of that frame sits on a line that also holds
+  speech or content, where a whole-line cut cannot reach it.
 - **Vocabulary is not the limit.** Of the tokens that are not proper nouns, 97.4% are inside the CEFR-J
   A1-B2 list; 89.5% of passages have at least 95% of their tokens there. Beyond B2 sits 2.3% of all tokens,
   mostly current-affairs words (coronavirus, spacecraft, activists, migrants, sanctions).
 - **The grade is a limit.** Median passage: 544 words, 38 sentences, Flesch-Kincaid grade between 7 and 9.
-  Only 16.7% of passages (3,335) are below grade 7, the project's level 4 band.
+  Only 16.1% of passages (3,214) are below grade 7, the project's level 4 band.
 
 ## How many passages are usable as-is for level 4?
 
-**72.** The filter, with each threshold taken from a project document and fixed before any count was made:
+**55.** The filter, with each threshold taken from a project document and fixed before any count was made:
 
 | Filter | Threshold | From |
 |---|---|---|
@@ -137,43 +164,43 @@ the cut, so two passages just over 1,200 words come in).
 | boilerplate | no editorial boilerplate at all: no host line, programme name, script label or call to comment | "as is": nothing to cut |
 | licence | VOA-staff byline, no wire text or third-party media | ADR-0006, `license.py` |
 
-Passages left after each step: 19,838, then 16,944 (length), 2,538 (grade), 76 (boilerplate), **72** (licence).
+Passages left after each step: 19,838, then 16,944 (length), 2,432 (grade), 59 (boilerplate), **55** (licence).
 Page furniture ("Share", "Print", "No media source currently available") is not counted as boilerplate: a
-parser fix removes it and it is on 99.7% of passages. Of the 72, 17 belong to programmes about English itself
+parser fix removes it and it is on 99.7% of passages. Of the 55, 7 belong to programmes about English itself
 or to fiction (*Words and Their Stories*, *Let's Learn English*, *American Stories*), which the units
-proposal ruled out as topical sources, leaving **55**.
+proposal ruled out as topical sources, leaving **48**.
 
 **That is uncomfortably small.** Two facts make it worse than it sounds:
 
-- Only 76 passages survive the boilerplate step out of 2,538 that pass length and grade: 97% of the
-  otherwise suitable passages fail on boilerplate. It is usually small: of the 784 passages that a cut of at
-  most 5% of the words makes usable, 712 need a trim, and the median one loses 2 lines and 1.7% of its words
-  (p90: 3 lines, 4.2%).
-- With the crude topic keywords the 72 match the eight units as: Healthy habits 5, Study and work 19,
-  Food and eating 6, Technology 7, Animals 2, Music 5, Nature and places 4, Sport 1 (49 matches: a passage
+- Only 59 passages survive the boilerplate step out of 2,432 that pass length and grade: 97.6% of the
+  otherwise suitable passages fail on boilerplate. It is usually small: of the 678 passages that a cut of at
+  most 5% of the words makes usable, 623 need a trim, and the median one loses 2 lines and 2.0% of its words
+  (p90: 3 lines, 4.4%).
+- With the crude topic keywords the 55 match the eight units as: Healthy habits 4, Study and work 16,
+  Food and eating 2, Technology 3, Animals 2, Music 5, Nature and places 3, Sport 1 (36 matches: a passage
   can match several units or none). The proposal's rule
   was at least 3 confirmed items per unit and 6 to be comfortable. The tags are crude (see below), so some of
   these counts are too high, and a unit of 1 to 3 leaves no choice of passage and nothing to fall back on if
   the one passage turns out to be wrong on reading.
 
 An estimate for the whole site: the cache holds 71% of the 67,337 article URLs in a random order, so it is a
-uniform sample; scaled, 72 becomes about 101.
+uniform sample; scaled, 55 becomes about 77.
 
 ## What would have to change to raise the count
 
 Nothing here is applied to the corpus. The figures come from the second table of "The level 4 filter" below.
 
 1. **Cut the frame, whole lines only (ADR-0008, accepted).** If a passage may have its frame lines removed,
-   the count at the same thresholds is **784** when the cut is at most 5% of its words, **484** at 2%,
-   **1,153** at 10% and **1,191** when any amount may be cut. Per unit (crude tags): 29 to 132 passages with
+   the count at the same thresholds is **678** when the cut is at most 5% of its words, **368** at 2%,
+   **1,123** at 10% and **1,227** when any amount may be cut. Per unit (crude tags): 31 to 117 passages with
    the 5% cut. This is removal, not writing, so it does not touch ADR-0006's ban on generated English; the
    stored text is VOA's lines minus its frame. What the lists miss is not counted out: see "How far to trust".
-2. **A different grade ceiling.** Below grade 8 the strict count is 121 and the cleaned one 1,513 (5% cut) or
-   2,141 (any cut). But grade 7 to 8 is level 5 by the project's own bands, so this finds more level 5
+2. **A different grade ceiling.** Below grade 8 the strict count is 97 and the cleaned one 1,361 (5% cut) or
+   2,285 (any cut). But grade 7 to 8 is level 5 by the project's own bands, so this finds more level 5
    material, not more level 4. The other readability measure argues the same way: by Coleman-Liau only 6.2%
    of passages are below 7, against 16.7% by Flesch-Kincaid, so grade 7 is already the generous reading.
-3. **A different length window.** Small effect: 150 to 1,200 words adds 25 strict passages (97) and 38 with
-   the 5% cut (822); 250 to 2,000 adds 55 and 115.
+3. **A different length window.** Small effect: 150 to 1,200 words adds 24 strict passages (79) and 37 with
+   the 5% cut (715); 250 to 2,000 adds 19 and 97.
 4. **A second source.** ADR-0006 allows only VOA and Tatoeba, and Tatoeba is single sentences, so a second
    source of *passages* needs a superseding ADR and its own licence check per item. The licence filter is the
    other fixed constraint: 38% of passages (7,474 of 19,918) fail it because they carry wire text or
@@ -182,30 +209,34 @@ Nothing here is applied to the corpus. The figures come from the second table of
    still has to read the passage a unit uses; the topic tags are crude keywords, and none of this checks
    that a passage suits a lesson.
 
-The cheapest move is the first. It multiplies the usable set by about 11 to 17 and leaves 29 or more
+The cheapest move is the first. It multiplies the usable set by about 12 to 22 and leaves 31 or more
 passages per unit to choose from; the others add little or change the level. The next gain inside it is
-recall, not the cap: see the end of the next section.
+recall, not the cap: see [voa-trim-recall.md](voa-trim-recall.md).
 
 ## How far to trust these numbers
 
 - **Boilerplate lists** (`tools/voa_corpus/frames/`, ADR-0008). A line is boilerplate only when every sentence
-  in it is on a closed list: 565 sentences, each found in at least 3 passages and read by hand, and 174 staff
-  names. [voa-trim-precision.md](voa-trim-precision.md) measures them: no line was wrong among the 1,334 that a
-  5% cut would remove (all 271 distinct texts read) and none among 450 sampled across the corpus. "I'm Anna." in
-  a *Let's Learn English* dialogue is now content, because Anna is not on the staff list.
+  in it is on a closed list or matches one of 18 structural rules: 703 listed sentences, 178 staff names, 18
+  programme titles and 9 report topics. Each sentence was read when it went in. Two rules keep a bounded open
+  slot between closed words (a cue title, a question to the reader); ADR-0008 records that.
+  Precision: [voa-trim-precision.md](voa-trim-precision.md) measures round one (no line wrong among the 1,334
+  that a 5% cut would remove, and none among 450 sampled across the corpus), and
+  [voa-trim-recall.md](voa-trim-recall.md) the lines that round two added (none wrong in a random 555 of the
+  6,708, upper bound 0.66%). "I'm Anna." in a *Let's Learn English* dialogue is content, because Anna is not on
+  the staff list.
   **Recall is the weak side, and the "no rule catches" line below hides it**: that line counts only
   *repeated* short paragraphs, and what is left among them is headings ("Closing Thoughts"). The frame lines
-  the lists miss are one-off: a call to comment with a question about the story, a stage direction with a song
-  title, "Hello and welcome to another Words and Their Stories." In a seeded sample of 60 of the 782 passages
-  that a 5% cut made usable when the sample was drawn (784 now), 23 still hold at least one such line. So 784 counts the passages that a
-  whole-line cut can make *mechanically* usable; about 60% of them (a wide range, 49% to 73%) are also free of
-  frame lines the lists miss.
+  the lists miss are one-off. In a seeded sample of 120 passages of the 5% set, read in full, 32% still hold
+  at least one such line (22% to 42%), down from 48% (37% to 59%) before round two. So 678 counts the
+  passages that a whole-line cut can make *mechanically* usable; about 68% of them (58% to 78%), roughly 460,
+  are also free of the frame lines the lists miss. The target of 90% is not met; what is left is mostly
+  closings, teasers and blurbs in *Everyday Grammar*, *Ask a Teacher* and *Words and Their Stories*.
 - **Readability** is computed on the text without the lines the lists remove. With every short line left in,
-  4,448 passages are below grade 7 instead of 3,335: each short line without a full stop ("Share",
-  "VOICE ONE:") counts as a tiny sentence and lowers the grade, so 1,113 passages (25% of the 4,448) look
+  4,448 passages are below grade 7 instead of 3,214: each short line without a full stop ("Share",
+  "VOICE ONE:") counts as a tiny sentence and lowers the grade, so 1,234 passages (28% of the 4,448) look
   easier than they are. The same happens, to a smaller degree, with the frame lines the lists miss (3,253
-  passages with the old rules, 3,335 now), so the grade of a passage that still holds such lines is
-  slightly too low. The earlier inventory used the raw text.
+  passages with the old rules, 3,335 with round one, 3,214 now), so the grade of a passage that still holds
+  such lines is slightly too low. The earlier inventory used the raw text.
 - **Vocabulary** uses the CEFR-J list (A1-B2) plus Octanove (C1/C2), which hold lemmas; inflected forms are
   matched by suffix rules and a table of 131 irregular forms, so the match is approximate. A word counts at
   its easiest listed level. The "in neither list" class includes fragments the tokenizer produces (`th`, `re`,
@@ -226,7 +257,7 @@ definition (licence, audio, raw Flesch-Kincaid below 7) gives **1,759** on the 7
 that figure predicts (394 / 0.17 x 0.71 is about 1,650; it was 1,618 before the parser fix). The two reports do not disagree; they count different
 things. The earlier one counted pages that pass licence, audio and a grade measured on text full of
 boilerplate lines; this one asks whether the text can be used without cutting anything, and the answer is
-72. The proposal's candidate lists were read by title and its own text says P50 reads each chosen passage
+55. The proposal's candidate lists were read by title and its own text says P50 reads each chosen passage
 in full; that reading is where the boilerplate would have been found.
 
 ## Tables
@@ -263,7 +294,7 @@ Words per page, all article pages:
 | 1200-2000 | 2474 | 5.2% |
 | >=2000 | 68 | 0.1% |
 
-Passages: words p5 303, p25 425, p50 544, p75 776, p95 1444; sentences p5 20, p25 30, p50 38, p75 57, p95 116.
+Passages: words p5 303, p25 425, p50 544, p75 776, p95 1444; sentences p5 20, p25 29, p50 38, p75 56, p95 115.
 
 ### Readability
 
@@ -271,75 +302,76 @@ Flesch-Kincaid grade, without the boilerplate paragraphs (level 4 is below 7):
 
 | bucket | passages | share |
 |---|---|---|
-| <5 | 732 | 3.7% |
-| 5-7 | 2603 | 13.1% |
-| 7-9 | 8133 | 40.8% |
-| 9-11 | 7297 | 36.6% |
-| 11-13 | 1108 | 5.6% |
-| >=13 | 41 | 0.2% |
+| <5 | 724 | 3.6% |
+| 5-7 | 2490 | 12.5% |
+| 7-9 | 8025 | 40.3% |
+| 9-11 | 7457 | 37.4% |
+| 11-13 | 1174 | 5.9% |
+| >=13 | 44 | 0.2% |
 
-Below 7: 3335 passages this way, 4448 with the boilerplate left in (each short line such as "Share" or "VOICE ONE:" counts as a tiny sentence).
+Below 7: 3214 passages this way, 4448 with the boilerplate left in (each short line such as "Share" or "VOICE ONE:" counts as a tiny sentence).
 
 Coleman-Liau index (letters, not syllables):
 
 | bucket | passages | share |
 |---|---|---|
 | <5 | 273 | 1.4% |
-| 5-7 | 958 | 4.8% |
-| 7-9 | 3326 | 16.7% |
-| 9-11 | 8475 | 42.5% |
-| 11-13 | 6112 | 30.7% |
-| >=13 | 774 | 3.9% |
+| 5-7 | 954 | 4.8% |
+| 7-9 | 3244 | 16.3% |
+| 9-11 | 8402 | 42.2% |
+| 11-13 | 6245 | 31.4% |
+| >=13 | 800 | 4.0% |
 
 ### Vocabulary
 
-13,149,202 tokens in 19918 passages, boilerplate paragraphs left out:
+13,030,647 tokens in 19918 passages, boilerplate paragraphs left out:
 
 | level | tokens | share |
 |---|---|---|
-| A1 | 8,568,455 | 65.2% |
-| A2 | 1,501,929 | 11.4% |
-| B1 | 843,845 | 6.4% |
-| B2 | 366,639 | 2.8% |
-| C1 | 21,493 | 0.2% |
-| C2 | 5,967 | 0.0% |
-| in neither list | 274,669 | 2.1% |
-| proper noun or acronym | 1,566,205 | 11.9% |
+| A1 | 8,495,127 | 65.2% |
+| A2 | 1,494,358 | 11.5% |
+| B1 | 838,285 | 6.4% |
+| B2 | 364,870 | 2.8% |
+| C1 | 21,371 | 0.2% |
+| C2 | 5,925 | 0.0% |
+| in neither list | 270,924 | 2.1% |
+| proper noun or acronym | 1,539,787 | 11.8% |
 
 Share of each passage's tokens (proper nouns aside) at A1-B2:
 
 | bucket | passages | share |
 |---|---|---|
 | <0.85 | 2 | 0.0% |
-| 0.85-0.9 | 36 | 0.2% |
-| 0.9-0.95 | 2048 | 10.3% |
-| 0.95-0.98 | 9993 | 50.2% |
-| >=0.98 | 7836 | 39.3% |
+| 0.85-0.9 | 37 | 0.2% |
+| 0.9-0.95 | 2049 | 10.3% |
+| 0.95-0.98 | 9898 | 49.7% |
+| >=0.98 | 7929 | 39.8% |
 
-Commonest tokens in neither list: com (3,131), coronavirus (2,085), non (1,968), th (1,864), spacecraft (1,676), voaspecialenglish (1,464), shown (1,368), re (1,357), app (1,259), activists (1,145), al (1,040), voanews (978), co (941), de (897), bacteria (834), migrants (807), sanctions (796), reportedly (780), nominated (764), protesters (764)
+Commonest tokens in neither list: com (2,269), coronavirus (2,083), non (1,962), th (1,863), spacecraft (1,673), shown (1,359), re (1,355), app (1,247), activists (1,144), al (1,040), co (940), voaspecialenglish (897), de (889), bacteria (832), migrants (805), sanctions (794), reportedly (780), protesters (763), militants (759), nominated (756)
 
 ### Boilerplate
 
 | kind | passages carrying it | share |
 |---|---|---|
 | furniture | 19849 | 99.7% |
-| script | 4305 | 21.6% |
-| presenter | 15486 | 77.7% |
-| programme | 7649 | 38.4% |
-| call_to_action | 4550 | 22.8% |
+| script | 4307 | 21.6% |
+| presenter | 15409 | 77.4% |
+| programme | 7956 | 39.9% |
+| call_to_action | 5340 | 26.8% |
+| glossary | 347 | 1.7% |
 
-Frame words on a line that stays whole (a speaker label before speech, a sign-off glued to content; ADR-0008 never cuts these): 6449 passages (32.4%).
+Frame words on a line that stays whole (a speaker label before speech, a sign-off glued to content; ADR-0008 never cuts these): 5319 passages (26.7%).
 
 Editorial boilerplate (all kinds but furniture), share of a passage's words:
 
 | bucket | passages | share |
 |---|---|---|
-| <0.001 | 680 | 3.4% |
-| 0.001-2 | 8166 | 41.0% |
-| 2-5 | 5831 | 29.3% |
-| 5-10 | 5054 | 25.4% |
-| 10-25 | 187 | 0.9% |
-| >=25 | 0 | 0.0% |
+| <0.001 | 580 | 2.9% |
+| 0.001-2 | 7431 | 37.3% |
+| 2-5 | 4982 | 25.0% |
+| 5-10 | 6060 | 30.4% |
+| 10-25 | 834 | 4.2% |
+| >=25 | 31 | 0.2% |
 
 Short paragraphs repeated most that no rule catches (recall check): closing thoughts (96), what can you do? (38), dear teacher, (34), for example: (29), or (29), early life (27), final thoughts (21), legacy (21)
 
@@ -349,42 +381,42 @@ Short paragraphs repeated most that no rule catches (recall check): closing thou
 |---|---|---|
 | copies removed | 19838 | 99.6% |
 | length 250-1200 words | 16944 | 85.1% |
-| Flesch-Kincaid grade below 7 | 2538 | 12.7% |
-| no editorial boilerplate (as is) | 76 | 0.4% |
-| VOA-staff byline, no wire text (ADR-0006) | 72 | 0.4% |
-| - of which an English lesson or fiction programme | 17 | 0.1% |
+| Flesch-Kincaid grade below 7 | 2432 | 12.2% |
+| no editorial boilerplate (as is) | 59 | 0.3% |
+| VOA-staff byline, no wire text (ADR-0006) | 55 | 0.3% |
+| - of which an English lesson or fiction programme | 7 | 0.0% |
 | For comparison, P06's 'usable level 4' | 1759 | 8.8% |
 
 The same filter with other thresholds (copies removed, licence required):
 
 | editorial boilerplate | words | FK < 6 | FK < 7 | FK < 8 | FK < 9 | FK < 10 |
 |---|---|---|---|---|---|---|
-| as is | 250-1200 | 46 | 72 | 121 | 211 | 319 |
-| as is | 150-1200 | 65 | 97 | 152 | 250 | 362 |
-| as is | 250-2000 | 99 | 127 | 178 | 270 | 378 |
-| up to 2% cut | 250-1200 | 209 | 484 | 965 | 1589 | 2277 |
-| up to 2% cut | 150-1200 | 230 | 519 | 1014 | 1658 | 2365 |
-| up to 2% cut | 250-2000 | 286 | 569 | 1068 | 1706 | 2400 |
-| up to 5% cut | 250-1200 | 358 | 784 | 1513 | 2504 | 3580 |
-| up to 5% cut | 150-1200 | 380 | 822 | 1569 | 2585 | 3684 |
-| up to 5% cut | 250-2000 | 449 | 899 | 1663 | 2682 | 3771 |
-| up to 10% cut | 250-1200 | 593 | 1153 | 2095 | 3409 | 4879 |
-| up to 10% cut | 150-1200 | 616 | 1194 | 2162 | 3510 | 5023 |
-| up to 10% cut | 250-2000 | 686 | 1281 | 2273 | 3625 | 5114 |
-| any amount | 250-1200 | 620 | 1191 | 2141 | 3455 | 4925 |
-| any amount | 150-1200 | 647 | 1236 | 2214 | 3569 | 5089 |
-| any amount | 250-2000 | 713 | 1319 | 2319 | 3671 | 5160 |
+| as is | 250-1200 | 35 | 55 | 97 | 180 | 285 |
+| as is | 150-1200 | 53 | 79 | 126 | 216 | 325 |
+| as is | 250-2000 | 53 | 74 | 117 | 202 | 307 |
+| up to 2% cut | 250-1200 | 154 | 368 | 785 | 1339 | 1974 |
+| up to 2% cut | 150-1200 | 174 | 401 | 828 | 1398 | 2049 |
+| up to 2% cut | 250-2000 | 190 | 411 | 841 | 1408 | 2046 |
+| up to 5% cut | 250-1200 | 310 | 678 | 1361 | 2306 | 3364 |
+| up to 5% cut | 150-1200 | 332 | 715 | 1412 | 2379 | 3457 |
+| up to 5% cut | 250-2000 | 381 | 775 | 1485 | 2458 | 3524 |
+| up to 10% cut | 250-1200 | 573 | 1123 | 2124 | 3519 | 5086 |
+| up to 10% cut | 150-1200 | 596 | 1163 | 2187 | 3615 | 5228 |
+| up to 10% cut | 250-2000 | 652 | 1256 | 2316 | 3778 | 5370 |
+| any amount | 250-1200 | 630 | 1227 | 2285 | 3721 | 5331 |
+| any amount | 150-1200 | 657 | 1278 | 2374 | 3863 | 5539 |
+| any amount | 250-2000 | 710 | 1361 | 2478 | 3981 | 5616 |
 
 ### Topics
 
 | unit (crude keywords on title and lead) | all passages | as is | up to 5% cut |
 |---|---|---|---|
-| Healthy habits | 1579 | 5 | 57 |
-| Study and work | 2983 | 19 | 132 |
-| Food and eating | 1199 | 6 | 78 |
-| Technology | 1641 | 7 | 64 |
-| Animals | 1018 | 2 | 48 |
-| Music | 883 | 5 | 53 |
-| Nature and places | 1299 | 4 | 49 |
-| Sport | 645 | 1 | 29 |
+| Healthy habits | 1579 | 4 | 48 |
+| Study and work | 2983 | 16 | 117 |
+| Food and eating | 1199 | 2 | 63 |
+| Technology | 1641 | 3 | 46 |
+| Animals | 1018 | 2 | 38 |
+| Music | 883 | 5 | 50 |
+| Nature and places | 1299 | 3 | 43 |
+| Sport | 645 | 1 | 31 |
 <!-- END GENERATED -->

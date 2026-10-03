@@ -42,7 +42,7 @@ LABEL = re.compile(
     rf"^(?P<who>(?i:{SPEAKERS})|[A-Z][A-Z.'’\-]+(?: [A-Z][A-Z.'’\-]+){{0,2}}"
     r"|[A-Z][a-z.'’\-]+(?: [A-Z][a-z.'’\-]+){1,2}) ?:\s+(?=\S)"
 )
-EDITORIAL = ("script", "presenter", "programme", "call_to_action")  # furniture is page layout
+EDITORIAL = ("script", "presenter", "programme", "call_to_action", "glossary")  # not furniture
 
 
 def fold(text: str) -> str:
@@ -60,13 +60,25 @@ def _names() -> re.Pattern[str]:
     return re.compile(rf"(?<![\w'])(?:{'|'.join(re.escape(n) for n in reversed(names))})(?![\w'])")
 
 
+def _slot(file: str, before: str = "", after: str = "") -> re.Pattern[str]:
+    words = sorted((fold(w) for w in _data_lines(HERE / "frames" / file)), key=len, reverse=True)
+    return re.compile(
+        rf"(?<![\w']){before}(?:{'|'.join(re.escape(w) for w in words)}){after}(?![\w'])"
+    )
+
+
 STAFF = _names()
+PROGRAMMES = _slot("programmes.txt")
+REPORTS = _slot("report_topics.txt", r"(?:voa )?(?:(?:special|learning) english )?", " report")
+NAMES_IN_A_ROW = re.compile(r"<p>(?:(?:,| and|, and) ?<p>)+")
 
 
 def normalise(sentence: str) -> str:
-    """The form a sentence is listed in: a staff name becomes `<p>`; no commas, no dashes
-    variants, no ellipsis and no closing punctuation."""
-    s = STAFF.sub("<p>", fold(sentence))
+    """The form a sentence is listed in. Closed lists become slots: staff names `<p>` (a run of
+    names is one slot), programme titles `<prog>`, report topics `<rep>`. No commas, one dash
+    form, no ellipsis and no closing punctuation."""
+    s = NAMES_IN_A_ROW.sub("<p>", STAFF.sub("<p>", fold(sentence)))
+    s = REPORTS.sub("<rep>", PROGRAMMES.sub("<prog>", s))
     s = re.sub(r"\.{2,}|…", " ", s)
     s = re.sub(r"\s*(?:--+|\u2013|\u2014)\s*|\s-\s", " - ", s)  # one dash form
     s = re.sub(r"\s+", " ", s.replace(",", "")).strip()
@@ -95,8 +107,47 @@ def _furniture() -> re.Pattern[str]:
     raise ValueError("boilerplate.tsv has no furniture rule")
 
 
+def _patterns() -> tuple[list[tuple[str, re.Pattern[str]]], list[tuple[str, re.Pattern[str]]]]:
+    """(sentence rules, line rules) from patterns.tsv, each (kind, regex)."""
+    macros: dict[str, str] = {}
+    rules: dict[str, list[tuple[str, re.Pattern[str]]]] = {"sentence": [], "line": []}
+    for line in (HERE / "frames" / "patterns.tsv").read_text("utf-8").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("@"):
+            name, fragment = line[1:].split("\t")
+            macros[name] = fragment
+            continue
+        scope, kind, flags, rx = line.split("\t")
+        for name, fragment in macros.items():
+            rx = rx.replace(f"%{name}%", fragment)
+        rules[scope].append((kind, re.compile(rx, re.I if "i" in flags else 0)))
+    return rules["sentence"], rules["line"]
+
+
 FRAMES = _frames()
 FURNITURE = _furniture()
+SENTENCE_RULES, LINE_RULES = _patterns()
+YOU = re.compile(r"\byou(?:r|rs)?\b", re.I)
+
+
+def sentence_kind(sentence: str) -> str | None:
+    """The kind of a sentence that is frame (listed or built by a rule), or None."""
+    form = normalise(sentence)
+    if form in FRAMES:
+        return FRAMES[form]
+    return next((kind for kind, rx in SENTENCE_RULES if rx.match(form)), None)
+
+
+def is_reader_question(sentence: str) -> bool:
+    """A question put to the reader ("Have you tried it?"): short, and it says you."""
+    s = sentence.strip()
+    return (
+        s.endswith("?")
+        and len(s.split()) <= 35
+        and not s.startswith(('"', "“"))
+        and bool(YOU.search(s))
+    )
 
 
 def classify(paragraph: str) -> tuple[str, int] | None:
@@ -108,10 +159,23 @@ def classify(paragraph: str) -> tuple[str, int] | None:
     body = DIRECTIONS.sub("", text).strip()
     if not body:
         return "script", words  # a stage direction alone
+    flat = re.sub(r"\s+", " ", body)
+    for kind, rx in LINE_RULES:
+        if rx.match(flat):
+            return kind, words  # a glossary entry, a broadcast date, a cue with a title
     label = LABEL.match(body)
     rest = body[label.end() :] if label else body
     parts = sentences(rest)
-    kinds = [FRAMES.get(normalise(s)) for s in parts]
+    kinds = [sentence_kind(s) for s in parts]
+    questions = [k is None and is_reader_question(s) for k, s in zip(kinds, parts, strict=True)]
+    if (
+        parts
+        and all(k or q for k, q in zip(kinds, questions, strict=True))
+        and "call_to_action" in kinds
+    ):
+        return next(
+            k for k in kinds if k
+        ), words  # reader questions inside an invitation go with it
     if parts and all(kinds):
         return kinds[0] or "", words  # every sentence is frame: the whole line can go
     if label:
@@ -120,3 +184,44 @@ def classify(paragraph: str) -> tuple[str, int] | None:
     if framed:  # a sign-off glued to content: kept whole, the frame words still block
         return framed[0][0], sum(len(s.split()) for _, s in framed)
     return None
+
+
+INVITES = re.compile(
+    r"comment|facebook|e-?mail|write to us|write us|let us know|tell us|hear from you"
+)
+
+
+def classify_all(paragraphs: list[str]) -> list[tuple[str, int] | None]:
+    """`classify` for every paragraph of a passage, plus one rule that needs a neighbour: the
+    questions a call to comment asks. A line of nothing but questions to the reader (two or more,
+    or one of ten words or more: a lone short question is a heading) that stands next to a line
+    cut as an invitation to comment is part of that invitation, and so is one more such line
+    next to that."""
+    hits = [classify(p) for p in paragraphs]
+    questions = [i for i, p in enumerate(paragraphs) if hits[i] is None and _is_question_line(p)]
+    direct = [
+        i for i in questions if any(_is_cut_invitation(hits, paragraphs, j) for j in (i - 1, i + 1))
+    ]
+    chained = [i for i in questions if i not in direct and {i - 1, i + 1} & set(direct)]
+    for i in direct + chained:
+        hits[i] = ("call_to_action", len(paragraphs[i].split()))
+    return hits
+
+
+def _is_question_line(paragraph: str) -> bool:
+    parts = sentences(paragraph)
+    return (
+        bool(parts)
+        and all(map(is_reader_question, parts))
+        and (len(parts) >= 2 or len(paragraph.split()) >= 10)
+    )
+
+
+def _is_cut_invitation(hits: list, paragraphs: list[str], j: int) -> bool:
+    hit = hits[j] if 0 <= j < len(hits) else None
+    return (
+        bool(hit)
+        and hit[0] == "call_to_action"
+        and hit[1] >= len(paragraphs[j].split())
+        and bool(INVITES.search(fold(paragraphs[j])))
+    )
