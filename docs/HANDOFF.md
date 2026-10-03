@@ -16,8 +16,8 @@ Last updated: 2026-10-03
 - **P13 done** (#19): `sonari_core.shared`, 5 context packages, `/readyz`, OTel. `make check-imports`
   (in `make lint-core`) fails on cross-context imports. P12 skipped, not needed.
 - **P14 done** (#20): `/v1/auth`, refresh rotation, Turnstile, rate limit. Deploy: uvicorn `--proxy-headers`.
-- **P15 done** (ADR-0007): `shared/outbox.py` (txn outbox + relay), `shared/consumer.py` (group,
-  dead letter, dedupe). UserRegistered rides the outbox. Live Mongo/Redis tests: local only.
+- **P15 done** (ADR-0007): `shared/outbox.py`, `shared/consumer.py`. Live Mongo/Redis tests: local only.
+- **Conflict markers now fail pre-commit and CI** (`check-merge-conflict --assume-in-merge`). A clean merge still skips pre-commit hooks (backlog).
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
