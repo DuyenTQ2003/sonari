@@ -69,3 +69,8 @@ PR description.
 - A Cloudflare R2 mirror of the int8 model, as the second entry of `url` in `runtime/models.yaml` (a
   commented TODO there), so that a Hugging Face outage cannot stop an image build. The fetcher already
   tries the list in order; the CI check rejects a placeholder that is left in.
+- Make `voa_inventory.parse` read bare text in `#article-content` (`div.wsw`, `div.wordclick`, split on
+  `<br />`). 942 pages with 1-99 words are articles it misses, plus 40 passages it reads in part; the
+  fix and its test plan are in `docs/reports/voa-missing-pages.md`. Then rerun `make voa-corpus`.
+- Pair the audio-only pages with their text page: 7,700 text-less pages share a title with a passage
+  (more by fuzzier matching), so a passage could get its listening audio from the twin page.

@@ -1,0 +1,56 @@
+group	url	label	evidence
+zero	https://learningenglish.voanews.com/a/1978259.html	audio-only	'Listen to Show': player and mp3 link, related-media title only
+zero	https://learningenglish.voanews.com/a/5990754.html	audio-only	Words and Their Stories episode: player, no text
+zero	https://learningenglish.voanews.com/a/1935785.html	other-widget	Word of the Day: div.quiz widget, content rendered by script
+zero	https://learningenglish.voanews.com/a/3344276.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2267557.html	audio-only	radio slot 'Learning English Radio 1630 UTC': player, programme blurb
+zero	https://learningenglish.voanews.com/a/4839396.html	audio-only	Science & Technology item: player and headline, no body
+zero	https://learningenglish.voanews.com/a/2915258.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/5098628.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2216285.html	audio-only	radio slot 'Special English Radio 2230 UTC': player, programme blurb
+zero	https://learningenglish.voanews.com/a/6320133.html	other-widget	'Quiz - ...': div.quiz widget, questions rendered by script
+zero	https://learningenglish.voanews.com/a/3772875.html	audio-only	'Learning English Broadcast': player, programme blurb
+zero	https://learningenglish.voanews.com/a/5010817.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/3010845.html	audio-only	'Learning English Broadcast': player, programme blurb
+zero	https://learningenglish.voanews.com/a/1979838.html	audio-only	'Hear or download this story': player, no mp3 URL in the HTML
+zero	https://learningenglish.voanews.com/a/1977695.html	audio-only	'Listen to Show': player and mp3 link
+zero	https://learningenglish.voanews.com/a/6996501.html	audio-only	Arts & Culture item: player and headline, no body
+zero	https://learningenglish.voanews.com/a/4616316.html	audio-only	As It Is episode: player and headline, no body
+zero	https://learningenglish.voanews.com/a/3683470.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/october-4-2021-day-in-photos/6256997.html	other-gallery	The Day in Photos: 8 photo captions (span.caption), 11 words of intro
+zero	https://learningenglish.voanews.com/a/2238720.html	audio-only	'Special English 1430': player and mp3 link
+zero	https://learningenglish.voanews.com/a/6526744.html	audio-only	Science & Technology item: player and headline, no body
+zero	https://learningenglish.voanews.com/a/elon-musk-asks-twitter-about-selling-tesla-stock/6304945.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2242779.html	audio-only	radio slot 'Learning English Radio 2330 UTC': player, programme blurb
+zero	https://learningenglish.voanews.com/a/6315561.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/4968931.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2076984.html	audio-only	Explorations episode: player, no text
+zero	https://learningenglish.voanews.com/a/7186376.html	audio-only	podcast episode: player, episode summary in div.intro only
+zero	https://learningenglish.voanews.com/a/2470810.html	audio-only	The Making of a Nation episode: player, programme blurb
+zero	https://learningenglish.voanews.com/a/5493526.html	audio-only	Health & Lifestyle item: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/4769009.html	audio-only	Education item: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2268087.html	audio-only	radio slot 'Learning English Radio 2230 UTC': player, programme blurb
+zero	https://learningenglish.voanews.com/a/2501409.html	audio-only	Explorations episode: player, programme blurb
+zero	https://learningenglish.voanews.com/a/3062388.html	audio-only	What's Trending Today? episode: player, no text
+zero	https://learningenglish.voanews.com/a/3359404.html	audio-only	Words and Their Stories chapter: player, no text
+zero	https://learningenglish.voanews.com/a/6683538.html	audio-only	Science & Technology item: player and headline, no body
+zero	https://learningenglish.voanews.com/a/3298564.html	audio-only	Arts & Culture item: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/1978970.html	audio-only	'Science in the News - Download MP3': player, related-media title only
+zero	https://learningenglish.voanews.com/a/2625122.html	audio-only	As It Is episode: player, related-media titles only
+zero	https://learningenglish.voanews.com/a/2335465.html	audio-only	Words and Their Stories episode: player and headline, no body
+zero	https://learningenglish.voanews.com/a/4947127.html	other-widget	'Quiz - ...': div.quiz widget, questions rendered by script
+short	https://learningenglish.voanews.com/a/polio-somalia-salmon-alaska-sockeye-video-lucy-desi/1723062.html	missed-article	parser read 10 words; 1139 more in 37 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/september-27-2023-day-in-photos/7287609.html	other-gallery	The Day in Photos: 8 photo captions, 11 words of intro
+short	https://learningenglish.voanews.com/a/1920194.html	missed-article	parser read 10 words; 473 more in 14 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/december-27-2024-day-in-photos/7916442.html	other-gallery	The Day in Photos: 8 photo captions, 11 words of intro
+short	https://learningenglish.voanews.com/a/johnny-appleseed-american-frontier/1248938.html	missed-article	parser read 5 words; 1395 more in 29 text nodes directly inside div.wsw>div.wordclick (no <p>)
+short	https://learningenglish.voanews.com/a/february-14-2023-day-in-photos/6963069.html	other-gallery	The Day in Photos: 8 photo captions, 11 words of intro
+short	https://learningenglish.voanews.com/a/1801065.html	missed-article	parser read 10 words; 1194 more in 50 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/andrew-jackson-rachel-1828-election-john-quincy-adams/1742793.html	missed-article	parser read 10 words; 1609 more in 49 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/7037928.html	video-only	Let's Learn English video lesson: video player; the 68 words are comment-login steps
+short	https://learningenglish.voanews.com/a/pakistani-forces-stop-another-attack-in-karachi/1933581.html	missed-article	parser read 10 words; 306 more in 9 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/vinyl-usher-rush-josh-turner-confessions/1216840.html	missed-article	parser read 5 words; 1201 more in 41 text nodes directly inside div.wsw>div.wordclick (no <p>)
+short	https://learningenglish.voanews.com/a/december-6-2024-day-in-photos/7890356.html	other-gallery	The Day in Photos: 8 photo captions, 11 words of intro
+short	https://learningenglish.voanews.com/a/may-7-2024-day-in-photos/7601857.html	other-gallery	The Day in Photos: 8 photo captions, 11 words of intro
+short	https://learningenglish.voanews.com/a/preventing-newborn-deaths-pregnant-women-need-iodine/1934019.html	missed-article	parser read 10 words; 1579 more in 47 text nodes directly inside div.wsw (no <p>)
+short	https://learningenglish.voanews.com/a/small-business-survival-family-owned-businesses/1248743.html	missed-article	parser read 10 words; 1523 more in 68 text nodes directly inside div.wsw (no <p>)

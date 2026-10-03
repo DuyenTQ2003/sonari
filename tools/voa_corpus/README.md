@@ -20,6 +20,7 @@ word list; no LLM. It reuses `voa_inventory` for parsing, the licence check and 
 | `boilerplate.py`, `boilerplate.tsv` | Which paragraphs are not the passage: page furniture, scripts, hosts, programme lines |
 | `wordlist.py`, `irregular.txt`, `wordlists.sha256` | CEFR-J 1.5 + Octanove C1/C2, loaded from `~/.cache/sonari/wordlists` by `make voa-wordlists` |
 | `units.tsv` | Crude keywords for the eight level 4 units |
+| `missing.py`, `docs/reports/voa-missing-labels.tsv` | `make voa-missing`: the seeded sample of text-less pages with its hand labels, and a census of the article text the parser never reads (report: `voa-missing-pages.md`) |
 
 The word list is downloaded, not committed: the CEFR-J terms allow use with a citation but say
 nothing about redistribution (cite: *The CEFR-J Wordlist Version 1.5*, compiled by Yukio Tono,

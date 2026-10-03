@@ -79,7 +79,7 @@ test-tools:
 
 # VOA inventory (P06): a polite, resumable crawl into DATA_DIR/voa_cache, then an offline
 # report. The crawl needs VOA_CONTACT_EMAIL (it goes into the User-Agent). Not part of CI.
-.PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-wordlists
+.PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-wordlists voa-missing
 voa-crawl:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.crawl $(ARGS)
 
@@ -101,6 +101,11 @@ voa-wordlists:
 # docs/reports/voa-corpus.md. About 90 s.
 voa-corpus: voa-wordlists
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.analyze --report docs/reports/voa-corpus.md $(ARGS)
+
+# What the text-less pages are: the seeded sample's labels (docs/reports/voa-missing-labels.tsv) with
+# confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.
+voa-missing:
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.missing $(ARGS)
 
 # Topic-tagger evaluation (needs the owner's labels in tools/voa_inventory/labels/). The
 # sample step is cheap; the evaluate step loads bge-m3 (2.3 GB download, ~3 GB RAM).
