@@ -49,8 +49,8 @@ PR description.
   `speech.decode` and `speech.infer` spans through the API), with the first HTTP endpoint
   (P23); real iPhone and Chrome recordings as fixtures instead of the synthetic ones; capacity
   numbers measured on the VPS.
-- CI follow-ups (#28): the 4 tests on the real int8 model (PR #26) will still skip in CI, because the 355 MB
-  file has no URL yet; once `runtime/models.yaml` has one, fetch it in the speech job with
+- CI follow-ups (#28): the 4 tests on the real int8 model still skip in CI: `runtime/models.yaml` has
+  a URL now, but CI deliberately does not download 355 MB. To run them, fetch it in the speech job with
   `actions/cache` keyed on the pinned SHA-256 (the first run downloads it, later runs restore it).
   If the core job grows (it is 42 s now, 24 s of it starting MongoDB and Redis), cache the mongo and redis
   images, or run only `mongod` for the tests that do not need Redis.
@@ -66,3 +66,6 @@ PR description.
   enforcement.
 - Cap PR size going forward. #26 was 38 files / 2392 lines in one commit, past
   the point where review is real. Split prompts by layer, target under 500 lines.
+- A Cloudflare R2 mirror of the int8 model, as the second entry of `url` in `runtime/models.yaml` (a
+  commented TODO there), so that a Hugging Face outage cannot stop an image build. The fetcher already
+  tries the list in order; the CI check rejects a placeholder that is left in.

@@ -1,15 +1,24 @@
 # The model files the speech service runs, pinned by SHA-256. A file whose checksum differs
 # is never loaded. G1 thresholds (P25) are calibrated on exactly this file.
 #
-# `url` is where the file is hosted. It is deliberately empty: someone has to publish the
-# 355 MB file first (a GitHub release asset or a Hugging Face repo of the project), and a
-# URL guessed here would break the first image build. Until then pass it at build time:
-#   SPEECH_MODEL_URL=https://... python -m sonari_speech.runtime.weights
+# `url` is a list of mirrors of the file, in order of preference. The fetcher
+# (`python -m sonari_speech.runtime.weights`) downloads each in turn, checks the size and the
+# SHA-256 above, and keeps the first that matches; a mirror that is down or serves another
+# file is skipped, and when none matches the build fails. A mirror therefore only has to be
+# reachable, not trusted. `scripts/tests/test_models_manifest.py` fails CI when an entry has
+# no `url`, an empty list, or a placeholder in it: an empty `url` once reached main (#26).
 wav2vec2-lv-60-espeak-int8:
   file: wav2vec2_int8.onnx
   sha256: cd51f95340d31f72ffefc1b734bb6fae91f2f8b0964eb450a838ef7344a72876
   size: 355352992
-  url: null
+  url:
+    # Hugging Face, pinned to a commit: the blob behind this URL cannot change. Model card:
+    # https://huggingface.co/duyentq/sonari-wav2vec2-phoneme-int8
+    - https://huggingface.co/duyentq/sonari-wav2vec2-phoneme-int8/resolve/f0652c415244e59f472e23fe3c629cea1e694a11/wav2vec2_int8.onnx
+    # TODO: a Cloudflare R2 mirror, so that a Hugging Face outage cannot stop a build. Once the
+    # object exists, uncomment this entry and put its real URL in (the checks reject a
+    # placeholder that is left in):
+    # - https://<bucket>.r2.dev/wav2vec2_int8.onnx
   # How the file was made (P04, spikes/gop/onnx/BENCH.md), for whoever rebuilds it:
   #   source model  facebook/wav2vec2-lv-60-espeak-cv-ft, revision
   #                 ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4 (pytorch_model.bin sha256
