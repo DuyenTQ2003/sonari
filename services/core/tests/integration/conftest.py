@@ -67,6 +67,18 @@ def mongo_client() -> Iterator[MongoClient[dict[str, Any]]]:
 
 
 @pytest.fixture
+def core_mongo_uri(mongo_client: MongoClient[dict[str, Any]]) -> str:
+    """The `core` user's URI, for tests that need MongoDB and not Redis.
+
+    Depending on `mongo_client` means the test is skipped (or fails in CI) first when MongoDB
+    is down.
+    """
+    uri = env_value(URI_VARIABLE)
+    assert uri is not None  # `mongo_client` has already skipped the test otherwise
+    return uri
+
+
+@pytest.fixture
 def scratch_collections(
     mongo_client: MongoClient[dict[str, Any]],
 ) -> Iterator[tuple[Documents, Documents]]:
