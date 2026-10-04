@@ -17,8 +17,8 @@ PARAGRAPHS = [
 META = {"url": "https://example.test/a/1.html", "title": "Grains", "program": "Food", "fk": 4.2}
 
 
-def test_the_default_cap_is_ten_percent() -> None:
-    assert DEFAULT_CAP == 0.10
+def test_the_default_cap_is_five_percent_as_adr_0008_says() -> None:
+    assert DEFAULT_CAP == 0.05
 
 
 def test_a_record_carries_the_original_the_text_and_every_removed_line() -> None:

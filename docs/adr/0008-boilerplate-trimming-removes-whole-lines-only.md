@@ -197,4 +197,3 @@ Two facts shape the decision:
   keyword and the colon identify it and the variable part sits inside the parentheses; `patterns.tsv` has a test
   that fails if any other rule gains a repeated character class or a wildcard. A frame line that only an open
   slot could catch is left in the text.
-- **The cap** is 10% since ADR-0009, which supersedes decision 2 above and nothing else.

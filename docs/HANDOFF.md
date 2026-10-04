@@ -27,11 +27,11 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Ingest the trimmed corpus (`~/sonari-trimmed/voa/trimmed.jsonl`, ADR-0008/0009) into `Source`: `original_text`, `text`, `trim` as written; P50 still reads each chosen passage.
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Ingest the trimmed corpus (`~/sonari-trimmed/voa/trimmed.jsonl`, ADR-0008) into `Source`: `original_text`, `text`, `trim` as written; P50 still reads each chosen passage.
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.
-- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` (`docs/reports/voa-corpus.md`): **48 passages usable as-is at level 4, 1,081 with a cut of at most 10%** (ADR-0008, ADR-0009; 724 at 5%), about 674 of them free of missed frame (CI 578-766; the MVP needs ~50). Rules: closed lists and closed grammars only, no open slots (`tools/voa_corpus/frames/`). Precision: 0 wrong in the 2,646 lines removed, 0 in a random 300 + 150 (`docs/reports/voa-trim-corpus.md`). **Trimming is done:** `make voa-trim` writes `~/sonari-trimmed/voa/` (1,081 passages, outside the repo, regenerable). Recall work stopped. `make voa-evaluate voa-report` still to run.
+- P06: crawl done (47,854 of 67,337 pages). `make voa-corpus` (`docs/reports/voa-corpus.md`): **48 passages usable as-is at level 4, 724 with a cut of at most 5%** (ADR-0008 §2; 413 of them outside English-teaching and fiction programmes), about 409 free of missed frame (CI 330-484; the MVP needs ~50); every unit has >= 28 usable (crude tags). Rules: closed lists and closed grammars only, no open slots. Precision: 0 wrong in the 1,273 lines removed, 0 in a random 300 + 150 (`docs/reports/voa-trim-corpus.md`). **Trimming is done:** `make voa-trim` writes `~/sonari-trimmed/voa/` (724 passages, 5.9 MB, outside the repo, regenerable; `--cap` changes the cap). Recall work stopped. `make voa-evaluate voa-report` still to run.
 - Stale after the unit rewrite (not edited; out of scope): BUILD-PROMPTS P40-P55 say "unit 4"
   and "units 1-8" (the hand-built slice is now unit 3, food; add Unit 0); design-system.md
   §5 uses "Đồ ăn & nhà hàng"; `tools/voa_inventory/topics.yaml` and the report still carry
