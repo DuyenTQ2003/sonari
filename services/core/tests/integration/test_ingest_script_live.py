@@ -17,9 +17,9 @@ from source_fakes import BASE_ARTICLE, VERSION_B, make_record, write_corpus
 SCRIPT = Path(__file__).resolve().parents[4] / "scripts" / "ingest_sources.py"
 
 
-def run_script(path: Path, mongo_uri: str) -> subprocess.CompletedProcess[str]:
+def run_script(path: Path, mongo_uri: str, *flags: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(SCRIPT), str(path)],
+        [sys.executable, str(SCRIPT), str(path), *flags],
         env={**os.environ, "MONGO_URI_CORE": mongo_uri},
         capture_output=True,
         text=True,
@@ -121,3 +121,69 @@ def test_a_new_rules_version_through_the_script_supersedes_and_keeps_the_old(
     assert result.returncode == 0, result.stderr
     assert "0 inserted, 3 superseded, 0 unchanged, 0 conflicts" in result.stdout
     assert count(mongo_client, numbers) == 6
+
+
+def test_a_dry_run_says_what_would_happen_and_writes_nothing(
+    core_mongo_uri: str,
+    mongo_client: MongoClient[dict[str, Any]],
+    numbers: list[int],
+    tmp_path: Path,
+) -> None:
+    corpus = write_corpus(tmp_path, [make_record(n) for n in numbers])
+
+    dry = run_script(corpus, core_mongo_uri, "--dry-run")
+    real = run_script(corpus, core_mongo_uri)
+
+    assert dry.returncode == 0, dry.stderr
+    assert "dry run, nothing written" in dry.stdout
+    assert "3 would be inserted, 0 would be superseded, 0 unchanged, 0 conflicts" in dry.stdout
+    assert "3 inserted, 0 superseded, 0 unchanged, 0 conflicts" in real.stdout  # what it promised
+    assert count(mongo_client, numbers) == 3  # all written by the real run, none by the dry one
+
+
+def test_a_dry_run_against_stored_passages_counts_them_as_unchanged(
+    core_mongo_uri: str,
+    mongo_client: MongoClient[dict[str, Any]],
+    numbers: list[int],
+    tmp_path: Path,
+) -> None:
+    corpus = write_corpus(tmp_path, [make_record(n) for n in numbers])
+    run_script(corpus, core_mongo_uri)
+    before = list(mongo_client["content"]["sources"].find({}).sort("_id"))
+
+    dry = run_script(corpus, core_mongo_uri, "--dry-run")
+
+    assert dry.returncode == 0, dry.stderr
+    assert "0 would be inserted, 0 would be superseded, 3 unchanged, 0 conflicts" in dry.stdout
+    assert list(mongo_client["content"]["sources"].find({}).sort("_id")) == before
+
+
+def test_a_dry_run_that_finds_a_conflict_exits_1_and_names_the_key(
+    core_mongo_uri: str,
+    mongo_client: MongoClient[dict[str, Any]],
+    numbers: list[int],
+    tmp_path: Path,
+) -> None:
+    run_script(write_corpus(tmp_path, [make_record(n) for n in numbers]), core_mongo_uri)
+    changed = make_record(numbers[0])
+    changed["title"] = "Same rules version, different title"
+    other = tmp_path / "second"
+    other.mkdir()
+
+    dry = run_script(write_corpus(other, [changed]), core_mongo_uri, "--dry-run")
+
+    assert dry.returncode == 1  # so a dry run can gate the real one in a shell `&&`
+    assert f"conflict: voa:{numbers[0]}@" in dry.stderr
+    assert count(mongo_client, numbers) == 3
+
+
+def test_a_bad_file_is_refused_the_same_way_in_a_dry_run(
+    core_mongo_uri: str, numbers: list[int], tmp_path: Path
+) -> None:
+    records = [make_record(n) for n in numbers]
+    records[1]["text"] = records[1]["text"][1:]
+
+    dry = run_script(write_corpus(tmp_path, records), core_mongo_uri, "--dry-run")
+
+    assert dry.returncode == 1
+    assert "line 2" in dry.stderr
