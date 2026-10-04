@@ -42,7 +42,7 @@ LABEL = re.compile(
     rf"^(?P<who>(?i:{SPEAKERS})|[A-Z][A-Z.'’\-]+(?: [A-Z][A-Z.'’\-]+){{0,2}}"
     r"|[A-Z][a-z.'’\-]+(?: [A-Z][a-z.'’\-]+){1,2}) ?:\s+(?=\S)"
 )
-EDITORIAL = ("script", "presenter", "programme", "call_to_action", "glossary")  # not furniture
+EDITORIAL = ("script", "presenter", "programme", "call_to_action")  # not furniture
 
 
 def fold(text: str) -> str:
@@ -75,13 +75,14 @@ NAMES_IN_A_ROW = re.compile(r"<p>(?:(?:,| and|, and) ?<p>)+")
 
 def normalise(sentence: str) -> str:
     """The form a sentence is listed in. Closed lists become slots: staff names `<p>` (a run of
-    names is one slot), programme titles `<prog>`, report topics `<rep>`. No commas, one dash
-    form, no ellipsis and no closing punctuation."""
+    names is one slot), programme titles `<prog>`, report topics `<rep>`. No commas, no double
+    quotes (a title in curly quotes is the same slot), one dash form, no ellipsis and no closing
+    punctuation."""
     s = NAMES_IN_A_ROW.sub("<p>", STAFF.sub("<p>", fold(sentence)))
     s = REPORTS.sub("<rep>", PROGRAMMES.sub("<prog>", s))
     s = re.sub(r"\.{2,}|…", " ", s)
     s = re.sub(r"\s*(?:--+|\u2013|\u2014)\s*|\s-\s", " - ", s)  # one dash form
-    s = re.sub(r"\s+", " ", s.replace(",", "")).strip()
+    s = re.sub(r"\s+", " ", s.replace(",", "").replace('"', "")).strip()
     return re.sub(r"[\s.!:;_]+$", "", s)
 
 
@@ -110,26 +111,17 @@ def _furniture() -> re.Pattern[str]:
 
 def _patterns() -> tuple[list[tuple[str, re.Pattern[str]]], list[tuple[str, re.Pattern[str]]]]:
     """(sentence rules, line rules) from patterns.tsv, each (kind, regex)."""
-    macros: dict[str, str] = {}
     rules: dict[str, list[tuple[str, re.Pattern[str]]]] = {"sentence": [], "line": []}
     for line in (HERE / "frames" / "patterns.tsv").read_text("utf-8").splitlines():
-        if not line or line.startswith("#"):
-            continue
-        if line.startswith("@"):
-            name, fragment = line[1:].split("\t")
-            macros[name] = fragment
-            continue
-        scope, kind, flags, rx = line.split("\t")
-        for name, fragment in macros.items():
-            rx = rx.replace(f"%{name}%", fragment)
-        rules[scope].append((kind, re.compile(rx, re.I if "i" in flags else 0)))
+        if line and not line.startswith("#"):
+            scope, kind, flags, rx = line.split("\t")
+            rules[scope].append((kind, re.compile(rx, re.I if "i" in flags else 0)))
     return rules["sentence"], rules["line"]
 
 
 FRAMES = _frames()
 FURNITURE = _furniture()
 SENTENCE_RULES, LINE_RULES = _patterns()
-YOU = re.compile(r"\byou(?:r|rs)?\b", re.I)
 
 
 def sentence_rule(sentence: str) -> tuple[str, str] | None:
@@ -148,17 +140,6 @@ def sentence_rule(sentence: str) -> tuple[str, str] | None:
 def sentence_kind(sentence: str) -> str | None:
     hit = sentence_rule(sentence)
     return hit[0] if hit else None
-
-
-def is_reader_question(sentence: str) -> bool:
-    """A question put to the reader ("Have you tried it?"): short, and it says you."""
-    s = sentence.strip()
-    return (
-        s.endswith("?")
-        and len(s.split()) <= 35
-        and not s.startswith(('"', "“"))
-        and bool(YOU.search(s))
-    )
 
 
 Hit = tuple[str, int, str]  # kind, words that are boilerplate, the rule that decided
@@ -180,7 +161,7 @@ def explain(paragraph: str) -> Hit | None:
     flat = re.sub(r"\s+", " ", body)
     for n, (kind, rx) in enumerate(LINE_RULES, 1):
         if rx.match(flat):
-            return kind, words, f"patterns.tsv:line:{n}"  # a glossary entry, a date, a cue
+            return kind, words, f"patterns.tsv:line:{n}"  # a broadcast date, a cue
     label = LABEL.match(body)
     rest = body[label.end() :] if label else body
     lead = ["label"] if label else []
@@ -188,14 +169,6 @@ def explain(paragraph: str) -> Hit | None:
     found = [sentence_rule(s) for s in parts]
     kinds = [f[0] if f else None for f in found]
     rules = [f[1] for f in found if f]
-    questions = [k is None and is_reader_question(s) for k, s in zip(kinds, parts, strict=True)]
-    if (
-        parts
-        and all(k or q for k, q in zip(kinds, questions, strict=True))
-        and "call_to_action" in kinds
-    ):  # reader questions inside an invitation go with it
-        first = next(k for k in kinds if k)
-        return first, words, _rules([*lead, *rules, "reader-question"])
     if parts and all(kinds):
         return kinds[0] or "", words, _rules([*lead, *rules])
     if label:  # the speech stays, and so does its label
@@ -210,48 +183,3 @@ def classify(paragraph: str) -> tuple[str, int] | None:
     """(kind, words that are boilerplate) for a paragraph, or None when it is passage text."""
     hit = explain(paragraph)
     return hit[:2] if hit else None
-
-
-INVITES = re.compile(
-    r"comment|facebook|e-?mail|write to us|write us|let us know|tell us|hear from you"
-)
-
-
-def explain_all(paragraphs: list[str]) -> list[Hit | None]:
-    """`explain` for every paragraph of a passage, plus one rule that needs a neighbour: the
-    questions a call to comment asks. A line of nothing but questions to the reader (two or more,
-    or one of ten words or more: a lone short question is a heading) that stands next to a line
-    cut as an invitation to comment is part of that invitation, and so is one more such line
-    next to that."""
-    hits = [explain(p) for p in paragraphs]
-    questions = [i for i, p in enumerate(paragraphs) if hits[i] is None and _is_question_line(p)]
-    direct = [
-        i for i in questions if any(_is_cut_invitation(hits, paragraphs, j) for j in (i - 1, i + 1))
-    ]
-    chained = [i for i in questions if i not in direct and {i - 1, i + 1} & set(direct)]
-    for i in direct + chained:
-        hits[i] = ("call_to_action", len(paragraphs[i].split()), "neighbour-question")
-    return hits
-
-
-def classify_all(paragraphs: list[str]) -> list[tuple[str, int] | None]:
-    return [hit[:2] if hit else None for hit in explain_all(paragraphs)]
-
-
-def _is_question_line(paragraph: str) -> bool:
-    parts = sentences(paragraph)
-    return (
-        bool(parts)
-        and all(map(is_reader_question, parts))
-        and (len(parts) >= 2 or len(paragraph.split()) >= 10)
-    )
-
-
-def _is_cut_invitation(hits: list, paragraphs: list[str], j: int) -> bool:
-    hit = hits[j] if 0 <= j < len(hits) else None
-    return (
-        bool(hit)
-        and hit[0] == "call_to_action"
-        and hit[1] >= len(paragraphs[j].split())
-        and bool(INVITES.search(fold(paragraphs[j])))
-    )

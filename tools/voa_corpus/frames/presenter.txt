@@ -43,7 +43,7 @@ from voa learning english i'm <p>
 hello i'm <p>
 i'm <p>
 i'm <p> and i'm <p>
-i'm <p> and that's "<prog>" on the voice of america
+i'm <p> and that's <prog> on the voice of america
 i'm <p> hoping you can join us again next week for <prog> in voa special english
 i'm <p> in washington
 i'm <p> in washington with the program that helps you learn and improve your american english

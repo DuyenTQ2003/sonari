@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from voa_corpus.boilerplate import HERE, Hit, explain_all
+from voa_corpus.boilerplate import HERE, Hit, explain
 
 
 @dataclass(frozen=True)
@@ -48,7 +48,7 @@ class Trim:
 
 def trim(paragraphs: list[str]) -> Trim:
     """Remove every line that is wholly frame (a hit that covers all of its words)."""
-    hits = explain_all(paragraphs)
+    hits = [explain(p) for p in paragraphs]
     removed = [
         Removed(i, hit[0], hit[2], p)
         for i, (p, hit) in enumerate(zip(paragraphs, hits, strict=True))

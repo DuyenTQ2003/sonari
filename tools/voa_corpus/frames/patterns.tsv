@@ -1,33 +1,18 @@
-# Structural rules, for frame lines whose variable part cannot be listed (a song title, the subject
-# of a report, what a reader is asked). ADR-0008 5.3 asks for rules anchored at both ends; these
-# are anchored at both ends and each carries closed words at the ends: a directive and a channel of
-# VOA's own, a keyword and a colon, a part-of-speech tag. The open part is bounded in length and
-# can never reach outside its sentence or its line. Each rule lands with the evidence of section 5
-# (docs/reports/voa-trim-precision.md).
+# Structural rules for frame lines that are closed grammars: every part that varies is a fixed
+# alternation, a date or a cue between parentheses. ADR-0008 5.3: a rule matches the whole line or
+# sentence, anchored at both ends, and its variable part is a closed list. Open slots (a topic, a
+# question to the reader, a headword and its definition) were tried and rejected; see ADR-0008
+# Notes. The one exception to "closed list" is the cue line, whose boundary is not a regex guess:
+# the text itself marks it (the parentheses), and the closed part (a keyword and a colon) alone
+# identifies the line.
 #
 # Tab-separated: scope, kind, flags (i = ignore case), regex.
 #   sentence  matched against the normalised sentence (lower case, no commas, slots such as <p>)
 #   line      matched against the whole line as written
-# Lines starting with @ define a fragment, written %NAME% in the rules after it.
-@LEAD	(?:(?:please|now|and|or|so|also|do) )*
-@CHAN	(?:(?:in|on|at|to|via|by) )?(?:the comments?(?: section| sections| area| box| below)?|the comment section|our comments? sections?|our facebook page|our web ?site|our channel|voa learning english|learningenglish\.voanews\.com|voaspecialenglish(?:\.com| dot com)|(?:special|mosaic|word|learningenglish)@voanews\.com)
-@OPENER	(?:(?:and|now|hello|hi|so) )*(?:welcome(?: back)?(?: to)?|that's|that is|this is|here's|it's time for|you are listening to|you have been listening to|check out|until next time|i'm <p> with|a special)
-@DIRECTIVE	(?:don't forget to (?:tell us|write|share|post|let us know|leave)|let us know|tell us|write to us|write us|write to|write your|write a|share your|share|post your|post a|post|leave us|leave a|leave your|send us|send an|send your|send it|send|e-?mail us|email us|give us|add your|add a|answer|click|check out|visit|follow us|find us|join us|you can (?:also )?(?:find|follow|read|watch|get|download|listen|visit|comment|join|reach|send|write|tell|share|contact|see|hear|learn|ask)|we(?:'d| would) love to hear|we want to hear|use the|try)
-sentence	call_to_action		^%LEAD%(?:if you [^?]{1,100}? )?%DIRECTIVE%\b[^?]{0,140}?\b%CHAN%[^?]{0,60}$
-sentence	call_to_action		^%CHAN% %DIRECTIVE%\b[^?]{0,140}$
-sentence	call_to_action		^(?:and |or )?our (?:e-?mail|postal|web) (?:address|site) is [^?]{1,100}$
-sentence	call_to_action		^(?:(?:english )?(?:teachers?|students?): )?(?:to )?(?:click|download)\b[^?]{0,100}\b(?:pdf|worksheet|lesson plan|transcript|activities)\b[^?]{0,60}$
-sentence	programme		^%OPENER%\b[a-z0-9' &-]{0,60}?<prog>[a-z0-9' &-]{0,50}$
 sentence	programme		^on (?:this|our) (?:show|program) we (?:explore|talk about|discuss|look at) (?:common )?(?:words|expressions|idioms|phrases)(?: and (?:expressions|phrases|idioms))?(?: in (?:the english language|american english))?$
-sentence	programme		^you can get more information about [a-z' -]{1,80} from the group volunteers in technical assistance$
 sentence	programme		^vita is (?:an organization that helps people around the world use science and technology to solve problems|on the internet at v-i-t-a dot o-r-g(?: \(?vita\.org\)?)?)$
 sentence	programme		^you can contact vita through the internet at its (?:world wide )?web address:? w-w-w dot v-i-t-a dot o-r-g(?: \(www\.vita\.org\))?$
-sentence	programme		^<p> (?:wrote|adapted|reported|edited|produced) (?:this|it|them|her report|his report|their stories|this [a-z' ]{1,30}) (?:for|with) (?:the )?(?:voa )?(?:learning|special) english$
-sentence	programme		^<p> wrote this [a-z' ]{1,30} with <p> for (?:voa )?learning english$
-sentence	programme		^[a-z<>' &-]{0,60}(?:was|were) (?:written|adapted|produced|directed|edited|narrated|read)(?: and (?:written|produced|directed|read))?(?: for [a-z ]{1,25})? by <p>(?: who (?:was|were) also (?:the |our )?(?:producer|editor))?$
 sentence	programme		^<p> (?:was|were) (?:the |our )?(?:editors?|producers?|narrators?|readers?|engineers?|announcers?)$
 sentence	programme		^<p> produced the video$
-sentence	programme		^<p> read (?:the|this) (?:passage|poem|story|excerpt|letter)[^?]{0,80}$
-line	glossary		^[a-z][a-z' ’-]{0,50} ?[–—-] ?(?:(?:n|v|adj|adv|exp|prep|conj|pron|phr|idiom)\.?(?: |:|$)|used to ).*$
 line	programme	i	^\[?broadcast:? (?:january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2},? \d{4}\]?$
 line	script	i	^\({1,3} ?(?:music|sound|cut|tape|tape cut|act|sfx)(?: (?:one|two|three|four|five|\d+))? ?[:–—-][^()]{1,100}\){1,3}$
