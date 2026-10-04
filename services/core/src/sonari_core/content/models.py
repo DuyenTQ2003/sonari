@@ -7,6 +7,15 @@ from beanie import Document
 from pydantic import BaseModel, Field, model_validator
 from pymongo import ASCENDING, IndexModel
 
+from sonari_core.content.trim_rules import (
+    MAX_FK,
+    MAX_WORDS,
+    MIN_WORDS,
+    TRIM_CAP,
+    count_words,
+    editorial_words,
+)
+
 
 class RemovedLine(BaseModel):
     """One line a trim took out of the original (ADR-0008 decision 3)."""
@@ -19,10 +28,22 @@ class RemovedLine(BaseModel):
 
 class Trim(BaseModel):
     rules_version: str = Field(min_length=1)
-    cap: float  # the most the trim was allowed to cut, as a share of the original's words
+    cap: float  # ADR-0008 decision 2: always `TRIM_CAP`; a file does not choose its own
     removed_words: int  # editorial words only; page furniture does not count against the cap
-    removed_share: float
+    removed_share: float  # `removed_words` over the original's words, to 4 places
     removed: list[RemovedLine]
+
+    @model_validator(mode="after")
+    def _the_cap_is_the_adr_s_and_the_cut_is_what_the_lines_say(self) -> Self:
+        if self.cap != TRIM_CAP:
+            raise ValueError(f"ADR-0008 decision 2: trim.cap is {self.cap}, the cap is {TRIM_CAP}")
+        derived = editorial_words((line.kind, line.text) for line in self.removed)
+        if self.removed_words != derived:
+            raise ValueError(
+                f"ADR-0008 decision 2: trim.removed_words is {self.removed_words}, but the "
+                f"removed lines hold {derived} words that count (furniture does not, decision 1)"
+            )
+        return self
 
 
 class TrimmedPassage(BaseModel):
@@ -37,8 +58,10 @@ class TrimmedPassage(BaseModel):
     url: str
     title: str
     program: str = ""  # empty when the page names none
-    fk: float  # Flesch-Kincaid grade of `text`, the trimmed lines
-    original_words: int  # editorial words of the ORIGINAL; the denominator of `trim.removed_share`
+    fk: float  # Flesch-Kincaid grade of `text`, the trimmed lines; below `MAX_FK`
+    # Words of the ORIGINAL, the denominator of `trim.removed_share`. It is the corpus's count of
+    # `original_text`, so the validator derives it and refuses a file that declares another.
+    original_words: int
     original_text: list[str]  # the lines as the parser returned them, untouched
     text: list[str]  # `original_text` minus `trim.removed`, byte for byte
     trim: Trim
@@ -61,10 +84,42 @@ class TrimmedPassage(BaseModel):
         kept = [text for index, text in enumerate(self.original_text) if index not in set(gone)]
         if self.text != kept:
             raise ValueError("text is not the original lines minus the removed ones")
-        if self.trim.removed_share > self.trim.cap:
+        return self
+
+    @model_validator(mode="after")
+    def _the_cut_is_within_the_cap_by_the_lines_and_not_by_the_file(self) -> Self:
+        """The cap is a share of the original's words, so both sides of it are derived."""
+        words = count_words(self.original_text)
+        if self.original_words != words:
             raise ValueError(
-                f"the trim cut {self.trim.removed_share} of the words, over its cap {self.trim.cap}"
+                f"ADR-0008 decision 2: original_words is {self.original_words}, "
+                f"but original_text has {words} words"
             )
+        if words == 0:
+            raise ValueError("ADR-0008 decision 2: the passage has no words, so none can be cut")
+        cut = self.trim.removed_words  # `Trim` has already checked it against the lines
+        if self.trim.removed_share != round(cut / words, 4):
+            raise ValueError(
+                f"ADR-0008 decision 2: trim.removed_share is {self.trim.removed_share}, "
+                f"but {cut} of {words} words is {round(cut / words, 4)}"
+            )
+        if cut > TRIM_CAP * words:
+            raise ValueError(
+                f"ADR-0008 decision 2: the trim cut {cut} of {words} words, "
+                f"over the cap of {TRIM_CAP:.0%}"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _the_trimmed_text_is_in_the_window_and_below_the_grade_ceiling(self) -> Self:
+        words = count_words(self.text)
+        if not MIN_WORDS <= words <= MAX_WORDS:
+            raise ValueError(
+                f"ADR-0008 decision 2: the trimmed text has {words} words, "
+                f"outside {MIN_WORDS}-{MAX_WORDS}"
+            )
+        if not self.fk < MAX_FK:  # written so that a NaN fails it too
+            raise ValueError(f"ADR-0008 decision 2: fk is {self.fk}, not below {MAX_FK:g}")
         return self
 
 

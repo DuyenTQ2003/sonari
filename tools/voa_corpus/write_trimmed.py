@@ -22,11 +22,10 @@ from voa_inventory.parse import parse_page
 
 from voa_corpus import filters
 from voa_corpus.analyze import CACHE, WORDLISTS
-from voa_corpus.filters import Passage
+from voa_corpus.filters import DEFAULT_CAP, Passage
 from voa_corpus.measure import init, measure
 from voa_corpus.trim import rules_version, trim, validate
 
-DEFAULT_CAP = 0.05  # ADR-0008 decision 2: a trim may cut at most this share of a passage's words
 OUT = Path(os.environ.get("TRIM_DIR", "~/sonari-trimmed")).expanduser() / "voa"
 
 

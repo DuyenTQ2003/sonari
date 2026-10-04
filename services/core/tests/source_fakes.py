@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from sonari_core.content.trim_rules import count_words
+
 BASE_ARTICLE = 990_000_000
 VERSION_A = "voa-trim/aaaaaaaaaaaa"
 VERSION_B = "voa-trim/bbbbbbbbbbbb"
@@ -46,8 +48,10 @@ def make_record(
         {"index": index, **_kind_and_rule(original[index]), "text": original[index]}
         for index in cut
     ]
-    editorial = [line for line in original if line != FURNITURE]
-    words = sum(len(line.split()) for line in editorial)
+    # `words` is the page's word count as the parser reports it: the corpus tokeniser over every
+    # line it parsed, page furniture included. `removed_words` is counted by whitespace and
+    # leaves furniture out (ADR-0008 decisions 1 and 2): the two counts really differ.
+    words = count_words(original)
     removed_words = sum(len(r["text"].split()) for r in removed if r["kind"] != "furniture")
     return {
         "url": url_of(article),

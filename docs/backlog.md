@@ -103,9 +103,9 @@ PR description.
 - Not stored on `Source` (ADR-0010 ingests the trimmed corpus as it is): the "Words in This Story" glossary,
   which the parser splits off, and the credit lines the parser drops before the trim; both are in the cached
   HTML. P50 decides whether they matter.
-- `Source` has no word count of `text`: `original_words` counts the untrimmed page, and the corpus tokeniser
-  lives in `tools/voa_corpus`, which the service cannot import. A length filter on the trimmed text (250-1,200)
-  needs `write_trimmed.py` to emit it (a contract change, tools first) or one tokeniser both can import.
+- `Source` stores no word count of `text`. The service counts it to check the window
+  (`trim_rules.count_words`), so a reader that needs the length (P50's filters) can call that. Store a number
+  only if a query has to filter on it, which would be a contract change, tools first.
 - `SourceIngested` event for the other contexts (ADR-0001: they keep read models, they never query `content`).
   Nothing consumes Sources yet, so none exists; add it with its first consumer.
 - `--dry-run` counts a rollback (a stored older version made current again) as `superseded`, like a
@@ -114,13 +114,14 @@ PR description.
 - Provenance of the batch is not on `Source`: only `ingested_at`. The manifest's `snapshot.index_sha256` (which
   crawl) and `trimmed_jsonl_sha256` (which file) are checked at ingest and then dropped. Add them if an audit
   ever needs to name the crawl a stored trim came from.
-- The service enforces less of ADR-0008 than the tools do. `scripts/tests/test_adr_0008_drift.py` pins the
-  tools' cap, window and grade ceiling to the ADR and compares the two line validators, but
-  `TrimmedPassage` checks none of the three numbers: not `fk` below 7 (stored, so it could), not the window
-  (no word count of `text`, above), not that `trim.cap` is 5% (a file trimmed with `--cap 0.2` ingests). Its cap
-  check compares two numbers the file reports about itself: `removed_words` and `removed_share` recompute
-  exactly from `trim.removed` for all 724 stored records (`split()`, furniture excluded), so it could derive them.
-- `analyze.py` writes the 5% cap again as a literal (`cut_share=0.05`, next to `write_trimmed.DEFAULT_CAP`).
-  Moving the constant into `filters.py` lets both import it.
+- The cap's two sides are counted differently. `removed_words` counts by whitespace and leaves page furniture
+  out; `original_words` is the corpus tokeniser over every line of `original_text`, furniture included (all 724
+  stored records; ADR-0010 called it "editorial words"). The gap is small and runs both ways. Both are enforced
+  as the writer produces them (`trim_rules.py`); whether they should share one tokeniser is a superseding ADR.
+- `TrimmedPassage` is also what `Source` is read through, so a rule in `trim_rules.py` that tightens later makes
+  older stored versions fail to load, and ADR-0010 keeps them. Decide before such a change lands whether stored
+  versions are migrated or only a file entering is validated.
+- `make test-scripts` pins pydantic, beanie and what they pull in to the core lock (`scripts/locked_pins.py`);
+  pytest, pyyaml and uv itself still float.
 - One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
   *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.

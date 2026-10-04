@@ -70,10 +70,13 @@ test-core:
 test-speech:
 	$(UV_RUN) services/speech pytest
 
-# pydantic and beanie: scripts/tests/test_adr_0008_drift.py imports the content models to compare
-# them with the tools' trim rules.
+# The ADR-0008 drift tests import the content models to compare them with the tools' trim rules.
+# pydantic, beanie and everything they pull in are pinned to the versions the core service locks
+# (scripts/locked_pins.py reads services/core/uv.lock), so a release upstream cannot turn CI red
+# with no change here, and a pin cannot go stale. The script fails the target if it cannot pin.
 test-scripts:
-	uv run --no-project --with pytest --with pyyaml --with pydantic --with beanie pytest -q scripts/tests
+	pins="$$(uv run --no-project python scripts/locked_pins.py pydantic beanie)" && \
+	uv run --no-project --with pytest --with pyyaml $$pins pytest -q scripts/tests
 
 # numpy-only tests (tools + spike aligner); neither torch project is installed for these.
 test-tools:

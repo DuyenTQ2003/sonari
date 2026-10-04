@@ -106,7 +106,9 @@ def remove_a_line_outside_the_original(r: Record) -> None:
 
 
 def cut_more_than_the_cap(r: Record) -> None:
-    r["trim"]["removed_share"] = 0.2
+    # A real 8% cut with every declared number consistent, so only the cap can refuse it.
+    r.clear()
+    r.update(make_record(BASE_ARTICLE, remove=(0, 1, 2, 3, 4, -1)))
 
 
 def lose_the_rules_version(r: Record) -> None:
