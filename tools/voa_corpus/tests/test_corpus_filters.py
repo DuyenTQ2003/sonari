@@ -83,6 +83,18 @@ def test_length_is_measured_on_the_text_that_is_left_after_the_cut() -> None:
     assert "length" in blockers(long)
 
 
+def test_page_furniture_is_not_a_word_of_the_text_that_is_left_after_a_cut() -> None:
+    """The trim removes page furniture too (ADR-0008), so its words are not words of the passage."""
+    short = passage(words=MIN_WORDS + 5, text_words=MIN_WORDS - 15)  # 255 words, 235 once it goes
+    assert "length" in blockers(short, cut_share=0.05)
+    assert "length" not in blockers(short)  # as is nothing is cut
+    long = passage(
+        words=MAX_WORDS + 10, text_words=MAX_WORDS - 5
+    )  # 1,210 words, 1,195 once it goes
+    assert "length" not in blockers(long, cut_share=0.05)
+    assert "length" in blockers(long)
+
+
 def test_a_passage_without_the_licence_is_blocked() -> None:
     assert blockers(passage(licence_ok=False)) == ["licence"]
 

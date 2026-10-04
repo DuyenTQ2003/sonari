@@ -77,8 +77,9 @@ PR description.
   looks inside `#article-content`. Not analysed further; check before relying on `has_audio`.
 - Pair the audio-only pages with their text page: 7,700 text-less pages share a title with a passage
   (more by fuzzier matching), so a passage could get its listening audio from the twin page.
-- ADR-0008 recall, what is left (raised by `docs/reports/voa-trim-recall.md`): 68% of the 5% set is free of
-  missed frame, target 90%. By lines in the 120-passage sample, with the passages that hold one: A closings and
+- ADR-0008 recall (not planned: the 90% target was withdrawn, `docs/reports/voa-trim-corpus.md`; kept as a
+  record of what is left). 57% of the 5% set is free of missed frame. By lines in the round-two sample, with the
+  passages that hold one: A closings and
   teasers in plain prose, "Join us again soon for Part 2", "We leave you with ... singing" (22 lines, 19
   passages); B programme blurbs and openers with other wording, "Each week we explore ..." (12, 12); C practice
   or discussion prompts without a channel word, "Practice what you learned today!" (9, 8); D editor or series
@@ -86,16 +87,23 @@ PR description.
   and C would give about 89% in the sample (in-sample). A and B read like content in a lesson body, so each
   needs closed anchors (a series name) and the reading of ADR-0008 section 5, and a rule that needs the
   position of the line in the passage is a new idea that the ADR has not weighed.
-- Three quick wins, left out of the recall round so that the code measured is the code committed (+46 lines
-  corpus-wide in a scratch copy; about +5 points clean at 5% in the sample): `normalise` should drop straight
-  double quotes so that a title in curly quotes still matches `<prog>`; the page header "Read and listen to the
-  article. Then open the activities on the right side of the page to improve your English!"; and "(The story
-  continues next week)".
+- Closed versions of rules that had an open slot, if recall is ever wanted back (each needs the evidence of
+  ADR-0008 section 5): credits with an explicit list of nouns after "wrote this" (lesson, story, report, ...),
+  VITA leaflets by topic, the opener with the programme titles listed, glossary entries as exact sentences. The
+  open versions removed 4,568 lines (`docs/reports/voa-trim-corpus.md`).
 - A blocking screen for what recall cannot reach: block a passage that has a line with a channel, a programme
   word or a closing phrase left after the rules. About 83-87% clean on the "before" sample (in-sample), at the
   cost of more than a third of the passages. Not adopted; only if cleanliness matters more than the count.
-- `make voa-precision`: the sampler and summariser behind `voa-trim-precision.md` and `voa-trim-recall.md` were
-  one-off scripts (seeds 20261003 to 20261006; populations and strata are in the reports). Make them a target
+- `make voa-precision`: the sampler and summariser behind `voa-trim-precision.md`, `voa-trim-recall.md` and
+  `voa-trim-corpus.md` were one-off scripts (seeds 20261003 to 20261008; populations and strata are in the
+  reports). Make them a target
   that draws the samples, writes the TSV to label and prints the counts with exact intervals, so every change
   to the lists can be re-measured. The grade is computed with the lines the rules miss still in, so recompute
-  it as recall improves (below grade 7 was 3,253, 3,335 and 3,214 passages with the three rule sets).
+  it as recall improves (below grade 7 was 3,253, 3,335, 3,214 and 3,313 passages with the four rule sets).
+- Ingesting the trimmed corpus (`make voa-trim`) into the `content` context's `Source`: `original_text` and
+  `text` are lists of lines in the file and would be joined with newlines there. A passage trimmed under one
+  `rules_version` keeps it; re-trimming one is a separate step with the removed lines before and after read
+  (ADR-0008 5.6). Not stored: the "Words in This Story" glossary, which the parser splits off, and the credit
+  lines the parser drops before the trim; both are in the cached HTML.
+- One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
+  *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.

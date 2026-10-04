@@ -31,7 +31,7 @@ def test_a_closed_list_entry_is_one_slot(sentence: str, form: str) -> None:
     [
         "Jill Robbins and Anna Matteo wrote this lesson for Learning English.",
         "Welcome to Words to the Wise!",
-        "Check out our website for more episodes of Words and Their Stories.",
+        "Anna Matteo will be here tomorrow with another edition of Words and Their Stories.",
         "This Agriculture Report was written by Gary Garriott.",
     ],
 )
@@ -49,5 +49,29 @@ def test_a_line_made_of_slots_and_listed_words_is_frame(line: str) -> None:
     ],
 )
 def test_a_slot_does_not_make_a_sentence_somebody_wrote_into_frame(line: str) -> None:
+    hit = classify(line)
+    assert not (hit and hit[1] >= len(line.split()))
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "And that\u2019s \u201cWords and Their Stories.\u201d",
+        'And that\'s "Words and Their Stories."',
+        "And that\u2019s \u201cWords and Their Stories\u201d",
+    ],
+)
+def test_a_title_in_double_quotes_is_the_same_slot_as_the_bare_title(line: str) -> None:
+    assert normalise(line) == "and that's <prog>"
+    hit = classify(line)
+    assert hit and hit[1] == len(line.split())
+
+
+def test_double_quotes_are_not_part_of_the_form_a_sentence_is_listed_in() -> None:
+    assert normalise('He said "I\u2019m Anna".') == normalise("He said I'm Anna.")
+
+
+def test_quoted_speech_around_a_sign_off_is_still_not_a_whole_listed_sentence() -> None:
+    line = '"I\'m Anna Matteo," she said.'
     hit = classify(line)
     assert not (hit and hit[1] >= len(line.split()))

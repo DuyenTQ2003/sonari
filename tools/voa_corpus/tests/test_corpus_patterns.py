@@ -1,11 +1,16 @@
-"""Structural rules (frames/patterns.tsv): anchored at both ends, with closed words at the ends.
+"""Structural rules (frames/patterns.tsv): closed grammars only (ADR-0008 5.3 and its Notes).
 
-Each family has the lines it must remove and the nearest lines of content it must keep (ADR-0008
-section 5). A line is removed when `classify` says every word of it is boilerplate.
+Open slots were tried and rejected: a rule whose variable part is any text can remove a sentence
+somebody wrote. What stays is a rule whose variable part is a fixed alternation, a date, or a cue
+between parentheses, where the text itself marks the boundary. A line is removed when `classify`
+says every word of it is boilerplate.
 """
 
+import re
+
 import pytest
-from voa_corpus.boilerplate import classify, classify_all
+from voa_corpus.boilerplate import HERE, classify
+from voa_corpus.trim import trim
 
 
 def removed(line: str) -> bool:
@@ -13,14 +18,6 @@ def removed(line: str) -> bool:
     return bool(hit) and hit[1] >= len(line.split())
 
 
-GLOSSARY = [
-    "tradition \u2013 n. a way of thinking, behaving, or doing something that has been used by the "
-    "people in a particular group, family, society, etc., for a long time",
-    "bold \u2013adj. strong, clear and without fear",
-    "pitch in \u2013v. to contribute to a common task",
-    "of course \u2013 used to show that what is being said is very obvious or generally known",
-    "a wink and a nod \u2013 exp. A sly, subtle signal used to communicate a piece of information",
-]
 METADATA = ["Broadcast: December 21, 2004", "[Broadcast May 6, 2004]", "Broadcast: April 22, 2003"]
 CUES = [
     '(MUSIC: "Let\'s Go Get Stoned")',
@@ -29,42 +26,43 @@ CUES = [
     "((CUT 3: WHEN THE SUN GOES DOWN; CDP-28627))",
     "(SOUND: Barking dog)",
 ]
-INVITATIONS = [
-    "In the comments section, share a story of salt from your culture.",
-    "Let us know in the comments below or write to us at learningenglish@voanews.com.",
-    "Post your thoughts in the comment section.",
-    "Give us your reaction on our Facebook page!",
-    "Write your answers in the comments section.",
-    "You can also find us on Facebook, Twitter and YouTube at VOA Learning English.",
-    "Our e-mail address is word@voanews.com.",
-    "Are you planning to see the movie? Let us know in the comments section.",
-    "Do you have rodeos where you live? Let us know. Post your thoughts in the comment section.",
-    "If you liked this week's story about fish, let us know in the Comments Section.",
-    "And don't forget to tell us your answers in the comments area.",
-    "Anna: Until next time!",
+CLOSED = [
     "On this program we talk about common expressions and phrases in American English.",
     "On this show, we explore words and expressions in the English language.",
-    "Now, a special Words and their Stories for New Years.",
-    "Hello, I'm Anna Matteo with the Learning English program Words and Their Stories.",
-    "That's Words and Their Stories for today, with a song.",
-    "You can get more information about solar food dryers from the group Volunteers in "
-    "Technical Assistance. VITA is on the Internet at v-i-t-a dot o-r-g. (vita.org.)",
-    "Together, they form the living speech of the American people.",
-]
-CREDITS = [
-    "Yaroslav Khrokalo wrote this lesson for VOA Learning English.",
-    "Dorothy Gundy produced the video.",
-    "Christopher Jones Cruise read the passage from Jack London’s “The Sea Wolf.”",
-    "Yaroslav Khrokalo wrote this lesson with Gena Bennett for VOA Learning English.",
-    "You can get more information about windbreaks from the group Volunteers in Technical "
-    "Assistance. You can contact VITA through the Internet at its World Wide Web address, "
+    "VITA is on the Internet at v-i-t-a dot o-r-g. (vita.org.)",
+    "You can contact VITA through the Internet at its World Wide Web address, "
     "w-w-w dot v-i-t-a dot o-r-g.",
+    "Dorothy Gundy produced the video.",
+    "Gary Garriott was the editor.",
 ]
 
 
-@pytest.mark.parametrize("line", GLOSSARY + METADATA + CUES + INVITATIONS + CREDITS)
-def test_frame_the_rules_must_remove(line: str) -> None:
+@pytest.mark.parametrize("line", METADATA + CUES + CLOSED)
+def test_frame_the_closed_rules_must_remove(line: str) -> None:
     assert removed(line)
+
+
+# Frame that only an open slot could catch. It is left in: a line that stays costs one passage a
+# cut that it still needs, a sentence that goes by mistake costs a lesson nobody notices.
+LEFT_IN = [
+    "tradition \u2013 n. a way of thinking, behaving, or doing something that has been used by the "
+    "people in a particular group, family, society, etc., for a long time",
+    "bold \u2013adj. strong, clear and without fear",
+    "In the comments section, share a story of salt from your culture.",
+    "Post your thoughts in the comment section.",
+    "Give us your reaction on our Facebook page!",
+    "Are you planning to see the movie? Let us know in the comments section.",
+    "Now, a special Words and their Stories for New Years.",
+    "You can get more information about solar food dryers from the group Volunteers in "
+    "Technical Assistance.",
+    "Christopher Jones Cruise read the passage from Jack London\u2019s \u201cThe Sea Wolf.\u201d",
+    "Yaroslav Khrokalo wrote this lesson with Gena Bennett for VOA Learning English.",
+]
+
+
+@pytest.mark.parametrize("line", LEFT_IN)
+def test_a_frame_line_that_needs_an_open_slot_is_left_in(line: str) -> None:
+    assert not removed(line)
 
 
 KEPT = [
@@ -78,6 +76,7 @@ KEPT = [
     "(Music is his passion.)",
     "(Sound familiar?)",
     "(The security guard takes Pete out. Anna watches the movie and eats quietly.)",
+    "(At the mailbox)",
     # a sentence about a channel or a site that is not an invitation
     "Facebook users can share photos in the comments section.",
     "Share the video with your friends.",
@@ -100,6 +99,8 @@ KEPT = [
     # a credit-shaped sentence about somebody who is not VOA staff, or about a film
     "Sam Mendes directed the film Skyfall for the studio.",
     "The book was written by a teacher who lived in Texas.",
+    "The editor was a teacher who lived in Texas.",
+    "The stage direction (MUSIC: loud) is written in the margin of the script.",
 ]
 
 
@@ -108,56 +109,42 @@ def test_the_nearest_content_is_kept_whole(line: str) -> None:
     assert not removed(line)
 
 
-def test_a_line_of_reader_questions_goes_when_it_stands_next_to_an_invitation() -> None:
-    questions = "Have you updated your phone? Have you tried the new features?"
-    invitation = "We want to hear from you. Write to us in the Comments Section."
-    text = "Apple released the update last week."
-    before = classify_all([text, questions, invitation])
-    assert before[1] == ("call_to_action", len(questions.split()))
-    after = classify_all([invitation, questions, text])
-    assert after[1] == ("call_to_action", len(questions.split()))
+INVITATION = "We want to hear from you. Write to us in the Comments Section."
 
 
-def test_reader_questions_alone_stay() -> None:
-    questions = "Have you updated your phone? Have you tried the new features?"
-    text = "Apple released the update last week."
-    assert classify_all([text, questions, text])[1] is None
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What can you do?",
+        "How might you negotiate a lower price?",
+        "Have you updated your phone? Have you tried the new features?",
+        "In your country, what jobs do women do that are not traditional?",
+    ],
+)
+def test_a_question_beside_an_invitation_is_left_in(question: str) -> None:
+    """The open-slot rule "a question beside an invitation" removed the first two, which are
+    exercise questions of the lesson (ADR-0008 Notes). No question is removed by its neighbour."""
+    t = trim(["Apple released the update last week.", question, INVITATION])
+    assert question in t.kept
 
 
-def test_a_question_that_is_not_addressed_to_the_reader_stays_beside_an_invitation() -> None:
-    question = "What did the minister say?"
-    invitation = "We want to hear from you. Write to us in the Comments Section."
-    assert classify_all([question, invitation])[0] is None
+# A character class or a wildcard that repeats is an open slot. The one allowed is a cue between
+# parentheses: the text marks where it ends, and the keyword and colon alone identify the line.
+OPEN_SLOT = re.compile(r"\[[^\]]*\](?:[*+]|\{)|\.(?:[*+]|\{)|\\[wWsS](?:[*+]|\{)")
+CUE_BODY = "[^()]{1,100}"
 
 
-def test_a_short_heading_question_stays_beside_an_invitation() -> None:
-    heading = "What can you do?"
-    invitation = "Write us in the Comments Section of our website."
-    text = "The word would has many other meanings."
-    assert classify_all([invitation, heading, text])[1] is None
+def patterns() -> list[str]:
+    lines = (HERE / "frames" / "patterns.tsv").read_text("utf-8").splitlines()
+    return [line.split("\t")[3] for line in lines if line and not line.startswith("#")]
 
 
-def test_an_exercise_question_stays_beside_an_instruction_that_is_not_an_invitation() -> None:
-    question = "How might you negotiate a lower price?"
-    instruction = "Pause the audio to consider your answer."
-    assert classify_all(["Ten dollars.", question, instruction])[1] is None
+def test_no_rule_has_an_open_slot() -> None:
+    rules = patterns()
+    assert rules
+    assert [rx for rx in rules if OPEN_SLOT.search(rx.replace(CUE_BODY, ""))] == []
 
 
-def test_a_single_long_question_beside_an_invitation_goes() -> None:
-    question = "In your country, what jobs do women do that are not traditional?"
-    invitation = "We want to hear from you. Write to us in the Comments Section."
-    assert classify_all([question, invitation])[0] == ("call_to_action", len(question.split()))
-
-
-def test_two_blocks_of_questions_in_a_row_before_an_invitation_both_go() -> None:
-    first = "Have you seen the new button? Would you use it? Do you hope it comes to your phone?"
-    second = "Would you rather rate a show with stars? Do you like the matching feature?"
-    invitation = "Share your thoughts in the Comments Section below."
-    hits = classify_all(["Netflix added a button.", second, first, invitation])
-    assert hits[1] and hits[2] and hits[0] is None
-
-
-def test_the_chain_stops_after_one_step() -> None:
-    q = "Have you seen the new button? Would you use it? Do you hope it comes to your phone?"
-    hits = classify_all([q, q, q, "Share your thoughts in the Comments Section below."])
-    assert hits[0] is None and hits[1] and hits[2]
+def test_the_cue_is_the_only_rule_with_a_slot_between_parentheses() -> None:
+    assert [rx for rx in patterns() if CUE_BODY in rx and not rx.startswith(r"^\(")] == []
+    assert len([rx for rx in patterns() if CUE_BODY in rx]) == 1

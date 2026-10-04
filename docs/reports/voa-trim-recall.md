@@ -1,5 +1,8 @@
 # How much frame do the boilerplate lists still miss?
 
+> Round two. Its open-slot rules were removed in round three, so the figures below are not the rules as they
+> now are: see [voa-trim-corpus.md](voa-trim-corpus.md).
+
 [voa-trim-precision.md](voa-trim-precision.md) showed that what the lists remove is frame, and that about 4 in 10
 of the passages a 5% cut makes usable still held a frame line the lists miss. This report closes part of that
 gap and measures what is left, the same way as before: a seeded sample of the usable set, read in full.

@@ -3,6 +3,7 @@
 # punctuation. Taken from the corpus: every sentence found in at least 3 passages, then read and
 # kept by hand. A line is boilerplate only when every sentence in it is listed in some frames file.
 # Adding an entry needs the evidence of ADR-0008 section 5.
+(the story continues next week)
 (vita.org.)
 (www.vita.org)
 <p> is away
@@ -29,12 +30,12 @@ and that is <prog> for today
 and that is all the time we have for this <prog>
 and that is our program for today
 and that is the end of this <prog>
-and that's "<prog>." we hope you enjoyed our program today
 and that's <prog>
 and that's <prog> for this week
 and that's <prog> for today
 and that's <prog> from voa learning english
 and that's <prog> in voa special english
+and that's <prog>. we hope you enjoyed our program today
 and that's all for this <prog>
 and that's all the time we have for <prog>
 and that's all the time we have for this <prog>
@@ -53,12 +54,12 @@ and we hope you can join us again next week for <prog> in voa special english
 anna: until next time
 be sure to join us again next week for <prog> in voa special english
 developed as a radio show each weekly program is 15 minutes long
-every day on "<prog>" we explore the latest events and report on issues that concern you
+every day on <prog> we explore the latest events and report on issues that concern you
 every week at this time we tell the story of words and expressions used in american english
 every week we tell about a person important in the history of the united states
 every week we tell about a person who was important in the history of the united states
 every week we tell about someone important in the history of the united states
-for earlier programs type "making of a nation" in quotation marks in the search box at the top of the page
+for earlier programs type making of a nation in quotation marks in the search box at the top of the page
 for english learning activities and interactive features click on the classroom at voa learning english
 for learning english <prog> i'm <p>
 for the <prog> i'm <p>
@@ -79,7 +80,7 @@ from washington this is voa news
 hello again and welcome to <prog>
 hello again and welcome to <prog> from voa learning english
 hello and welcome back to <prog> from voa learning english
-hello and welcome once again to "<prog>" our daily show for people learning everyday american english
+hello and welcome once again to <prog> our daily show for people learning everyday american english
 hello and welcome to <prog>
 hello and welcome to <prog> from voa learning english
 hello and welcome to the voa learning english program <prog>
@@ -178,6 +179,7 @@ please join us again next week for <prog> in voa special english
 please join us again next week for another <prog> in voa special english
 please join us over the next several weeks as we bring you stories about international students and the american higher education system as a whole
 please join us over the next several weeks as we bring you stories about these amazing individuals and the american higher education system as a whole
+read and listen to the article
 sadly we have no more time for this program
 see you next time
 see you next time on <prog>
@@ -204,6 +206,7 @@ that's <prog> for today
 that's <prog> for today i'm <p>
 that's all for <prog> this week
 that's our show for today
+then open the activities on the right side of the page to improve your english
 this is <prog>
 this is <prog> from voa learning english
 this is <prog> from voa special english

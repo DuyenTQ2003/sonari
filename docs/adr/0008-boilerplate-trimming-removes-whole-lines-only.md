@@ -182,9 +182,19 @@ Two facts shape the decision:
   lists and rules they judge, so neither is an independent measurement. Every line and passage read is in
   `docs/reports/voa-trim-precision-labels.tsv` and `docs/reports/voa-trim-recall-labels.tsv`, for a second reader
   to re-label.
-- **Open slots in section 5.3.** Since the recall round, `frames/patterns.tsv` holds rules whose variable part is
-  a bounded open slot (a cue title, the topic of a report, what a reader is asked) between closed anchors, not a
-  closed list. Section 5.3 does not allow that form. They carry the evidence of section 5; whether to keep them
-  is the maintainer's call, and keeping them is a superseding ADR.
-- **The cap at 5%** is 678 passages after the recall round (784 after the closed lists), measured by
-  `make voa-corpus`; 462 of them are free of frame the rules miss, by a sample of 120.
+- **Open slots were tried and rejected (2026-10-04).** In the recall round, `frames/patterns.tsv` and the
+  classifier gained rules whose variable part was a bounded open slot between closed anchors: a topic, a
+  question put to the reader, a headword and its definition, a noun in a credit. Section 5.3 does not allow
+  that form and the maintainer decided it stays that way: the list is closed, there is no superseding ADR.
+  The evidence is that round's own data. The first version of the rule "a question line beside an invitation to
+  comment" removed two lines of content in a census of its 57 lines ("What can you do?", "How might you
+  negotiate a lower price?"); the tightening that stopped it (a neighbour that names a channel, a minimum
+  length, a chain of one step) is a guess about neighbours, which is what a closed list is there to avoid.
+  The rules were removed in round three: the reader-question and neighbour rules, the glossary rule and ten
+  sentence patterns (4,568 lines left the removal set, [voa-trim-corpus.md](../reports/voa-trim-corpus.md)).
+  What stays is closed: sentence grammars that are fixed alternations, a broadcast date, and a stage direction
+  whose boundary the text itself marks. A cue such as `(MUSIC: "Let's Go Get Stoned")` is removed when the
+  keyword and the colon identify it and the variable part sits inside the parentheses; `patterns.tsv` has a test
+  that fails if any other rule gains a repeated character class or a wildcard. A frame line that only an open
+  slot could catch is left in the text.
+- **The cap** is 10% since ADR-0009, which supersedes decision 2 above and nothing else.
