@@ -91,11 +91,12 @@ def sentences(text: str) -> list[str]:
     return [s for s in SENTENCE.split(text) if s]
 
 
-def _frames() -> dict[str, str]:
-    frames: dict[str, str] = {}
+def _frames() -> dict[str, tuple[str, str]]:
+    """Listed sentence -> (kind, file it is listed in)."""
+    frames: dict[str, tuple[str, str]] = {}
     for name, kind in FRAME_FILES:
         for line in _data_lines(HERE / "frames" / name):
-            frames.setdefault(line, kind)
+            frames.setdefault(line, (kind, name))
     return frames
 
 
@@ -131,12 +132,22 @@ SENTENCE_RULES, LINE_RULES = _patterns()
 YOU = re.compile(r"\byou(?:r|rs)?\b", re.I)
 
 
-def sentence_kind(sentence: str) -> str | None:
-    """The kind of a sentence that is frame (listed or built by a rule), or None."""
+def sentence_rule(sentence: str) -> tuple[str, str] | None:
+    """(kind, rule) of a sentence that is frame, listed or built by a rule, or None. The rule is
+    `list:<file>` or `patterns.tsv:sentence:<n>` (n counts the rules of that scope from 1)."""
     form = normalise(sentence)
     if form in FRAMES:
-        return FRAMES[form]
-    return next((kind for kind, rx in SENTENCE_RULES if rx.match(form)), None)
+        kind, name = FRAMES[form]
+        return kind, f"list:{name}"
+    for n, (kind, rx) in enumerate(SENTENCE_RULES, 1):
+        if rx.match(form):
+            return kind, f"patterns.tsv:sentence:{n}"
+    return None
+
+
+def sentence_kind(sentence: str) -> str | None:
+    hit = sentence_rule(sentence)
+    return hit[0] if hit else None
 
 
 def is_reader_question(sentence: str) -> bool:
@@ -150,40 +161,55 @@ def is_reader_question(sentence: str) -> bool:
     )
 
 
-def classify(paragraph: str) -> tuple[str, int] | None:
-    """(kind, words that are boilerplate) for a paragraph, or None when it is passage text."""
+Hit = tuple[str, int, str]  # kind, words that are boilerplate, the rule that decided
+
+
+def _rules(rules: list[str]) -> str:
+    return "+".join(dict.fromkeys(rules))
+
+
+def explain(paragraph: str) -> Hit | None:
+    """`classify` with the rule that decided: (kind, words that are boilerplate, rule)."""
     text = INVISIBLE.sub("", paragraph).strip()
     words = len(text.split())
     if not text or FURNITURE.search(text):
-        return "furniture", words
+        return "furniture", words, "furniture"
     body = DIRECTIONS.sub("", text).strip()
     if not body:
-        return "script", words  # a stage direction alone
+        return "script", words, "direction"  # a stage direction alone
     flat = re.sub(r"\s+", " ", body)
-    for kind, rx in LINE_RULES:
+    for n, (kind, rx) in enumerate(LINE_RULES, 1):
         if rx.match(flat):
-            return kind, words  # a glossary entry, a broadcast date, a cue with a title
+            return kind, words, f"patterns.tsv:line:{n}"  # a glossary entry, a date, a cue
     label = LABEL.match(body)
     rest = body[label.end() :] if label else body
+    lead = ["label"] if label else []
     parts = sentences(rest)
-    kinds = [sentence_kind(s) for s in parts]
+    found = [sentence_rule(s) for s in parts]
+    kinds = [f[0] if f else None for f in found]
+    rules = [f[1] for f in found if f]
     questions = [k is None and is_reader_question(s) for k, s in zip(kinds, parts, strict=True)]
     if (
         parts
         and all(k or q for k, q in zip(kinds, questions, strict=True))
         and "call_to_action" in kinds
-    ):
-        return next(
-            k for k in kinds if k
-        ), words  # reader questions inside an invitation go with it
+    ):  # reader questions inside an invitation go with it
+        first = next(k for k in kinds if k)
+        return first, words, _rules([*lead, *rules, "reader-question"])
     if parts and all(kinds):
-        return kinds[0] or "", words  # every sentence is frame: the whole line can go
-    if label:
-        return "script", len(label["who"].split())  # the speech stays, and so does its label
+        return kinds[0] or "", words, _rules([*lead, *rules])
+    if label:  # the speech stays, and so does its label
+        return "script", len(label["who"].split()), "label"
     framed = [(k, s) for k, s in zip(kinds, parts, strict=True) if k]
     if framed:  # a sign-off glued to content: kept whole, the frame words still block
-        return framed[0][0], sum(len(s.split()) for _, s in framed)
+        return framed[0][0], sum(len(s.split()) for _, s in framed), _rules(rules)
     return None
+
+
+def classify(paragraph: str) -> tuple[str, int] | None:
+    """(kind, words that are boilerplate) for a paragraph, or None when it is passage text."""
+    hit = explain(paragraph)
+    return hit[:2] if hit else None
 
 
 INVITES = re.compile(
@@ -191,21 +217,25 @@ INVITES = re.compile(
 )
 
 
-def classify_all(paragraphs: list[str]) -> list[tuple[str, int] | None]:
-    """`classify` for every paragraph of a passage, plus one rule that needs a neighbour: the
+def explain_all(paragraphs: list[str]) -> list[Hit | None]:
+    """`explain` for every paragraph of a passage, plus one rule that needs a neighbour: the
     questions a call to comment asks. A line of nothing but questions to the reader (two or more,
     or one of ten words or more: a lone short question is a heading) that stands next to a line
     cut as an invitation to comment is part of that invitation, and so is one more such line
     next to that."""
-    hits = [classify(p) for p in paragraphs]
+    hits = [explain(p) for p in paragraphs]
     questions = [i for i, p in enumerate(paragraphs) if hits[i] is None and _is_question_line(p)]
     direct = [
         i for i in questions if any(_is_cut_invitation(hits, paragraphs, j) for j in (i - 1, i + 1))
     ]
     chained = [i for i in questions if i not in direct and {i - 1, i + 1} & set(direct)]
     for i in direct + chained:
-        hits[i] = ("call_to_action", len(paragraphs[i].split()))
+        hits[i] = ("call_to_action", len(paragraphs[i].split()), "neighbour-question")
     return hits
+
+
+def classify_all(paragraphs: list[str]) -> list[tuple[str, int] | None]:
+    return [hit[:2] if hit else None for hit in explain_all(paragraphs)]
 
 
 def _is_question_line(paragraph: str) -> bool:

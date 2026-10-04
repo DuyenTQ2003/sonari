@@ -12,8 +12,8 @@ from voa_inventory.levels import SENTENCE_END, WORD, stats
 from voa_inventory.parse import parse_page
 
 from voa_corpus import wordlist
-from voa_corpus.boilerplate import classify_all
 from voa_corpus.filters import MIN_PASSAGE_WORDS, Passage
+from voa_corpus.trim import trim
 
 TOKEN = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)?")
 CONTRACTION = {"ca": "can", "wo": "will", "sha": "shall"}  # "can't" -> ca + n't
@@ -67,17 +67,15 @@ def measure(entry: tuple[str, str]) -> Passage:
     if p.words < MIN_PASSAGE_WORDS:
         return p
     paras = body.paragraphs
-    plain, loose = [], []
-    for para, hit in zip(paras, classify_all(paras), strict=True):
+    t = trim(paras)  # the one trim: what is counted here is what the trimmed corpus stores
+    loose = []
+    for para, hit in zip(paras, t.hits, strict=True):
         if hit:
             p.boiler[hit[0]] = p.boiler.get(hit[0], 0) + hit[1]
-            if hit[0] != "furniture" and hit[1] < len(para.split()):
-                p.kept += hit[1]  # frame words on a line that stays whole: a trim cannot cut them
-        else:
-            if len(para.split()) <= LOOSE_WORDS:
-                loose.append(re.sub(r"\s+", " ", para.strip().lower()))
-        if not hit or hit[1] < len(para.split()):  # a speaker label leaves its quotation
-            plain.append(para)
+        elif len(para.split()) <= LOOSE_WORDS:
+            loose.append(re.sub(r"\s+", " ", para.strip().lower()))
+    p.kept = t.kept_frame_words  # frame words on a line that stays whole: a trim cannot cut them
+    plain = t.kept  # a speaker label leaves its quotation
     words, _, p.fk = stats(plain)  # the passage as it would be read, boilerplate left out
     sentences = [s for para in plain for s in SENTENCE_END.split(para.strip()) if WORD.search(s)]
     letters = sum(len(re.findall("[A-Za-z]", w)) for para in plain for w in WORD.findall(para))
