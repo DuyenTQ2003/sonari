@@ -108,6 +108,13 @@ voa-corpus: voa-wordlists
 voa-trim: voa-wordlists
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.write_trimmed $(ARGS)
 
+# Loads the trimmed corpus into content.sources as the `core` user (ADR-0010). Idempotent: run
+# it again after a re-trim to add the new version and make it current. Starts the infra first.
+SOURCES_FILE ?= $(HOME)/sonari-trimmed/voa/trimmed.jsonl
+.PHONY: ingest-sources
+ingest-sources: infra
+	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_sources.py $(SOURCES_FILE)
+
 # What the text-less pages are: the seeded sample's labels (docs/reports/voa-missing-labels.tsv) with
 # confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.
 voa-missing:

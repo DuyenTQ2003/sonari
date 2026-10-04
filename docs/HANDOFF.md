@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-10-03
+Last updated: 2026-10-04
 
 ## Done
 - Docs (PLAN-v7, ADR-0001/0004/0006, design-system, BUILD-PROMPTS, eval-data); P10 scaffold.
@@ -10,14 +10,14 @@ Last updated: 2026-10-03
 - **P05 done (listening pending).** `spikes/tts/`: Kokoro-82M, 3 speeds + dialogue, RTF 0.35-0.41.
 - **P06 tagger: `phrase`** (F0.5 0.36 vs bge-m3 0.35; 100 pages, one labeller). Tag counts
   are leads, not supply; pre-fix counts void. 34/100 usable lv-4 pages are `language_learning`.
-- **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0 (speaking-only Part 1
-  starter, no passage); Films and TV is the one reserve. Record: `docs/level4-units-proposal.md`.
+- **Level 4 units decided (PLAN 4.1/4.2).** 8 corpus-backed units + Unit 0 (speaking-only Part 1 starter, no passage); Films and TV is the one reserve. Record: `docs/level4-units-proposal.md`.
 - **P11 done.** `compose.yaml`, `infra/mongo/`: Mongo `rs0` + Redis. `make infra && make test-core`. New clone: `make setup` (git hooks).
 - **P13 done** (#19): `sonari_core.shared`, 5 contexts, `/readyz`, OTel; `make check-imports` fails on cross-context imports. P12 skipped.
 - **P14 done** (#20): `/v1/auth`, refresh rotation, Turnstile, rate limit. Deploy: uvicorn `--proxy-headers`.
 - **P15 done** (ADR-0007): `shared/outbox.py`, `shared/consumer.py`. CI runs its live tests (#28: `make infra`; speech uses vendored cmudict); with `CI` set a missing service fails, not skips.
 - **Conflict markers now fail pre-commit and CI** (`check-merge-conflict --assume-in-merge`). A clean merge still skips pre-commit hooks (backlog).
 - **P20 done** (int8): `sonari_speech.runtime`. Model on Hugging Face (`models.yaml` `url` list; R2 mirror TODO); CI skips its 4 real-model tests.
+- **Source ingest done** (ADR-0010): `content.sources` holds the 724 trimmed passages; `make ingest-sources` is idempotent (`_id` = `voa:<article>@<rules_version>`); a re-trim adds a version and flips `current`, never overwrites. 6 MiB, indexes 84+88 KiB, cold ingest 3 s, no-op 1.5 s. Docker is off in this WSL distro: live tests ran on a user-space mongod 7.0 `rs0`; CI runs `make infra`.
 
 ## Notes for G1 (P24/P25)
 - Whole-clip alignment lets an absent phoneme drift into context (bad.wav: θ landed in
@@ -27,7 +27,7 @@ Last updated: 2026-10-03
 - `spikes/gop/align.py` copies `tools/evaldata/ctc_align.py`; merge at P22.
 
 ## Next (one per session; prompts in `docs/prompts/BUILD-PROMPTS.md`)
-1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. Ingest the trimmed corpus (`~/sonari-trimmed/voa/trimmed.jsonl`, ADR-0008) into `Source`: `original_text`, `text`, `trim` as written; P50 still reads each chosen passage.
+1. Design A6 → P12 contracts. 2. P22 alignment + GOP. 3. P17 mock speech. 4. P40: Learnables and exercises store the pinned `Source._id`, never "current" (ADR-0010); P50 still reads each chosen passage.
 
 ## Blockers
 - P04: rerun `spikes/gop/onnx/` on the real VPS (BENCH.md); numbers above are the laptop's.

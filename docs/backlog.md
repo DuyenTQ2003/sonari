@@ -100,10 +100,20 @@ PR description.
   that draws the samples, writes the TSV to label and prints the counts with exact intervals, so every change
   to the lists can be re-measured. The grade is computed with the lines the rules miss still in, so recompute
   it as recall improves (below grade 7 was 3,253, 3,335, 3,214 and 3,313 passages with the four rule sets).
-- Ingesting the trimmed corpus (`make voa-trim`) into the `content` context's `Source`: `original_text` and
-  `text` are lists of lines in the file and would be joined with newlines there. A passage trimmed under one
-  `rules_version` keeps it; re-trimming one is a separate step with the removed lines before and after read
-  (ADR-0008 5.6). Not stored: the "Words in This Story" glossary, which the parser splits off, and the credit
-  lines the parser drops before the trim; both are in the cached HTML.
+- Not stored on `Source` (ADR-0010 ingests the trimmed corpus as it is): the "Words in This Story" glossary,
+  which the parser splits off, and the credit lines the parser drops before the trim; both are in the cached
+  HTML. P50 decides whether they matter.
+- `Source` has no word count of `text`: `original_words` counts the untrimmed page, and the corpus tokeniser
+  lives in `tools/voa_corpus`, which the service cannot import. A length filter on the trimmed text (250-1,200)
+  needs `write_trimmed.py` to emit it (a contract change, tools first) or one tokeniser both can import.
+- `SourceIngested` event for the other contexts (ADR-0001: they keep read models, they never query `content`).
+  Nothing consumes Sources yet, so none exists; add it with its first consumer.
+- `ingest_sources.py --dry-run`: run each transaction and abort it, to print what would be inserted,
+  superseded or refused before a re-trimmed file is made current.
+- Provenance of the batch is not on `Source`: only `ingested_at`. The manifest's `snapshot.index_sha256` (which
+  crawl) and `trimmed_jsonl_sha256` (which file) are checked at ingest and then dropped. Add them if an audit
+  ever needs to name the crawl a stored trim came from.
+- The ADR-0008 invariant is written twice (`tools/voa_corpus/trim.py` `validate`, and `TrimmedPassage`).
+  A test that feeds one the other's cases, or a package both import, would stop them drifting.
 - One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
   *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.
