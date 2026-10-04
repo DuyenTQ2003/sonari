@@ -170,19 +170,23 @@ def funnel(text: list[Passage]) -> tuple[str, list[Passage]]:
 
 def topics(text: list[Passage], final: list[Passage]) -> str:
     light = [p for p in text if not filters.blockers(p, cut_share=0.05)]
+    heavy = [p for p in text if not filters.blockers(p, cut_share=0.10)]
     units = [
-        [name, *[sum(i in p.units for p in group) for group in (text, final, light)]]
+        [name, *[sum(i in p.units for p in group) for group in (text, final, light, heavy)]]
         for i, (name, _) in enumerate(UNITS)
     ]
-    heads = ["unit (crude keywords on title and lead)", "all passages", "as is", "up to 5% cut"]
+    heads = [
+        "unit (crude keywords on title and lead)",
+        "all passages",
+        "as is",
+        "up to 5% cut",
+        "up to 10% cut",
+    ]
     return md(heads, units)
 
 
 def render(pages: list[Passage], index_rows: int, index_sha: str) -> str:
-    seen: set[str] = set()
-    for p in pages:  # URL order, so the first copy of a body is the one kept
-        p.duplicate = bool(p.digest) and p.digest in seen
-        seen.add(p.digest)
+    filters.mark_duplicates(pages)  # URL order: the first copy of a body is the one kept
     text = [p for p in pages if p.words >= filters.MIN_PASSAGE_WORDS]
     answer, final = funnel(text)
     sections = {

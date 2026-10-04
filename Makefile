@@ -79,7 +79,7 @@ test-tools:
 
 # VOA inventory (P06): a polite, resumable crawl into DATA_DIR/voa_cache, then an offline
 # report. The crawl needs VOA_CONTACT_EMAIL (it goes into the User-Agent). Not part of CI.
-.PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-wordlists voa-missing
+.PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-trim voa-wordlists voa-missing
 voa-crawl:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.crawl $(ARGS)
 
@@ -101,6 +101,12 @@ voa-wordlists:
 # docs/reports/voa-corpus.md. About 90 s.
 voa-corpus: voa-wordlists
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.analyze --report docs/reports/voa-corpus.md $(ARGS)
+
+# The trimmed corpus (ADR-0008, ADR-0009): the passages usable at a 10% cut, each with the lines the
+# parser returned, the lines left and every removed line with its rule. Read-only on DATA_DIR; it
+# writes $(TRIM_DIR) (default ~/sonari-trimmed/voa). About 90 s.
+voa-trim: voa-wordlists
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.write_trimmed $(ARGS)
 
 # What the text-less pages are: the seeded sample's labels (docs/reports/voa-missing-labels.tsv) with
 # confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.

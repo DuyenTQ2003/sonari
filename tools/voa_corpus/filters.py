@@ -40,6 +40,7 @@ class Passage:
     duplicate: bool = False
     boiler: dict[str, int] = field(default_factory=dict)  # kind -> words
     kept: int = 0  # editorial words on lines that stay whole (ADR-0008): a label before speech
+    text_words: int | None = None  # words of the text the trim leaves, page furniture gone too
     vocab: tuple[int, ...] = (0,) * 8
     units: tuple[int, ...] = ()
     unlisted: dict[str, int] = field(default_factory=dict)
@@ -61,6 +62,15 @@ class Passage:
         return sum(self.vocab[:4]) / total if total else None
 
 
+def mark_duplicates(pages: list[Passage]) -> None:
+    """Flag every page whose body is an exact copy of an earlier one (pages in URL order, so the
+    first copy of a body is the one that stays)."""
+    seen: set[str] = set()
+    for p in pages:
+        p.duplicate = bool(p.digest) and p.digest in seen
+        seen.add(p.digest)
+
+
 def bucket(value: float, edges: tuple[float, ...]) -> str:
     """Label of the half-open bucket of `value`: '<5', '5-7', ..., '>=13'."""
     index = sum(value >= e for e in edges)
@@ -79,9 +89,12 @@ def blockers(
 
     `cut_share` is the most that may be cut, as a share of the words, by removing whole lines
     (ADR-0008): frame words on a line that stays can never be cut, and the length window applies
-    to the text that is left after the cut. At 0 nothing is cut: "as is".
+    to the text that is left after the cut, page furniture included in what goes. At 0 nothing is
+    cut: "as is".
     """
-    left = p.words - (p.removable if cut_share > 0 else 0)
+    left = p.words
+    if cut_share > 0:
+        left = p.words - p.removable if p.text_words is None else p.text_words
     checks = (
         ("not a passage", p.words < MIN_PASSAGE_WORDS or p.duplicate),
         ("length", not words[0] <= left <= words[1]),

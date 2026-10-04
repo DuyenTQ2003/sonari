@@ -77,6 +77,7 @@ def measure(entry: tuple[str, str]) -> Passage:
     p.kept = t.kept_frame_words  # frame words on a line that stays whole: a trim cannot cut them
     plain = t.kept  # a speaker label leaves its quotation
     words, _, p.fk = stats(plain)  # the passage as it would be read, boilerplate left out
+    p.text_words = words
     sentences = [s for para in plain for s in SENTENCE_END.split(para.strip()) if WORD.search(s)]
     letters = sum(len(re.findall("[A-Za-z]", w)) for para in plain for w in WORD.findall(para))
     p.sentences, p.fk_raw = len(sentences), item.fk_grade
