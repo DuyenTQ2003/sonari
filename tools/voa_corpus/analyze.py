@@ -169,7 +169,7 @@ def funnel(text: list[Passage]) -> tuple[str, list[Passage]]:
 
 
 def topics(text: list[Passage], final: list[Passage]) -> str:
-    light = [p for p in text if not filters.blockers(p, cut_share=0.05)]
+    light = [p for p in text if not filters.blockers(p, cut_share=filters.DEFAULT_CAP)]
     heavy = [p for p in text if not filters.blockers(p, cut_share=0.10)]
     units = [
         [name, *[sum(i in p.units for p in group) for group in (text, final, light, heavy)]]
@@ -179,7 +179,7 @@ def topics(text: list[Passage], final: list[Passage]) -> str:
         "unit (crude keywords on title and lead)",
         "all passages",
         "as is",
-        "up to 5% cut",
+        f"up to {filters.DEFAULT_CAP:.0%} cut",
         "up to 10% cut",
     ]
     return md(heads, units)

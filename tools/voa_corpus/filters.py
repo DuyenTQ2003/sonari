@@ -5,10 +5,15 @@ count was looked at, and each comes from a project document:
 * Flesch-Kincaid grade below 7.0: `voa_inventory/levels.py` (FK_BANDS: level 4 = B1);
 * no editorial boilerplate: "as is" means nothing has to be cut out of the text;
 * licence: ADR-0006 (VOA-staff byline, no wire text), via `voa_inventory/license.py`.
+
+The cap and the two thresholds above are ADR-0008 decision 2, and the content service enforces
+them again where a file enters (`sonari_core.content.trim_rules`): `scripts/tests/` fails if the
+two sides disagree, or if either leaves the ADR.
 """
 
 from dataclasses import dataclass, field
 
+DEFAULT_CAP = 0.05  # ADR-0008 decision 2: a trim may cut at most this share of a passage's words
 MIN_WORDS, MAX_WORDS = 250, 1200
 MAX_FK = 7.0
 MIN_PASSAGE_WORDS = 100  # shorter pages are captions or stubs (rows.py: MIN_WORDS)

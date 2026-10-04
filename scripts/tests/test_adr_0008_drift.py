@@ -1,18 +1,14 @@
 """Guard: ADR-0008's rules are written down in more than one place, and nothing else compares them.
 
 The tools write the trimmed corpus and the content service reads it, and the service cannot
-import the tools (ADR-0010), so some rules exist twice:
+import the tools (ADR-0010), so every rule exists twice. This file covers the line invariant and
+the record's shape; `test_adr_0008_constraints_drift.py` covers the numbers (cap, window, grade).
 
-* "A trim removes whole lines and nothing else": `voa_corpus.trim.validate` and
+* "A trim removes whole lines and nothing else" (decision 1): `voa_corpus.trim.validate` and
   `TrimmedPassage`. Both get the same cases here and must give the same verdict.
-* The record the writer emits is the one the service keeps (ADR-0008 decision 3).
-* The cut is within the cap: `filters.blockers` picks the passages, and `TrimmedPassage`
-  refuses a record that cut more than its own `cap`. Both must agree on the boundary.
-
-The cap, the length window and the grade ceiling (ADR-0008 decision 2) exist in the tools only:
-the service stores `fk` and `cap` but pins no number, and stores no word count of `text`
-(ADR-0010), so it cannot apply the window. They are pinned here to the ADR's own text, so
-changing one takes a superseding ADR and a deliberate edit of this file.
+* The record the writer emits is the one the service keeps (decision 3).
+* The cap, the length window and the grade ceiling (decision 2) are pinned to the ADR's own
+  text, so changing one takes a superseding ADR and a deliberate edit of this file.
 
 Runs under `make test-scripts`, which installs pydantic and beanie for the service's models.
 """
@@ -21,70 +17,18 @@ import re
 from collections.abc import Callable
 from dataclasses import fields
 from pathlib import Path
-from typing import Any
 
 import pytest
-from pydantic import ValidationError
+from adr_0008_fakes import Parts, service_accepts, tools_accepts, valid
 from sonari_core.content.models import RemovedLine, Trim, TrimmedPassage
 from voa_corpus import filters
-from voa_corpus.filters import Passage
-from voa_corpus.trim import Removed, validate
-from voa_corpus.write_trimmed import DEFAULT_CAP, make_record
+from voa_corpus.filters import DEFAULT_CAP
+from voa_corpus.trim import Removed
+from voa_corpus.write_trimmed import make_record
+from voa_inventory.levels import stats
 
 ROOT = Path(__file__).resolve().parents[2]
 ADR_0008 = ROOT / "docs" / "adr" / "0008-boilerplate-trimming-removes-whole-lines-only.md"
-
-# Two identical furniture lines: the one at index 0 is removed and the one at index 4 is kept, so
-# a verdict that went by text instead of by index would be wrong.
-ORIGINAL = ["Share", "Kept line one.", "I'm June Simms.", "Kept line two.", "Share"]
-REMOVED = [
-    {"index": 0, "kind": "furniture", "rule": "furniture", "text": "Share"},
-    {"index": 2, "kind": "presenter", "rule": "list:presenter.txt", "text": "I'm June Simms."},
-]
-KEPT = ["Kept line one.", "Kept line two.", "Share"]
-
-Parts = tuple[list[str], list[str], list[dict[str, Any]]]  # original, kept, removed
-
-
-def tools_accepts(original: list[str], kept: list[str], removed: list[dict[str, Any]]) -> bool:
-    return validate(original, kept, [Removed(**line) for line in removed]) == []
-
-
-def service_passage(
-    original: list[str],
-    kept: list[str],
-    removed: list[dict[str, Any]],
-    cap: float = 1.0,
-    share: float = 0.0,
-) -> TrimmedPassage:
-    return TrimmedPassage(
-        source_id="voa:1",
-        url="https://learningenglish.voanews.com/a/1.html",
-        title="A passage",
-        fk=4.0,
-        original_words=100,
-        original_text=original,
-        text=kept,
-        trim=Trim(
-            rules_version="voa-trim/aaaaaaaaaaaa",
-            cap=cap,
-            removed_words=0,
-            removed_share=share,
-            removed=[RemovedLine(**line) for line in removed],
-        ),
-    )
-
-
-def service_accepts(*parts: Any, **cut: float) -> bool:
-    try:
-        service_passage(*parts, **cut)
-    except ValidationError:
-        return False
-    return True
-
-
-def valid() -> Parts:
-    return list(ORIGINAL), list(KEPT), [dict(line) for line in REMOVED]
 
 
 def nothing_removed(p: Parts) -> None:
@@ -105,7 +49,7 @@ def kept_line_dropped_without_a_record(p: Parts) -> None:
 
 
 def the_wrong_one_of_two_identical_lines_dropped(p: Parts) -> None:
-    p[1].pop()  # the kept "Share" at index 4, which no removed record covers
+    p[1].pop()  # the kept "Share" at index 5, which no removed record covers
 
 
 def kept_lines_reordered(p: Parts) -> None:
@@ -117,27 +61,27 @@ def removed_line_also_kept(p: Parts) -> None:
 
 
 def removed_text_is_not_the_original_line(p: Parts) -> None:
-    p[2][0]["text"] = "Something VOA never wrote."
+    p[2][1]["text"] = "Something VOA never wrote."
 
 
 def a_line_removed_twice(p: Parts) -> None:
-    p[2].append(dict(p[2][0]))
+    p[2].append(dict(p[2][1]))
 
 
 def an_index_past_the_end(p: Parts) -> None:
-    p[2][0]["index"] = len(p[0])
+    p[2][1]["index"] = len(p[0])
 
 
 def a_negative_index(p: Parts) -> None:
-    p[2][0]["index"] = -1
+    p[2][1]["index"] = -1
 
 
 def a_removed_line_without_a_kind(p: Parts) -> None:
-    p[2][0]["kind"] = ""
+    p[2][1]["kind"] = ""
 
 
 def a_removed_line_without_a_rule(p: Parts) -> None:
-    p[2][0]["rule"] = ""
+    p[2][1]["rule"] = ""
 
 
 ACCEPTED = [nothing_removed, removed_listed_out_of_order]
@@ -171,6 +115,8 @@ def test_both_validators_give_the_verdict_adr_0008_asks_for(
     parts = valid()
     mutate(parts)
 
+    words = stats(parts[1])[0]  # a case must not be refused for its length instead
+    assert filters.MIN_WORDS <= words <= filters.MAX_WORDS, f"{mutate.__name__} left the window"
     assert (tools_accepts(*parts), service_accepts(*parts)) == (accepted, accepted)
 
 
@@ -179,14 +125,14 @@ def test_the_removed_record_has_the_same_fields_in_both() -> None:
 
 
 def test_the_writer_emits_a_record_the_service_accepts_and_keeps_whole() -> None:
-    body = [f"Sentence {number} of the passage is short." for number in range(20)]
+    body = [f"Sentence {number} of the passage is short." for number in range(60)]
     paragraphs = ["Share", "I'm June Simms.", *body]
     meta = {
         "url": "https://learningenglish.voanews.com/a/1.html",
         "title": "A passage",
         "program": "",
         "fk": 4.1,
-        "words": 3 + 8 * len(body),  # editorial words of the original, furniture excluded
+        "words": stats(paragraphs)[0],  # what the parser reports as the page's word count
     }
 
     record = make_record(meta, paragraphs, DEFAULT_CAP)
@@ -201,18 +147,6 @@ def test_the_writer_emits_a_record_the_service_accepts_and_keeps_whole() -> None
     rest = {name: value for name, value in record.items() if name != "words"}
     passage = TrimmedPassage(source_id="voa:1", original_words=record["words"], **rest)
     assert passage.text == record["text"]
-
-
-@pytest.mark.parametrize(("removed_words", "allowed"), [(50, True), (51, False)])
-def test_the_cap_is_inclusive_in_both_places(removed_words: int, allowed: bool) -> None:
-    words = 1000
-    page = Passage("https://learningenglish.voanews.com/a/1.html", words=words)
-    page.boiler = {"presenter": removed_words}
-
-    picked = "boilerplate" not in filters.blockers(page, cut_share=DEFAULT_CAP)
-    kept = service_accepts(*valid(), cap=DEFAULT_CAP, share=removed_words / words)
-
-    assert (picked, kept) == (allowed, allowed)
 
 
 def adr_0008(pattern: str, what: str) -> tuple[str, ...]:
@@ -237,7 +171,6 @@ def test_the_length_window_and_grade_ceiling_are_the_ones_adr_0008_fixes() -> No
         r"\(Flesch-Kincaid\s+below\s+(\d+(?:\.\d+)?)\)",
         "the length window and the grade ceiling",
     )
-
     in_the_adr = (int(low.replace(",", "")), int(high.replace(",", "")), float(grade))
 
     assert in_the_adr == (filters.MIN_WORDS, filters.MAX_WORDS, filters.MAX_FK)

@@ -62,9 +62,12 @@ kept with one marked current?** Three facts decide it.
    that passage, leaves what is stored, names the key and exits with status 1.
 6. **A file is validated whole before anything is written** (`TrimmedPassage`, no database):
    the ADR-0008 decision 1 invariants (`text` is `original_text` minus the removed lines, each
-   removed record is the line it says, no line twice, the cut is within its `cap`), a field the
-   schema does not keep (so provenance cannot vanish quietly), one version per passage per file,
-   and, when `MANIFEST.json` sits beside it, the file's sha256 and passage count.
+   removed record is the line it says, no line twice), the ADR-0008 decision 2 limits (the cap is
+   5% whatever the file declares; `original_words`, `removed_words` and `removed_share` are
+   derived from the lines and must equal what the file says; the trimmed text is 250-1,200 words;
+   `fk` is below 7), a field the schema does not keep (so provenance cannot vanish quietly), one
+   version per passage per file, and, when `MANIFEST.json` sits beside it, the file's sha256 and
+   passage count. `Source` inherits these checks, so they also run when a stored version is read.
 
 ## The document
 
@@ -75,7 +78,7 @@ kept with one marked current?** Three facts decide it.
 | `id` | `source_id@rules_version` |
 | `source_id`, `url`, `title`, `program` | the passage and where it came from (`program` is empty when the page names none) |
 | `fk` | Flesch-Kincaid grade of **`text`**, the trimmed lines |
-| `original_words` | editorial words of the **original** page: the corpus's `words`, the denominator of `trim.removed_share` |
+| `original_words` | words of the **original** page, counted over every line of `original_text` (page furniture included) with the corpus tokeniser: the corpus's `words`, the denominator of `trim.removed_share`. Derived and checked at ingest |
 | `original_text`, `text` | lists of lines, not joined: `trim.removed[].index` addresses positions in `original_text` |
 | `trim` | `rules_version`, `cap`, `removed_words`, `removed_share`, `removed[{index, kind, rule, text}]` |
 | `current`, `ingested_at` | which version is current; when this version was stored (versions cannot be ordered by `rules_version`) |
@@ -83,7 +86,9 @@ kept with one marked current?** Three facts decide it.
 `words` was renamed. In the corpus it counts the original page while `fk` is measured on the
 trimmed text (the maximum is 1,241, over the 1,200 ceiling the filter applies to the trimmed
 text). Under the name `words` a reader would filter `text` by a number that is not its length.
-No word count of `text` is stored: the corpus tokeniser is not reimplemented here (backlog).
+No word count of `text` is stored. Where the service needs one it counts (`trim_rules.count_words`,
+the corpus tokeniser written out once more and pinned to the original by a drift test): the length
+window of ADR-0008 decision 2 is checked that way.
 
 **Queried:** the passage by `source_id` with `current: true` (partial unique index
 `source_id_current`), and a pinned version by `_id`. **Not indexed:** `fk`, `original_words`,
@@ -99,9 +104,12 @@ cheaper than keeping an index; add one when the corpus grows or a profile shows 
   (ADR-0001), and no event exists yet (backlog).
 - The ADR-0008 invariant is implemented twice, in `tools/voa_corpus/trim.py` (`validate`) and in
   `TrimmedPassage`, because the service cannot import the tools. Both suites pin the edited,
-  dropped, forged and reordered cases; the service's adds a duplicated or out-of-range index, the
-  cap, a missing version or rule, and an unknown field. `scripts/tests/test_adr_0008_drift.py` feeds
-  both the same cases and fails if their verdicts differ.
+  dropped, forged and reordered cases; the service's adds a duplicated or out-of-range index, a
+  missing version or rule, and an unknown field. The numbers of decision 2 (cap, window, grade
+  ceiling, and the word counts behind them) are written in both places too, in
+  `tools/voa_corpus/filters.py` and `sonari_core/content/trim_rules.py`.
+  `scripts/tests/test_adr_0008_drift.py` and `test_adr_0008_constraints_drift.py` feed both the same
+  cases, compare the constants with each other and with the text of ADR-0008, and fail if they differ.
 
 ## Alternatives rejected
 
