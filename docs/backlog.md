@@ -108,12 +108,19 @@ PR description.
   needs `write_trimmed.py` to emit it (a contract change, tools first) or one tokeniser both can import.
 - `SourceIngested` event for the other contexts (ADR-0001: they keep read models, they never query `content`).
   Nothing consumes Sources yet, so none exists; add it with its first consumer.
-- `ingest_sources.py --dry-run`: run each transaction and abort it, to print what would be inserted,
-  superseded or refused before a re-trimmed file is made current.
+- `--dry-run` counts a rollback (a stored older version made current again) as `superseded`, like a
+  re-trim, because the real run's summary does. To tell them apart, split the outcome in `_decide`
+  (`content/ingest.py`), which the run and the plan both ask.
 - Provenance of the batch is not on `Source`: only `ingested_at`. The manifest's `snapshot.index_sha256` (which
   crawl) and `trimmed_jsonl_sha256` (which file) are checked at ingest and then dropped. Add them if an audit
   ever needs to name the crawl a stored trim came from.
-- The ADR-0008 invariant is written twice (`tools/voa_corpus/trim.py` `validate`, and `TrimmedPassage`).
-  A test that feeds one the other's cases, or a package both import, would stop them drifting.
+- The service enforces less of ADR-0008 than the tools do. `scripts/tests/test_adr_0008_drift.py` pins the
+  tools' cap, window and grade ceiling to the ADR and compares the two line validators, but
+  `TrimmedPassage` checks none of the three numbers: not `fk` below 7 (stored, so it could), not the window
+  (no word count of `text`, above), not that `trim.cap` is 5% (a file trimmed with `--cap 0.2` ingests). Its cap
+  check compares two numbers the file reports about itself: `removed_words` and `removed_share` recompute
+  exactly from `trim.removed` for all 724 stored records (`split()`, furniture excluded), so it could derive them.
+- `analyze.py` writes the 5% cap again as a literal (`cut_share=0.05`, next to `write_trimmed.DEFAULT_CAP`).
+  Moving the constant into `filters.py` lets both import it.
 - One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
   *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.

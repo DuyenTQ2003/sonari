@@ -70,8 +70,10 @@ test-core:
 test-speech:
 	$(UV_RUN) services/speech pytest
 
+# pydantic and beanie: scripts/tests/test_adr_0008_drift.py imports the content models to compare
+# them with the tools' trim rules.
 test-scripts:
-	uv run --no-project --with pytest --with pyyaml pytest -q scripts/tests
+	uv run --no-project --with pytest --with pyyaml --with pydantic --with beanie pytest -q scripts/tests
 
 # numpy-only tests (tools + spike aligner); neither torch project is installed for these.
 test-tools:
@@ -110,10 +112,12 @@ voa-trim: voa-wordlists
 
 # Loads the trimmed corpus into content.sources as the `core` user (ADR-0010). Idempotent: run
 # it again after a re-trim to add the new version and make it current. Starts the infra first.
+# `make ingest-sources ARGS=--dry-run` reports what would be inserted, superseded or refused and
+# writes nothing; it exits 1 on a conflict, like the real run.
 SOURCES_FILE ?= $(HOME)/sonari-trimmed/voa/trimmed.jsonl
 .PHONY: ingest-sources
 ingest-sources: infra
-	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_sources.py $(SOURCES_FILE)
+	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_sources.py $(SOURCES_FILE) $(ARGS)
 
 # What the text-less pages are: the seeded sample's labels (docs/reports/voa-missing-labels.tsv) with
 # confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.

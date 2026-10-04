@@ -17,7 +17,9 @@ from functools import partial
 from pathlib import Path
 from typing import Any
 
+from beanie import init_beanie
 from pymongo.asynchronous.client_session import AsyncClientSession
+from pymongo.asynchronous.database import AsyncDatabase
 
 from sonari_core.content.models import Source, TrimmedPassage
 from sonari_core.shared.outbox import run_in_transaction
@@ -110,6 +112,17 @@ class IngestReport:
     unchanged: int = 0
     conflicts: list[str] = field(default_factory=list)  # keys that were refused
 
+    def record(self, outcome: Outcome, key: str) -> None:
+        match outcome:
+            case Outcome.INSERTED:
+                self.inserted += 1
+            case Outcome.SUPERSEDED:
+                self.superseded += 1
+            case Outcome.UNCHANGED:
+                self.unchanged += 1
+            case Outcome.CONFLICT:
+                self.conflicts.append(key)
+
 
 async def ingest_sources(passages: Sequence[TrimmedPassage], now: datetime) -> IngestReport:
     """Make each passage's version the current `Source` of that passage (ADR-0010).
@@ -123,32 +136,65 @@ async def ingest_sources(passages: Sequence[TrimmedPassage], now: datetime) -> I
     report = IngestReport()
     for passage in passages:
         outcome = await run_in_transaction(client, partial(_make_current, passage, now))
-        match outcome:
-            case Outcome.INSERTED:
-                report.inserted += 1
-            case Outcome.SUPERSEDED:
-                report.superseded += 1
-            case Outcome.UNCHANGED:
-                report.unchanged += 1
-            case Outcome.CONFLICT:
-                report.conflicts.append(passage.key)
+        report.record(outcome, passage.key)
     return report
 
 
-async def _make_current(
-    passage: TrimmedPassage, now: datetime, session: AsyncClientSession
-) -> Outcome:
-    collection = Source.get_pymongo_collection()
+async def bind_read_only(database: AsyncDatabase[dict[str, Any]]) -> None:
+    """Bind `Source` to `database` without creating its indexes.
+
+    `ContextSpec.init` creates them, and on an empty database that also creates the collection:
+    a write. A plan only reads, so it binds this way and can run against a database it must not
+    change.
+    """
+    await init_beanie(database=database, document_models=[Source], skip_indexes=True)
+
+
+async def plan_sources(passages: Sequence[TrimmedPassage]) -> IngestReport:
+    """What `ingest_sources` would report for these passages, found by reading and nothing else:
+    no transaction, no write, no index. It is a forecast and not a lock, so another writer can
+    change the answer before the real run. `Source` must be bound already.
+
+    A file holds one version per passage (`load_passages`), so each passage is decided on its
+    own, exactly as the real run decides it.
+    """
+    report = IngestReport()
+    for passage in passages:
+        outcome, _ = await _decide(passage)
+        report.record(outcome, passage.key)
+    return report
+
+
+async def _decide(
+    passage: TrimmedPassage, session: AsyncClientSession | None = None
+) -> tuple[Outcome, Source | None]:
+    """What ingesting `passage` does, from reads alone, and the stored version of it if there
+    is one. The one place that decides: the ingest and its plan both ask it, so a plan cannot
+    say anything the ingest does not do."""
     stored = await Source.get(passage.key, session=session)
     if stored is not None:
         # The same key must mean the same content. If it does not, the trim changed without a
         # new `rules_version` (ADR-0008 5.6): refuse, and leave what is stored alone.
         if stored.model_dump(include=set(TrimmedPassage.model_fields)) != passage.model_dump():
-            return Outcome.CONFLICT
+            return Outcome.CONFLICT, stored
         if stored.current:
-            return Outcome.UNCHANGED
+            return Outcome.UNCHANGED, stored
+        return Outcome.SUPERSEDED, stored  # an older version coming back, as in a rollback
+    current = await Source.get_pymongo_collection().find_one(
+        {"source_id": passage.source_id, "current": True}, {"_id": 1}, session=session
+    )
+    return (Outcome.INSERTED if current is None else Outcome.SUPERSEDED), None
+
+
+async def _make_current(
+    passage: TrimmedPassage, now: datetime, session: AsyncClientSession
+) -> Outcome:
+    outcome, stored = await _decide(passage, session)
+    if outcome in (Outcome.CONFLICT, Outcome.UNCHANGED):
+        return outcome
+    collection = Source.get_pymongo_collection()
     # Demote before promoting: the partial unique index allows one current version at a time.
-    demoted = await collection.update_many(
+    await collection.update_many(
         {"source_id": passage.source_id, "current": True},
         {"$set": {"current": False}},
         session=session,
@@ -160,5 +206,4 @@ async def _make_current(
         await collection.update_one(
             {"_id": passage.key}, {"$set": {"current": True}}, session=session
         )
-    inserted = stored is None and demoted.modified_count == 0
-    return Outcome.INSERTED if inserted else Outcome.SUPERSEDED
+    return outcome

@@ -100,7 +100,8 @@ cheaper than keeping an index; add one when the corpus grows or a profile shows 
 - The ADR-0008 invariant is implemented twice, in `tools/voa_corpus/trim.py` (`validate`) and in
   `TrimmedPassage`, because the service cannot import the tools. Both suites pin the edited,
   dropped, forged and reordered cases; the service's adds a duplicated or out-of-range index, the
-  cap, a missing version or rule, and an unknown field. Nothing yet fails if the two drift apart.
+  cap, a missing version or rule, and an unknown field. `scripts/tests/test_adr_0008_drift.py` feeds
+  both the same cases and fails if their verdicts differ.
 
 ## Alternatives rejected
 

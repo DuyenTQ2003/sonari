@@ -17,7 +17,12 @@ from pymongo import AsyncMongoClient
 from pymongo.errors import DuplicateKeyError
 
 from sonari_core import content
-from sonari_core.content.ingest import ingest_sources, passage_from_record
+from sonari_core.content.ingest import (
+    bind_read_only,
+    ingest_sources,
+    passage_from_record,
+    plan_sources,
+)
 from sonari_core.content.models import Source, TrimmedPassage
 from source_fakes import BASE_ARTICLE, VERSION_A, VERSION_B, make_record
 
@@ -171,6 +176,75 @@ async def test_two_ingests_at_once_leave_one_document_per_passage(articles: Arti
     documents = await stored(numbers)
     assert len(documents) == 20
     assert all(d.current for d in documents)
+
+
+async def mixed_state(articles: Articles) -> tuple[list[TrimmedPassage], list[int]]:
+    """Five passages, each in a different state, and the file that would ingest them: nothing
+    stored, this version already current, another version current (a re-trim), this version
+    stored but not current (a rollback), and the same key with other content (a conflict)."""
+    new, unchanged, retrimmed, rolled_back, conflict = numbers = articles(5)
+    await ingest_sources([passage(n, VERSION_A) for n in numbers[1:]], NOW)
+    await ingest_sources([passage(rolled_back, VERSION_B, remove=(0, 1, -1))], NOW)
+    file = [
+        passage(new),
+        passage(unchanged),
+        passage(retrimmed, VERSION_B, remove=(0, 1, -1)),
+        passage(rolled_back, VERSION_A),
+        passage(conflict).model_copy(update={"title": "A title the first run never saw"}),
+    ]
+    return file, numbers
+
+
+async def test_a_plan_names_what_the_ingest_would_do_to_each_state_a_passage_can_be_in(
+    articles: Articles,
+) -> None:
+    file, _ = await mixed_state(articles)
+
+    plan = await plan_sources(file)
+
+    assert (plan.inserted, plan.superseded, plan.unchanged) == (1, 2, 1)
+    assert plan.conflicts == [file[4].key]
+
+
+async def test_a_plan_writes_nothing(articles: Articles) -> None:
+    file, numbers = await mixed_state(articles)
+    collection = Source.get_pymongo_collection()
+    ours = {"source_id": {"$in": [f"voa:{n}" for n in numbers]}}
+    documents = await collection.find(ours).sort("_id").to_list()
+    indexes = await collection.index_information()
+
+    await plan_sources(file)
+
+    assert await collection.find(ours).sort("_id").to_list() == documents
+    assert await collection.index_information() == indexes
+    assert await stored([numbers[0]]) == []  # the passage that was never stored still is not
+
+
+async def test_the_real_ingest_reports_what_the_plan_said(articles: Articles) -> None:
+    file, _ = await mixed_state(articles)
+    plan = await plan_sources(file)
+
+    real = await ingest_sources(file, NOW + timedelta(days=1))
+
+    assert real == plan
+
+
+async def test_binding_for_a_plan_creates_no_collection_and_no_index(core_mongo_uri: str) -> None:
+    """`ContextSpec.init` creates the indexes, which on a fresh database also creates the
+    collection. A dry run must not, so it binds without them. The `learning` database is the
+    scratch space: the `core` user may use it and it has no `sources`."""
+    client: AsyncMongoClient[dict[str, Any]] = AsyncMongoClient(core_mongo_uri, tz_aware=True)
+    database = client["learning"]
+    assert "sources" not in await database.list_collection_names()
+    try:
+        await bind_read_only(database)
+        await plan_sources([passage(BASE_ARTICLE)])
+
+        assert "sources" not in await database.list_collection_names()
+    finally:
+        await database.drop_collection("sources")
+        await content.SPEC.init(client)  # `Source` belongs to `content` again
+        await client.close()
 
 
 async def test_the_collection_has_the_id_and_one_partial_unique_index(articles: Articles) -> None:
