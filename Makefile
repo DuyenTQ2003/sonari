@@ -102,7 +102,7 @@ voa-wordlists:
 voa-corpus: voa-wordlists
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.analyze --report docs/reports/voa-corpus.md $(ARGS)
 
-# The trimmed corpus (ADR-0008, ADR-0009): the passages usable at a 10% cut, each with the lines the
+# The trimmed corpus (ADR-0008): the passages usable at a 5% cut, each with the lines the
 # parser returned, the lines left and every removed line with its rule. Read-only on DATA_DIR; it
 # writes $(TRIM_DIR) (default ~/sonari-trimmed/voa). About 90 s.
 voa-trim: voa-wordlists

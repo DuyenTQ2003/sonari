@@ -1,4 +1,4 @@
-"""Write the trimmed corpus (ADR-0008, ADR-0009): the passages usable at the default cap, each with
+"""Write the trimmed corpus (ADR-0008): the passages usable at the cap, each with
 the lines the parser returned, the lines left after the trim and every line removed with the rule
 that removed it. Taking `original_text` undoes the trim.
 
@@ -26,7 +26,7 @@ from voa_corpus.filters import Passage
 from voa_corpus.measure import init, measure
 from voa_corpus.trim import rules_version, trim, validate
 
-DEFAULT_CAP = 0.10  # ADR-0009: a trim may cut at most this share of a passage's words
+DEFAULT_CAP = 0.05  # ADR-0008 decision 2: a trim may cut at most this share of a passage's words
 OUT = Path(os.environ.get("TRIM_DIR", "~/sonari-trimmed")).expanduser() / "voa"
 
 

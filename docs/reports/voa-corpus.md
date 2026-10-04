@@ -127,8 +127,9 @@ with no frame line left: 52% at 5% after round one, 68% after round two and 57% 
 ## Summary
 
 - **48 passages are usable as they are for level 4**, out of 19,918 passages and 47,854 article pages
-  (0.24% and 0.10%). If the passages may have whole lines cut first (ADR-0008, ADR-0009: at most 10% of the
-  words), it is 22 times more: 1,081 (724 at a cut of 5%). The filter and the detail are in the next section.
+  (0.24% and 0.10%). If the passages may have whole lines cut first (ADR-0008: at most 5% of the words), it is
+  15 times more: 724 (1,081 at a cut of 10%, which is not the cap). The filter and the detail are in the next
+  section.
   The count was 76 before the parser fix, 98 with the old boilerplate rules, 72 with the first closed lists and
   55 with the open-slot rules; it moves with what the lists recognise, so it is not a measure of how clean the
   passages are (see the previous section).
@@ -188,10 +189,10 @@ uniform sample; scaled, 48 becomes about 68.
 
 Nothing here is applied to the corpus. The figures come from the second table of "The level 4 filter" below.
 
-1. **Cut the frame, whole lines only (ADR-0008, ADR-0009).** If a passage may have its frame lines removed,
-   the count at the same thresholds is **1,081** when the cut is at most 10% of its words (the default,
-   ADR-0009), **724** at 5%, **442** at 2% and **1,120** when any amount may be cut. Per unit (crude tags): 28
-   to 126 passages with the 5% cut, 37 to 217 with the 10% cut. This is removal, not writing, so it does not touch ADR-0006's ban on generated English; the
+1. **Cut the frame, whole lines only (ADR-0008).** If a passage may have its frame lines removed, the count
+   at the same thresholds is **724** when the cut is at most 5% of its words (the cap), **442** at 2%, 1,081
+   at 10% and 1,120 when any amount may be cut. Per unit (crude tags): 28 to 126 passages with the 5% cut,
+   37 to 217 with the 10% cut. This is removal, not writing, so it does not touch ADR-0006's ban on generated English; the
    stored text is VOA's lines minus its frame. What the lists miss is not counted out: see "How far to trust".
 2. **A different grade ceiling.** Below grade 8 the strict count is 88 and the cleaned one 1,419 (5% cut) or
    2,037 (any cut). But grade 7 to 8 is level 5 by the project's own bands, so this finds more level 5
@@ -207,9 +208,9 @@ Nothing here is applied to the corpus. The figures come from the second table of
    still has to read the passage a unit uses; the topic tags are crude keywords, and none of this checks
    that a passage suits a lesson.
 
-The cheapest move is the first. It multiplies the usable set by about 15 to 23 and leaves 28 or more
+The cheapest move is the first. At the 5% cap it multiplies the usable set by about 15 and leaves 28 or more
 passages per unit to choose from; the others add little or change the level. It is done: the trimmed corpus is
-written ([voa-trim-corpus.md](voa-trim-corpus.md)), and recall work stops there.
+written at 5% ([voa-trim-corpus.md](voa-trim-corpus.md)), and recall work stops there.
 
 ## How far to trust these numbers
 
@@ -226,7 +227,7 @@ written ([voa-trim-corpus.md](voa-trim-corpus.md)), and recall work stops there.
   **Recall is the weak side, and the "no rule catches" line below hides it**: that line counts only
   *repeated* short paragraphs, and what is left among them is headings ("Closing Thoughts"). The frame lines
   the lists miss are one-off. In a seeded sample of 120 passages of the usable set, read in full, 57% of the
-  5% set (46% to 67%) are free of them, and 62% of the 10% set (54% to 71%): about 409 and 674 passages. Recall
+  5% set (46% to 67%) are free of them, about 409 passages (the 10% set: 62%, about 674). Recall
   work stopped there (the 90% target was withdrawn); what is left unlisted is mostly closings, teasers,
   blurbs and practice prompts in *Everyday Grammar*, *Ask a Teacher* and *Words and Their Stories*.
 - **Readability** is computed on the text without the lines the lists remove. With every short line left in,
