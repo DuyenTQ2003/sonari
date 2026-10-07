@@ -1,7 +1,7 @@
 # What kind of text the 724 passages are
 
 > **The safety numbers below are the first run.** [voa-safety-stems.md](voa-safety-stems.md) narrows the stems and
-> splits the disaster rule: usable with no flag is now **264** by the default rule (strict 303, loose 184), not 240.
+> splits the disaster rule: usable with no flag is now **257** by the default rule (strict 295, loose 170), not 240.
 > The type counts, the validation of the types and the per-unit tags are unchanged.
 
 The "usable" count of [voa-corpus.md](voa-corpus.md) measures length, difficulty and boilerplate. It does not

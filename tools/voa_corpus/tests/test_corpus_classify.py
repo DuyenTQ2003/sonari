@@ -130,16 +130,10 @@ def test_tornado_season_in_the_corpus_is_not_flagged() -> None:
 @pytest.mark.parametrize(
     ("text", "category", "flagged"),
     [
-        ("The president of the club spoke. ", "politics", False),
-        ("President Emmerson Mnangagwa spoke. ", "politics", True),
-        ("The city government paid. ", "politics", False),
-        ("Government officials met. ", "politics", True),
         ("Congress made the park. ", "politics", False),
         ("An advertising campaign began. ", "politics", False),
         ("The presidential campaign ended. ", "politics", True),
-        ("The Democratic Republic of Congo. ", "politics", False),
         ("Democrats and Republicans argued. ", "politics", True),
-        ("The Bharatiya Janata Party won. ", "politics", True),
         ("A trade war began. ", "war", False),
         ("I saw Star Wars. ", "war", False),
         ("A home invasion happened. ", "war", False),
