@@ -125,3 +125,15 @@ PR description.
   pytest, pyyaml and uv itself still float.
 - One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
   *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.
+- Classification (`docs/reports/voa-classify.md`), ideas only, none coded. The safety flags over-fire: 8 false alarms in
+  15 flagged explainer/news passages of a 50-passage read, no miss seen. Count a stem once per paragraph (one
+  anecdote gave "politician" 4 times and 5 war words) and take the generic stems (`president`, `government`,
+  `politic`, `violen`, `attack`) from the title and lead only, then re-score on the same labels.
+- The "American Mosaic:" title makes a magazine even when the stored text is one segment (1 of 3 read); look at the
+  text. An English lesson with no programme and no lesson title ("Some New Words for VOA's Word Book") is tagged
+  explainer. The 50 labels have one labeller (the assistant): have the owner overrule any, and read a second sample
+  that was not used to write the rules.
+- The unit tags (`units.tsv`) are not validated: 352 of the 724 match no unit, and 7 of 15 reader letters are
+  tagged *Study and work*. Measure their precision on a read sample before the per-unit counts decide a unit.
+- Missed frame by type: voa-trim-corpus.md measured 57% of the 724 as free of a frame line the lists miss, mostly in
+  the lesson programmes. Re-measure it on the 370 explainers and news items, the set the reading path draws from.

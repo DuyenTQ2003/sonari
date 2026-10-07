@@ -1,0 +1,11 @@
+# The six topic-safety categories for an app aimed at Vietnamese students (docs/reports/voa-classify.md)
+# and the stems that flag them (tab-separated: category, regex alternatives matched at the start of a
+# word, case-insensitive except where a group says otherwise). The stems were fixed after reading which
+# words fired on the 724 passages: "sentenc" matched every grammar sentence and "trump" the instrument.
+# A flag is a lead for a reader, never a filter: nothing is deleted.
+war	wars?\b|warfare|military|armies|army\b|soldiers?\b|troops?\b|invasion|invad|missiles?\b|bomb|weapons?\b|battle|combat|terroris|islamic state|taliban|rebels?\b|veterans?\b
+politics	politic|elections?\b|elected|voters?\b|voting|congress|senate|parliament|republicans?\b|democrat|prime minister|president|government|referendum|sanctions?\b|campaign|trump\b|obama|putin|regime
+disaster	earthquake|tsunami|hurricane|cyclone|typhoon|flood|wildfire|tornado|disaster|volcano|drought|famine|avalanche|landslide|blizzard
+disease	disease|virus|cancer|ebola|epidemic|pandemic|coronavirus|covid|infect|outbreak|(?-i:AIDS\b)|hiv\b|malaria|flu\b|vaccin|illness|sickness
+crime	crimes?\b|criminals?\b|murder|killing|shoot|guns?\b|arrest|prison|police|theft|stole|steal|rape\b|violen|abuse|trafficking|jail|attack|sentenced|sentencing|gang|robber|kidnap
+death	death|die\b|dies\b|died|dead\b|deadly|funeral|suicide|victims?\b|fatal|casualt|cemeter|killed|kill\b|murder|mourn

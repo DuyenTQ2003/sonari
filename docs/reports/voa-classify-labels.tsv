@@ -1,0 +1,59 @@
+# Hand labels for `make voa-classify ARGS="--validate docs/reports/voa-classify-labels.tsv"`.
+# 50 passages of ~/sonari-trimmed/voa/trimmed.jsonl, drawn with seed 20261007 (stratified by the type the
+# classifier gave; `--sample 50` prints them in shuffled order with no tag). Each was read in full and
+# labelled BEFORE the classifier's tag was looked at, by one labeller (the assistant, not the owner).
+# Columns: id, type, safety categories (comma list, or -), note.
+# Type: what the text IS. Safety: a category is set when it is the main subject or a distinct, sizeable
+# part (a section of its own, about a tenth of the text); a passing mention is not.
+id	type	flags	note
+7014516	english_teaching	-	Everyday Grammar lesson
+2630072	news_item	-	news feature about matatu art; crime and the government ban are passing
+2495101	news_item	war	Kobani, Islamic State
+3015834	newscast	politics,crime,disease	Congo referendum, Pistorius prison, Ebola
+1630766	magazine	war	American Mosaic: three segments; the first is set in WWII
+4637376	news_item	war,death	doctor in a bombed war zone
+4372946	news_item	-	prom dress debate
+4707465	english_teaching	-	Ask a Teacher
+1662565	explainer	-	travel feature on Memphis; the King murder section is about 7% of the words, borderline
+1950115	news_item	-	NASA test flight, chatty tone
+2724681	news_item	-	blues musicians' CD; a death is mentioned in passing
+1639815	explainer	-	titled American Mosaic but the stored text is one topic: the film "42" and Jackie Robinson
+5889847	english_teaching	-	Words and Their Stories
+3406732	dialogue_script	-	Let's Learn English dialogue
+2643427	news_item	crime	coding class in San Quentin prison, convicted men
+4174093	fiction	-	the poem, read aloud
+2997205	explainer	death	what happens to a dead whale; natural science
+5693184	explainer	-	self-help advice built on a book
+130480	explainer	-	parsley
+5264093	english_teaching	-	Ask a Teacher
+3949984	explainer	-	how to use the Seeing AI app
+2484459	news_item	-	new cheetah study with researcher quotes
+7347203	english_teaching	-	Everyday Grammar
+2471697	news_item	-	91-year-old learns to fly; cancer and a war veteran are passing
+118822	english_teaching	-	Words and Their Stories, clothing idioms
+3837841	explainer	disease	harmonica for lung disease; describes an ongoing programme, no recent event; borderline news
+6947104	fiction	-	children's story
+3681464	news_item	-	experimental school feature
+3240468	dialogue_script	-	Let's Learn English dialogue
+3688552	dialogue_script	-	Let's Learn English dialogue
+3263516	english_teaching	-	April Fools joke that introduces three slang words; the text teaches vocabulary
+2829125	news_item	-	profile of a doctor who makes house calls; borderline explainer
+1146989	advice_column	-	reader letter asking for advice
+4533178	news_item	-	dogs find endangered frogs; the fungus that killed the frogs is a motive paragraph, borderline disease
+3571922	dialogue_script	-	Let's Learn English dialogue
+607849	advice_column	-	reader letter asking for advice
+2732061	english_teaching	-	Everyday Grammar
+6713512	english_teaching	-	Everyday Grammar
+3497702	explainer	war	how and why people join the US military; military service is the subject
+1816730	explainer	-	describes a living-history farm; borderline news
+2647404	explainer	-	boatbuilding tradition and a class; no recent event; borderline news
+2567409	fiction	-	the poem, with a short intro
+5328042	news_item	war,death	reportage from the al-Hol camp
+5101525	english_teaching	-	Words and Their Stories; violent idioms are vocabulary, not the topic
+3921610	explainer	-	dress and success; reports one study; borderline news
+4489551	english_teaching	-	Everyday Grammar
+1542391	magazine	-	three unrelated segments (fossils, films, albums)
+3025422	news_item	-	World Series preview
+131052	advice_column	-	reader letter asking for advice
+2586553	news_item	-	a government STEM initiative and a toy; policy is the frame, not the subject; borderline explainer
+# end of labels
