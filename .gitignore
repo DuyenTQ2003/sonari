@@ -7,3 +7,6 @@ __pycache__/
 node_modules/
 .next/
 .env
+next-env.d.ts
+*.tsbuildinfo
+.env.local

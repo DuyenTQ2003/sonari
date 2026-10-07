@@ -53,5 +53,12 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-      - run: make lint-scripts test-scripts test-tools
+      # apps/web: typecheck, the route-handler tests and a production build. Node comes from the
+      # runner, pinned here so a new default cannot change the result.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: make lint-scripts test-scripts test-tools typecheck-web test-web build-web
       - run: uvx pre-commit run --all-files --show-diff-on-failure
