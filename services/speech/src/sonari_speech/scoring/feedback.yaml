@@ -1,0 +1,151 @@
+# Which fixed Vietnamese explanation a wrong phoneme gets. This file holds KEYS and EVIDENCE only;
+# the Vietnamese text is in apps/web/messages/vi.json under pronunciation.fix.<key>.{why,how}.
+#
+# Rules are tried in order and the first match wins. A rule either names the pair
+# (expected, heard) or a position in the word ("final": the word's last phoneme is this
+# consonant; "cluster": the consonant touches another consonant), and a position rule may
+# also name `expected`. A phoneme no rule matches gets `generic`, which names the sound and
+# claims no cause. `heard` is compared after folding (tʰ, sʲ, t̪, tː count as t, s, t, t).
+#
+# Every rule carries `sources` (ids below) or `unsourced` (the reason): a test fails
+# otherwise, and fails on an id that is not defined or a source no rule uses.
+#
+# EVIDENCE LIMITS, read before trusting a rule:
+# - Most sources are studies of how often an error occurs, not of what the sound becomes.
+# - Position rules do not know what was said: the model's `heard` for a dropped sound is
+#   noise, so the copy for them says the sound is unclear, never that it was dropped.
+# - Not read in full (see `checked`): everything except Pham (2023). The two journal pages
+#   that carry the th/dh study returned 403 and were seen only as search-result summaries.
+#
+# NOT COVERED (no rule, so `generic`): ð→dʒ (Bui 2016 reports it), s→ʃ, ʒ, tʃ/dʒ, ɪ vs iː,
+# ʊ vs uː, word stress, and -ed endings beyond the final-consonant rule.
+
+sources:
+  bui-2016:
+    cite: >-
+      Bui, T. S. (2016). Pronunciation of consonants /ð/ and /θ/ by adult Vietnamese EFL
+      learners. Indonesian Journal of Applied Linguistics, 6(1), 125-134.
+      https://doi.org/10.17509/ijal.v6i1.2744
+    checked: >-
+      Findings as summarised by a search result (θ replaced most often by Vietnamese /t'/,
+      ð most often by /z/, /dʒ/ for ð also found). The article page returned 403: not read.
+  disney-le-2024:
+    cite: >-
+      Disney, S., & Le, N. C. (2024). Word-final /s/-/z/ omission in Vietnamese English.
+      Languages, 9(10), 327. https://doi.org/10.3390/languages9100327
+    checked: >-
+      Abstract read on the repository page: 16 adult speakers, 28.4% of expected word-final
+      consonants omitted, 50.7% for morphological {-s} after a consonant; the authors say
+      the rates are not explained by L1 transfer alone.
+  hwa-froelich-2002:
+    cite: >-
+      Hwa-Froelich, D., Hodson, B. W., & Edwards, H. T. (2002). Characteristics of
+      Vietnamese phonology. American Journal of Speech-Language Pathology, 11, 264-273.
+    checked: >-
+      Bibliographic data and the statement that Vietnamese has six word-final consonants
+      (p t k m n ŋ) from search results; not read.
+  luong-2026:
+    cite: >-
+      Luong, B. P. (2026). Common English pronunciation errors among Vietnamese first-year
+      non-English majors: a contrastive phonological analysis. Tap chi Khoa hoc & Cong nghe,
+      62(4). https://www.vjol.info.vn/dhcnhn/en/article/view/206434
+    checked: >-
+      Abstract read: 60 participants, coda consonant deletion 75%, substitution of θ ð 90%.
+      The abstract does not say what θ and ð were replaced by.
+  nguyen-2026-n-l:
+    cite: >-
+      Nguyen, X. K. (2026). Sociolinguistic analysis of Northern Vietnamese students with
+      /n/ and /l/ pronunciation challenges. Tap chi Giao chuc Viet Nam, 231.
+      https://vjol.info.vn/giaochuc/article/view/134065
+    checked: >-
+      Abstract read. It is about /n/ and /l/ in Vietnamese itself (speakers from Hai Duong,
+      Hai Phong, Thai Binh, Nam Dinh, Thai Nguyen who move to Hanoi), not about English.
+      That the confusion carries into English is an inference.
+  osburne-1996:
+    cite: >-
+      Osburne, A. G. (1996). Final cluster reduction in English L2 speech: A case study of a
+      Vietnamese speaker. Applied Linguistics, 17(2), 164-181.
+    checked: >-
+      Title and pages confirmed in an index listing; not read. One speaker.
+  pham-2023:
+    cite: >-
+      Pham, M. T. T. (2023). The intelligibility of Vietnamese-accented English to artificial
+      intelligence software and Asian listeners. TESOL Working Paper Series, 21, 1-23.
+    checked: >-
+      Full text read. Two speakers. Reports final sounds omitted or replaced (its Table 2)
+      and, for one speaker, /æ/ occasionally produced as /ɛ/ ("hat" as "head").
+  tran-nguyen-2022:
+    cite: >-
+      Tran, T. K. L., & Nguyen, A. T. (2022). Common mistakes in pronouncing English
+      consonant clusters: A case study of Vietnamese learners. CTU Journal of Innovation and
+      Sustainable Development, 14(3), 32-39. https://doi.org/10.22144/ctu.jen.2022.040
+    checked: >-
+      Abstract read: three-consonant clusters tend to be simplified by deleting the first
+      or second consonant, or both.
+
+rules:
+  # --- substitutions of a sound Vietnamese lacks -------------------------------------------
+  - expected: ["θ"]
+    heard: "t"
+    key: th_stop
+    sources: [bui-2016]
+    basis: >-
+      /θ/ replaced most often by Vietnamese /t'/, the aspirated "th" of tha, thu.
+  - expected: ["θ"]
+    heard: "s"
+    key: th_sibilant
+    unsourced: >-
+      No source found. Bui (2016) names /t'/ as the main replacement and the summary seen
+      does not mention /s/; the task brief asks for it.
+  - expected: ["ð"]
+    heard: "z"
+    key: dh_sibilant
+    sources: [bui-2016]
+    basis: ð most often mispronounced as /z/.
+  - expected: ["ð"]
+    heard: "d"
+    key: dh_stop
+    unsourced: >-
+      No source found. Bui (2016) reports /z/ and /dʒ/, not /d/; the task brief asks for it.
+  - expected: ["ʃ"]
+    heard: "s"
+    key: sh_s
+    unsourced: >-
+      No source found for the direction. A study of 200 English majors (jst.iuh.edu.vn,
+      article 331) says /s/ and /ʃ/ are often mispronounced; it could not be opened to read
+      which way. docs/PLAN-v7.md section 2 lists the pair as a focus.
+  # --- /n/ and /l/ -------------------------------------------------------------------------
+  - expected: ["l"]
+    heard: "n"
+    key: l_n
+    sources: [nguyen-2026-n-l]
+    basis: Dialect study of Vietnamese; carry-over into English is inferred.
+  - expected: ["n"]
+    heard: "l"
+    key: n_l
+    sources: [nguyen-2026-n-l]
+    basis: Dialect study of Vietnamese; carry-over into English is inferred.
+  # --- a vowel ------------------------------------------------------------------------------
+  - expected: ["æ"]
+    heard: "ɛ"
+    key: ae_e
+    sources: [pham-2023]
+    basis: One of two speakers, occasionally. Weak. docs/PLAN-v7.md section 2 lists /æ/-/e/.
+  # --- positions, whatever was heard --------------------------------------------------------
+  - expected: ["s", "z"]
+    position: final
+    key: final_sibilant
+    sources: [disney-le-2024, hwa-froelich-2002]
+    basis: >-
+      Omission of word-final /s/ and /z/ is measured; Vietnamese has no fricative among its
+      word-final consonants.
+  - position: cluster
+    key: cluster
+    sources: [tran-nguyen-2022, osburne-1996]
+    basis: Clusters are simplified by deleting a member.
+  - position: final
+    key: final_consonant
+    sources: [luong-2026, pham-2023, hwa-froelich-2002]
+    basis: >-
+      Coda deletion 75% in one study; Vietnamese word-final consonants are limited to p t k
+      m n ŋ.

@@ -118,6 +118,11 @@ Multipart `audio` (any format above) and `referenceText` (1-300 characters). The
 3. `scoring/gop.py` scores each phoneme as P02 did and calls it correct when
    `gop > gop_min` of `scoring/thresholds/v0.yaml`: **0.0, uncalibrated**; read that file.
 
+Each wrong phoneme also carries `feedback`: a message key (`pronunciation.fix.<rule>`) and
+parameters, never text. `scoring/feedback.py` picks the rule from `scoring/feedback.yaml`, which
+also lists the sources and the pairs that have none; the Vietnamese copy is the client's, in
+`apps/web/messages/vi.json`. No LLM is involved.
+
 Speech too short to hold the sentence: 422 `audio_too_short` with
 `details.reason = "shorter_than_reference"`. Align + GOP take 2-16 ms; the model is the cost.
 Per-phoneme output on the G0 clips: `uv run pytest -rP tests/scoring/test_g0_clips.py`.

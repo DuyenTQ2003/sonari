@@ -61,7 +61,9 @@ def score(client: TestClient, clip: str, text: str) -> list[dict[str, Any]]:
     for word in response.json()["words"]:
         for p in word["phonemes"]:
             phonemes.append(p)
-            verdict = "ok" if p["correct"] else f"WRONG, heard {p['heard']}"
+            verdict = "ok"
+            if not p["correct"]:
+                verdict = f"WRONG, heard {p['heard']} -> {p['feedback']['messageKey']}"
             print(
                 f"  {word['text']:<6} /{p['expected']}/  gop {p['gop']:>7.2f}  "
                 f"{p['startMs']:>4}-{p['endMs']:<4} ms  {verdict}"
@@ -91,21 +93,33 @@ def test_bad_wav_against_a_sentence_it_does_not_say_is_mostly_wrong(client: Test
 
 
 @pytest.mark.parametrize(
-    ("clip", "text", "index", "expected", "heard"),
+    ("clip", "text", "index", "expected", "heard", "fix"),
     [
-        ("good.wav", "one tink you", 3, "t", "θ"),  # P02's gate case, now in a sentence
-        ("bad.wav", "and thook his dead", 3, "θ", "t"),  # P02's misplaced case, now placed
+        # P02's gate case, now in a sentence. (t, θ) is not a pair Vietnamese speakers are
+        # known for, so it gets the generic message.
+        ("good.wav", "one tink you", 3, "t", "θ", "generic"),
+        # P02's misplaced case, now placed: (θ, t) is the table's first pair.
+        ("bad.wav", "and thook his dead", 3, "θ", "t", "th_stop"),
     ],
 )
 def test_a_substituted_phoneme_is_wrong_names_what_was_said_and_nothing_else_moves(
-    client: TestClient, clip: str, text: str, index: int, expected: str, heard: str
+    client: TestClient, clip: str, text: str, index: int, expected: str, heard: str, fix: str
 ) -> None:
     substituted = score(client, clip, text)
     original = score(client, clip, text.replace("tink", "think").replace("thook", "took"))
     assert substituted[index]["expected"] == expected
     assert not substituted[index]["correct"]
     assert substituted[index]["heard"] == heard
+    assert substituted[index]["feedback"]["messageKey"] == f"pronunciation.fix.{fix}"
+
     # "thook" is not in CMUdict and g2p_en guesses /uː/ for its vowel: compare like with like.
+    def scores(phoneme: dict[str, Any]) -> dict[str, Any]:
+        return {k: v for k, v in phoneme.items() if k != "feedback"}  # the word text differs
+
     pairs = zip(substituted, original, strict=True)
-    moved = [i for i, (s, o) in enumerate(pairs) if s["expected"] == o["expected"] and s != o]
+    moved = [
+        i
+        for i, (s, o) in enumerate(pairs)
+        if s["expected"] == o["expected"] and scores(s) != scores(o)
+    ]
     assert moved == []

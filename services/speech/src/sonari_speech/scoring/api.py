@@ -3,7 +3,8 @@
     curl -F audio=@take.webm -F referenceText="I think so" localhost:8001/v1/score
 
 Pipeline: G2P (reference -> espeak tokens per word), the runtime (decode, VAD trim, int8
-wav2vec2), forced alignment of the whole sentence, GOP per phoneme, versioned threshold.
+wav2vec2), forced alignment of the whole sentence, GOP per phoneme, versioned threshold,
+then a message key per wrong phoneme (scoring/feedback.py). The Vietnamese text is the client's.
 No STT and no language model anywhere: the model's posteriors are read, never decoded.
 """
 
@@ -20,6 +21,7 @@ from sonari_speech.g2p import G2pEnBackend, Pronouncer
 from sonari_speech.runtime.service import SpeechRuntime
 from sonari_speech.scoring.align import TooFewFrames
 from sonari_speech.scoring.contract import ScoreResponse
+from sonari_speech.scoring.feedback import explain_words
 from sonari_speech.scoring.gop import load_thresholds, load_vocab, score_words
 
 logger = logging.getLogger(__name__)
@@ -88,7 +90,9 @@ class Scorer:
                     {"reason": "shorter_than_reference"},
                 ) from None
         return ScoreResponse(
-            thresholds_version=thresholds.version, reference_text=reference_text, words=scored
+            thresholds_version=thresholds.version,
+            reference_text=reference_text,
+            words=explain_words(scored),
         )
 
 
