@@ -2,11 +2,12 @@
 # and the stems that flag them (tab-separated: category, regex alternatives matched at the start of a
 # word, case-insensitive except where a group says otherwise). The stems were fixed after reading which
 # words fired on the 724 passages, twice: "sentenc" matched every grammar sentence and "trump" the
-# instrument; then "president", "government", "congress" and "battle" were dropped or narrowed
-# (docs/reports/voa-safety-stems.md lists each change and what it caught). A flag is a lead for a
+# instrument; then "congress" and "battle" were dropped or narrowed. "president", "government" and
+# "democrat" stay literal on purpose: a narrower form fits the passages already read and proves
+# nothing about unseen ones (docs/reports/voa-safety-stems.md). A flag is a lead for a
 # reader, never a filter: nothing is deleted. The disaster category is also gated in code (classify.py).
 war	(?<!trade )(?<!star )wars?\b|warfare|military|armies|army\b|soldiers?\b|troops?\b|(?<!home )invasion|invad|missiles?\b|bomb|battlefield|combat|terroris|islamic state|taliban|rebels?\b|veterans?\b
-politics	politics\b|political|elections?\b|republicans?\b|democrats\b|democratic (?:party|nomination|candidate|primary)|prime minister|presidential|president (?-i:[A-Z])|government officials?|bharatiya janata|bjp\b|referendum|sanctions?\b|parliament|senate|campaign (?:trail|event|rally)|(?:election|presidential|political) campaign|trump\b|obama|putin|regime
+politics	politics\b|political|elections?\b|republicans?\b|democrat|prime minister|president|government|referendum|sanctions?\b|parliament|senate|campaign (?:trail|event|rally)|(?:election|presidential|political) campaign|trump\b|obama|putin|regime
 disaster	earthquake|tsunami|hurricane|cyclone|typhoon|flood|wildfire|tornado|disaster|volcano|drought|famine|avalanche|landslide|blizzard
 disease	disease|ebola(?: virus)?|virus|cancer|epidemic|(?:covid(?:-19)?|coronavirus) pandemic|pandemic|coronavirus|covid|(?<!tornado )outbreak|(?-i:AIDS\b)|hiv\b|malaria|flu\b|vaccin|illness
 crime	crimes?\b|criminals?\b|murder|killing|shootings?\b(?! stars?)|shooters?\b|shoots? (?:him|her|dead|at|the|an?)\b|(?<!park )guns?\b(?!-|[ ]?[‘’']n)|arrest|prison|police|theft|stole(?! the show)|rape\b|(?<!non-)violen(?!t (?:burst|wind|storm|eruption))|trafficking|jail|(?<!heart )(?<!panic )(?<!anxiety )attack|sentenced|sentencing|gangs?\b|robber|kidnap

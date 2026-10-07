@@ -1,5 +1,11 @@
 # The safety stems, second pass
 
+> **Superseded in one respect (PR #45).** `president`, `government` and `democrat` are literal again and
+> `bharatiya janata` and `government officials` are gone: the narrow forms were fitted to passages already read, which
+> says nothing about unseen ones. Usable with no flag is **257** by default (strict 295, loose 170; thinnest unit
+> Sport, 16); the other changes, including the disaster gate, stand. Every flag removed was read: 0 wrong by default
+> (44: 40 correct, 4 borderline), 2 wrong under strict. The text below describes PR #44, and so does the labels file.
+
 [voa-classify.md](voa-classify.md) found that 8 of the 15 flagged explainers and news items were false alarms
 and blamed stems that are too general. This pass reads what each stem catches, narrows or removes the ones that
 mostly catch another sense of the word, splits the disaster rule in two, counts again, and reads every passage

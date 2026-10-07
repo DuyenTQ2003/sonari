@@ -128,8 +128,7 @@ PR description.
 - Classification (`docs/reports/voa-classify.md`), ideas only, none coded. The stems are narrowed
   (`docs/reports/voa-safety-stems.md`); what stems cannot fix is how a mention is counted: count a stem once per
   paragraph (one anecdote gave "politician" 4 times and 5 war words; "President Donald Trump" counts as `president`
-  and `trump`), and read a sample of passages the flags left alone, which no pass has done. `bharatiya janata` and
-  `government officials` were added after reading the passages they bring back; test them on passages not read.
+  and `trump`), and read a sample of passages the flags left alone, which no pass has done.
 - The "American Mosaic:" title makes a magazine even when the stored text is one segment (1 of 3 read); look at the
   text. An English lesson with no programme and no lesson title ("Some New Words for VOA's Word Book") is tagged
   explainer. The 50 labels have one labeller (the assistant): have the owner overrule any, and read a second sample
