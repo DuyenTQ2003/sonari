@@ -15,6 +15,14 @@ TYPES = (
 )  # fmt: skip
 USABLE_TYPES = ("explainer", "news_item")  # a text about one thing that a lesson can be built on
 BODY_HITS = 3  # a safety stem seen this often in the body is a theme, not a passing mention
+# A disaster is flagged when it is reported with casualties, not when a phenomenon is explained:
+# two outcome words in the past tense ("killed", "missing"), not an average ("tornadoes kill 70").
+CASUALTIES = re.compile(
+    r"\b(killed|killing|died|dead|death toll|missing|victims?|drowned|survivors?|bodies"
+    r"|wounded|injured)\b",
+    re.I,
+)
+CASUALTY_HITS = 2
 WRITTEN_LESSONS = ("Words and Their Stories", "Everyday Grammar", "Ask a Teacher", "Early Literacy")
 TEACHING = (*WRITTEN_LESSONS, "Let's Learn English")  # programmes about English itself
 NEWS_PROGRAMMES = ("As It Is", "What's Trending Today?")  # news items, so a lower attribution bar
@@ -92,7 +100,10 @@ def classify_type(title: str, program: str, lines: list[str]) -> tuple[str, str]
 def safety_hits(title: str, lead: str, lines: list[str]) -> dict[str, tuple[bool, int]]:
     """Per category: does a stem occur in the title or lead, and how often in the body."""
     head, body = f"{title} {lead}", " ".join(lines)
-    return {c: (bool(rx.search(head)), len(rx.findall(body))) for c, rx in SAFETY.items()}
+    hits = {c: (bool(rx.search(head)), len(rx.findall(body))) for c, rx in SAFETY.items()}
+    if len(CASUALTIES.findall(body)) < CASUALTY_HITS:
+        hits["disaster"] = (False, 0)  # a tornado explained, or a flood with nobody hurt
+    return hits
 
 
 def safety_flags(hits: dict[str, tuple[bool, int]], body_hits: int = BODY_HITS) -> frozenset[str]:

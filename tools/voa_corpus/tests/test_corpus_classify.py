@@ -1,5 +1,8 @@
 """The type and safety tags: which rule decides, and the false matches the stems were fixed for."""
 
+import json
+from pathlib import Path
+
 import pytest
 from voa_corpus.classify import (
     SAFETY,
@@ -92,8 +95,80 @@ def flags(title: str = "", lead: str = "", body: str = "", min_body: int = 0) ->
 
 
 def test_a_stem_in_the_title_or_lead_flags_the_category_at_once() -> None:
-    assert flags(title="Tornado Season!") == {"disaster"}
     assert flags(lead="The army said it would leave.") == {"war"}
+
+
+# "Tornado Season!" in miniature: storms that only damaged homes, and an average, not a toll.
+EXPLAINED = (
+    "Tornadoes damaged hundreds of homes. Tornadoes kill 70 people in an average year. "
+    "Most injuries happen when objects hit people."
+)
+CYCLONE = (
+    "The cyclone hit in March, killing more than 800 people. Many are missing. Survivors wait."
+)
+TRIMMED = Path.home() / "sonari-trimmed/voa/trimmed.jsonl"
+
+
+def test_a_phenomenon_explained_is_not_a_disaster_but_one_reported_with_casualties_is() -> None:
+    body = EXPLAINED + " Tornadoes form in storms." * 3  # "tornado" recurs, "kill" does not
+    assert not flags(title="Tornado Season!", lead="Storms damaged hundreds of homes.", body=body)
+    assert "disaster" in flags(title="Cyclone Idai Hits", body=CYCLONE)
+    assert not flags(
+        title="Floodwaters Threaten a House", body="The flood rose. The house is empty."
+    )
+    assert not flags(
+        title="Drought", body="The drought was long. His animals died."
+    )  # one is not two
+
+
+@pytest.mark.skipif(not TRIMMED.exists(), reason="the trimmed corpus is outside the repo")
+def test_tornado_season_in_the_corpus_is_not_flagged() -> None:
+    row = next(r for r in map(json.loads, TRIMMED.open()) if r["url"].endswith("/181598.html"))
+    assert not safety_flags(safety_hits(row["title"], row["text"][0], row["text"]))
+
+
+@pytest.mark.parametrize(
+    ("text", "category", "flagged"),
+    [
+        ("The president of the club spoke. ", "politics", False),
+        ("President Emmerson Mnangagwa spoke. ", "politics", True),
+        ("The city government paid. ", "politics", False),
+        ("Government officials met. ", "politics", True),
+        ("Congress made the park. ", "politics", False),
+        ("An advertising campaign began. ", "politics", False),
+        ("The presidential campaign ended. ", "politics", True),
+        ("The Democratic Republic of Congo. ", "politics", False),
+        ("Democrats and Republicans argued. ", "politics", True),
+        ("The Bharatiya Janata Party won. ", "politics", True),
+        ("A trade war began. ", "war", False),
+        ("I saw Star Wars. ", "war", False),
+        ("A home invasion happened. ", "war", False),
+        ("A fight, a battle for supremacy. ", "war", False),
+        ("The civil war went on. ", "war", True),
+        ("The photo shoot ended. ", "crime", False),
+        ("The shooting happened. ", "crime", True),
+        ("A heart attack, a panic attack. ", "crime", False),
+        ("The attack hurt people. ", "crime", True),
+        ("A gangrene infection. ", "crime", False),
+        ("Mia stole the show. ", "crime", False),
+        ("Peaceful non-violence won. ", "crime", False),
+        ("Park Gun-ha and Guns ‘n’ Roses played. ", "crime", False),  # noqa: RUF001
+        ("Armed guns were seen. ", "crime", True),
+        ("The police came. ", "crime", True),
+        ("A tornado outbreak and altitude sickness. ", "disease", False),
+        ("The outbreak spread. ", "disease", True),
+    ],
+)
+def test_a_stem_catches_its_topic_and_not_the_other_senses_of_its_word(
+    text, category, flagged
+) -> None:
+    assert (category in flags(body=text * 3)) is flagged  # three mentions: a theme
+
+
+def test_a_phrase_that_two_disease_stems_match_counts_once() -> None:
+    phrase = "The coronavirus pandemic began. "
+    assert "disease" not in flags(body=phrase * 2)
+    assert "disease" in flags(body=phrase * 3)
 
 
 def test_a_stem_in_the_body_flags_only_when_it_recurs() -> None:

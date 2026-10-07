@@ -1,0 +1,99 @@
+# Hand verdicts for the passages whose flag status changed with the new safety stems
+# (docs/reports/voa-safety-stems.md). Each passage was read with the evidence of the old stems.
+# Columns: id, category, rule, verdict, final, note.
+# verdict: correct = the passage is not substantially about the category (the flag was a false alarm);
+#   borderline = a reader could go either way; wrong = the flag should have stayed.
+# final: removed = the flag is gone under the stems in this change; restored = the first set of stems
+#   removed it wrongly, and a narrower stem brings it back. Rule: the flag rule that showed the change.
+# default: all 82 flags the first set of stems removed. strict and loose: only the passages the default
+#   read did not cover (5 and 89); the 87 loose ones not listed were read and are correct.
+id	category	rule	verdict	final	note
+129091	politics	default	correct	removed	lame-duck idioms in an English lesson
+131137	disease	default	correct	removed	reader letter; her illness is background to a letter about polygamy
+131278	crime	default	correct	removed	song about bullying; "abuse" is not crime
+1662565	politics	default	correct	removed	Memphis; a mayor election and a future president are passing
+181500	crime	default	correct	removed	heart attack
+181598	disaster	default	correct	removed	Tornado Season!: explained, no casualties of a specific storm
+1881709	politics	default	correct	removed	Memphis, same text
+1925700	politics	default	correct	restored	obituary; presidents are passing
+1962732	politics	default	correct	removed	city government in a housing story
+1965485	politics	default	wrong	restored	jokes about Kim Jong Un: satire of a political leader; only one obama and one political hit are left
+2440000	crime	default	correct	removed	hunger report; stealing and prisoners are passing
+2443854	war	default	correct	removed	gun debate; military weapon and home invasion are not war
+2491592	politics	default	wrong	restored	news digest with a distinct Hong Kong activists-and-government talks section
+2512210	politics	default	correct	removed	cemetery of soldiers; war and death stay flagged
+2523788	politics	default	wrong	restored	defectors lobby Switzerland to freeze North Korean leaders' assets: political action against a regime
+2529468	politics	default	correct	removed	war and crime stay flagged; the government ousted is background
+2554031	disaster	default	correct	removed	herders and drought: no specific disaster, no casualties
+2603746	politics	default	correct	removed	MLK holiday; Congress and the Voting Rights Act are history
+2628621	politics	default	correct	restored	Ukraine refugees; war stays flagged, politics is secondary (borderline)
+2630072	politics	default	correct	removed	matatu art; the government ban is the setting
+2652516	politics	default	correct	removed	"Democratic Republic of Congo"; crime and war stay flagged
+2676545	politics	default	correct	removed	"government forces" as one side of a war; war stays flagged
+2679264	politics	default	wrong	restored	a party passes a beef ban; "a major issue between India's Hindus and Muslims"; crime stays flagged
+2732137	crime	default	correct	removed	"shooting the movie", monkeys steal eggs
+2776135	politics	default	borderline	removed	a teenager is mayor; local government is ordinary civic life
+2829125	politics	default	correct	removed	a Greek politician anecdote counted four times
+2857059	disaster	default	correct	removed	a specific flood, nobody hurt: not flagged by the split
+2906744	war	default	correct	removed	idioms: engage, mortal combat
+2915209	war	default	correct	removed	guns in a restaurant, not war; crime stays flagged
+2936596	crime	default	wrong	restored	English lesson; a fifth of it is a couple who rob men, and bribed police
+2998633	politics	default	borderline	restored	a UN diplomat charged with bribery; crime stays flagged
+3025422	politics	default	correct	removed	"Ronald Reagan was the U.S. president"
+3033285	politics	default	wrong	restored	US forces and Syrian rebels against the Assad regime; war stays flagged
+3102410	politics	default	correct	removed	Conch Republic joke, a 1982 roadblock
+3137265	war	default	correct	removed	Star Wars in a grammar lesson
+3165447	disaster	default	correct	removed	blizzard idioms
+3232293	crime	default	borderline	restored	a refugee camp, a section on growing police presence and fear of violence
+3244322	politics	default	correct	removed	Continental Congress and "Mr. President" eagles
+3284475	crime	default	correct	removed	the band Guns N' Roses
+3338983	politics	default	correct	removed	Congress made the park, a president named it
+3409880	politics	default	correct	removed	Congress made the park
+3490217	crime	default	correct	removed	"bite the bullet" idiom lesson
+3510719	crime	default	borderline	removed	English lesson built on a film scene with a gangster
+3549624	politics	default	correct	removed	an election dialogue as a grammar example
+3617940	crime	default	correct	restored	a dream about police and a shuttle
+3628488	war	default	correct	removed	Star Wars and "in battle" as grammar examples
+3673701	politics	default	correct	removed	"politics is not black and white" as an idiom
+3724522	politics	default	correct	restored	Trump's swearing-in is the day before
+3760800	crime	default	borderline	restored	a lesson on "wiretap"; police and crime are examples
+3760800	politics	default	borderline	removed	a lesson on "wiretap"; the Trump-Obama claim is the news hook
+3769487	crime	default	borderline	restored	a stolen violin found after 35 years; the theft is the backstory
+3958423	politics	default	correct	removed	a golf tour's president asks the government for help
+3966625	disaster	default	correct	removed	K2: an avalanche buried equipment
+4066305	politics	default	correct	removed	"politicians" as a role, "ONE campaign"
+4085937	war	default	correct	removed	Star Wars
+4140365	politics	default	correct	removed	"non-governmental"
+4358189	politics	default	correct	removed	an advertising campaign
+4487855	politics	default	borderline	restored	a trade war: tariffs and Trump are the cause, farming is the subject
+4487855	war	default	correct	removed	"trade war"
+4489551	politics	default	correct	removed	"the president's words" as an example
+4558634	crime	default	correct	removed	"steal from others" in an idiom lesson
+4627071	politics	default	correct	removed	a campaign idiom
+4637376	politics	default	borderline	removed	Sudan war zone; war and crime stay flagged
+4737578	war	default	correct	removed	"vanguard" idiom
+4775552	politics	default	correct	removed	"Democratic Republic of Congo", "non-governmental"
+4775552	war	default	correct	removed	a "different battle": figurative
+4817823	politics	default	borderline	removed	bread prices; people ask the president's government for help
+4878658	politics	default	correct	removed	jokes about politicians as an example
+5070229	politics	default	correct	removed	an apple on election materials, an idiom lesson
+5087032	politics	default	borderline	removed	separated Korean families; war stays flagged
+5099933	crime	default	correct	restored	a detective example in a grammar lesson
+5326585	disease	default	correct	removed	idiom: "an ounce of prevention", fire
+5406733	war	default	correct	removed	Star Wars
+5539710	crime	default	correct	removed	a password prevents "stealing" information
+5596213	politics	default	correct	removed	"the president's words" as an example
+5596636	disease	default	borderline	removed	college from home because of the pandemic; the pandemic is the premise, not the topic
+5782961	disease	default	correct	removed	hiring freezes during the pandemic
+5815521	politics	default	correct	restored	Obama's words as an example of "y'all"
+5850386	politics	default	correct	removed	government programmes for pine forests
+6004902	crime	default	correct	restored	"crime shows" in an idiom lesson
+7366844	politics	default	borderline	removed	a youth radio programme with a Congress section; civics
+7583607	politics	default	correct	removed	count nouns in the news
+2494451	politics	strict	wrong	removed	immigration politics (a delayed policy, parties accuse each other); only the lead's 'federal government' hit is gone
+2691721	politics	strict	wrong	removed	Camp David closes for Afghan peace talks; only the lead's 'American presidents' hit is gone
+3020505	politics	strict	wrong	removed	titled 'Politicians and Movies'; the title hit is gone
+3754272	politics	strict	correct	removed	street vendors; 'government permission' in the lead is civic, Trump is incidental
+3979185	politics	strict	wrong	removed	biography of a president; only the lead's 're-elected' hit is gone
+2670242	politics	loose	borderline	removed	a state ban on a documentary is the subject; one 'government' hit is gone
+3701864	politics	loose	borderline	removed	doctors strike against the government over wages; one 'government' hit is gone

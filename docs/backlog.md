@@ -125,10 +125,11 @@ PR description.
   pytest, pyyaml and uv itself still float.
 - One passage ends a content line with the page furniture "Return to main page" glued on (a letter in the
   *Dear Doctor* series); a whole-line trim cannot cut it. Parser territory, not touched here.
-- Classification (`docs/reports/voa-classify.md`), ideas only, none coded. The safety flags over-fire: 8 false alarms in
-  15 flagged explainer/news passages of a 50-passage read, no miss seen. Count a stem once per paragraph (one
-  anecdote gave "politician" 4 times and 5 war words) and take the generic stems (`president`, `government`,
-  `politic`, `violen`, `attack`) from the title and lead only, then re-score on the same labels.
+- Classification (`docs/reports/voa-classify.md`), ideas only, none coded. The stems are narrowed
+  (`docs/reports/voa-safety-stems.md`); what stems cannot fix is how a mention is counted: count a stem once per
+  paragraph (one anecdote gave "politician" 4 times and 5 war words; "President Donald Trump" counts as `president`
+  and `trump`), and read a sample of passages the flags left alone, which no pass has done. `bharatiya janata` and
+  `government officials` were added after reading the passages they bring back; test them on passages not read.
 - The "American Mosaic:" title makes a magazine even when the stored text is one segment (1 of 3 read); look at the
   text. An English lesson with no programme and no lesson title ("Some New Words for VOA's Word Book") is tagged
   explainer. The 50 labels have one labeller (the assistant): have the owner overrule any, and read a second sample
