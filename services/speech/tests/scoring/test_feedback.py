@@ -63,14 +63,20 @@ def key_of(*phones: tuple[str, str | None], at: int) -> str:
 # --- the table --------------------------------------------------------------------------
 
 
-def test_every_rule_has_a_source_or_says_why_not() -> None:
-    assert all(bool(r.sources) != bool(r.unsourced) for r in RULES)
+def test_every_rule_has_a_source_and_every_source_is_used() -> None:
+    assert all(r.sources for r in RULES)
     assert {s for r in RULES for s in r.sources} == set(load_table().sources)
 
 
-def test_the_unsourced_pairs_are_the_ones_the_brief_asked_for_without_evidence() -> None:
-    unsourced = {(r.expected[0], r.heard) for r in PAIR_RULES if r.unsourced and r.expected}
-    assert unsourced == {("θ", "s"), ("ð", "d"), ("ʃ", "s")}
+# Rules removed because their evidence was missing or was not about English (see feedback.yaml).
+REMOVED_PAIRS = [("θ", "s"), ("ð", "d"), ("ʃ", "s"), ("l", "n"), ("n", "l"), ("æ", "ɛ")]
+
+
+@pytest.mark.parametrize(("expected", "heard"), REMOVED_PAIRS)
+def test_a_pair_without_evidence_gets_the_generic_message_between_vowels(
+    expected: str, heard: str
+) -> None:
+    assert key_of(("ʌ", None), (expected, heard), ("ʌ", None), at=1) == FALLBACK_KEY
 
 
 @pytest.mark.parametrize(
@@ -79,8 +85,8 @@ def test_the_unsourced_pairs_are_the_ones_the_brief_asked_for_without_evidence()
         {"key": "k", "sources": ["a"]},  # neither heard nor position
         {"key": "k", "heard": "t", "position": "final", "expected": ["s"], "sources": ["a"]},
         {"key": "k", "heard": "t", "sources": ["a"]},  # a pair without `expected`
-        {"key": "k", "position": "final"},  # no evidence and no reason
-        {"key": "k", "position": "final", "sources": ["a"], "unsourced": "x"},
+        {"key": "k", "position": "final"},  # no evidence
+        {"key": "k", "position": "final", "sources": []},
     ],
 )
 def test_a_malformed_rule_is_rejected_when_the_table_loads(bad: dict[str, object]) -> None:
@@ -119,11 +125,9 @@ def test_every_pair_in_the_table_gives_its_key(rule: Rule) -> None:
         assert key_of(("ʌ", None), (expected, rule.heard), ("ʌ", None), at=1) == rule.key
 
 
-@pytest.mark.parametrize(
-    ("heard", "key"), [("tʰ", "th_stop"), ("t̪", "th_stop"), ("sʲ", "th_sibilant")]
-)
-def test_a_variant_of_the_heard_sound_counts_as_the_sound(heard: str, key: str) -> None:
-    assert key_of(("ʌ", None), ("θ", heard), ("ʌ", None), at=1) == key
+@pytest.mark.parametrize("heard", ["t", "tʰ", "t̪", "tː", "tʲ"])
+def test_a_variant_of_the_heard_sound_counts_as_the_sound(heard: str) -> None:
+    assert key_of(("ʌ", None), ("θ", heard), ("ʌ", None), at=1) == "th_stop"
 
 
 def test_fold_removes_aspiration_palatalisation_length_and_combining_marks() -> None:
