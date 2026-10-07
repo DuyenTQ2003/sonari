@@ -97,3 +97,15 @@ def mapped_tokens(table: Table | None = None) -> set[str]:
         tokens.update(rule["token"], rule.get("before_vowel", []))
     tokens.update(table["er_before_vowel"])
     return tokens
+
+
+@cache
+def vowel_tokens() -> frozenset[str]:
+    """Every espeak token the table can emit for a vowel; any other token is a consonant."""
+    table = load_table()
+    found = {t for base in VOWELS for t in table["phones"][base]}
+    found.update(t for base in VOWELS for t in table["unstressed"].get(base, []))
+    found.update(t for rule in table["unstressed_iy"].values() for t in rule)
+    found.update(t for tokens in table["vowel_merges"].values() for t in tokens)
+    found.update(t for rule in table["r_coloured"].values() for t in rule["token"])
+    return frozenset(found)

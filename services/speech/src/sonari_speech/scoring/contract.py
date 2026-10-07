@@ -11,6 +11,19 @@ class _Camel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, frozen=True)
 
 
+class FeedbackParams(_Camel):
+    expected: str
+    heard: str  # raw, as in the verdict
+    word: str  # the reference word that holds the phoneme
+
+
+class Feedback(_Camel):
+    """Which fixed explanation to show. The client renders `<message_key>.why` and `.how`."""
+
+    message_key: str
+    params: FeedbackParams
+
+
 class PhonemeVerdict(_Camel):
     expected: str
     correct: bool
@@ -18,6 +31,7 @@ class PhonemeVerdict(_Camel):
     gop: float
     start_ms: int
     end_ms: int
+    feedback: Feedback | None = None  # set by scoring.feedback for a wrong phoneme
 
 
 class WordScore(_Camel):

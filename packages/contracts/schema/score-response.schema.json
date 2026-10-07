@@ -32,7 +32,7 @@
     "phoneme": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["expected", "correct", "heard", "gop", "startMs", "endMs"],
+      "required": ["expected", "correct", "heard", "gop", "startMs", "endMs", "feedback"],
       "properties": {
         "expected": { "description": "espeak IPA token the reference calls for.", "type": "string", "minLength": 1 },
         "correct": { "type": "boolean" },
@@ -42,7 +42,30 @@
         },
         "gop": { "description": "Goodness of pronunciation in nats; higher is better.", "type": "number" },
         "startMs": { "description": "Start of the aligned frames, from the start of the recording.", "type": "integer", "minimum": 0 },
-        "endMs": { "type": "integer", "minimum": 0 }
+        "endMs": { "type": "integer", "minimum": 0 },
+        "feedback": {
+          "description": "Null when correct; otherwise always present. Which fixed explanation to show, never the text itself.",
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/feedback" }]
+        }
+      }
+    },
+    "feedback": {
+      "description": "The client renders messageKey + '.why' (what went wrong) and messageKey + '.how' (what to do with the mouth) from its message catalogue, filling the {name} placeholders from params. The service sends no prose.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageKey", "params"],
+      "properties": {
+        "messageKey": { "type": "string", "pattern": "^pronunciation\\.fix\\.[a-z_]+$" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["expected", "heard", "word"],
+          "properties": {
+            "expected": { "description": "espeak IPA token the reference calls for.", "type": "string", "minLength": 1 },
+            "heard": { "description": "The phoneme's own heard value, raw (a variant such as tʰ is not folded).", "type": "string", "minLength": 1 },
+            "word": { "description": "The reference word that holds the phoneme, as written.", "type": "string", "minLength": 1 }
+          }
+        }
       }
     }
   }
