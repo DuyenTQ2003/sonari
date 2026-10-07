@@ -7,8 +7,8 @@
 # also name `expected`. A phoneme no rule matches gets `generic`, which names the sound and
 # claims no cause. `heard` is compared after folding (tʰ, sʲ, t̪, tː count as t, s, t, t).
 #
-# Every rule carries `sources` (ids below) or `unsourced` (the reason): a test fails
-# otherwise, and fails on an id that is not defined or a source no rule uses.
+# Every rule carries `sources` (ids below): a test fails on a rule without one, on an id that
+# is not defined, and on a source no rule uses. A rule that rests on inference is not kept.
 #
 # EVIDENCE LIMITS, read before trusting a rule:
 # - Most sources are studies of how often an error occurs, not of what the sound becomes.
@@ -17,8 +17,12 @@
 # - Not read in full (see `checked`): everything except Pham (2023). The two journal pages
 #   that carry the th/dh study returned 403 and were seen only as search-result summaries.
 #
-# NOT COVERED (no rule, so `generic`): ð→dʒ (Bui 2016 reports it), s→ʃ, ʒ, tʃ/dʒ, ɪ vs iː,
-# ʊ vs uː, word stress, and -ed endings beyond the final-consonant rule.
+# LEFT OUT ON PURPOSE, so they get `generic` unless a position rule below applies:
+#   θ→s, ð→d, ʃ→s   no source found (removed in the PR after #47)
+#   l→n, n→l         the only source describes a Northern Vietnamese dialect, not English
+#   æ→ɛ              one of two speakers in one study, occasionally
+# NOT COVERED either: ð→dʒ (Bui 2016 reports it), s→ʃ, ʒ, tʃ/dʒ, ɪ vs iː, ʊ vs uː, word
+# stress, and -ed endings beyond the final-consonant rule.
 
 sources:
   bui-2016:
@@ -52,15 +56,6 @@ sources:
     checked: >-
       Abstract read: 60 participants, coda consonant deletion 75%, substitution of θ ð 90%.
       The abstract does not say what θ and ð were replaced by.
-  nguyen-2026-n-l:
-    cite: >-
-      Nguyen, X. K. (2026). Sociolinguistic analysis of Northern Vietnamese students with
-      /n/ and /l/ pronunciation challenges. Tap chi Giao chuc Viet Nam, 231.
-      https://vjol.info.vn/giaochuc/article/view/134065
-    checked: >-
-      Abstract read. It is about /n/ and /l/ in Vietnamese itself (speakers from Hai Duong,
-      Hai Phong, Thai Binh, Nam Dinh, Thai Nguyen who move to Hanoi), not about English.
-      That the confusion carries into English is an inference.
   osburne-1996:
     cite: >-
       Osburne, A. G. (1996). Final cluster reduction in English L2 speech: A case study of a
@@ -72,8 +67,7 @@ sources:
       Pham, M. T. T. (2023). The intelligibility of Vietnamese-accented English to artificial
       intelligence software and Asian listeners. TESOL Working Paper Series, 21, 1-23.
     checked: >-
-      Full text read. Two speakers. Reports final sounds omitted or replaced (its Table 2)
-      and, for one speaker, /æ/ occasionally produced as /ɛ/ ("hat" as "head").
+      Full text read. Two speakers. Reports final sounds omitted or replaced (its Table 2).
   tran-nguyen-2022:
     cite: >-
       Tran, T. K. L., & Nguyen, A. T. (2022). Common mistakes in pronouncing English
@@ -91,46 +85,11 @@ rules:
     sources: [bui-2016]
     basis: >-
       /θ/ replaced most often by Vietnamese /t'/, the aspirated "th" of tha, thu.
-  - expected: ["θ"]
-    heard: "s"
-    key: th_sibilant
-    unsourced: >-
-      No source found. Bui (2016) names /t'/ as the main replacement and the summary seen
-      does not mention /s/; the task brief asks for it.
   - expected: ["ð"]
     heard: "z"
     key: dh_sibilant
     sources: [bui-2016]
     basis: ð most often mispronounced as /z/.
-  - expected: ["ð"]
-    heard: "d"
-    key: dh_stop
-    unsourced: >-
-      No source found. Bui (2016) reports /z/ and /dʒ/, not /d/; the task brief asks for it.
-  - expected: ["ʃ"]
-    heard: "s"
-    key: sh_s
-    unsourced: >-
-      No source found for the direction. A study of 200 English majors (jst.iuh.edu.vn,
-      article 331) says /s/ and /ʃ/ are often mispronounced; it could not be opened to read
-      which way. docs/PLAN-v7.md section 2 lists the pair as a focus.
-  # --- /n/ and /l/ -------------------------------------------------------------------------
-  - expected: ["l"]
-    heard: "n"
-    key: l_n
-    sources: [nguyen-2026-n-l]
-    basis: Dialect study of Vietnamese; carry-over into English is inferred.
-  - expected: ["n"]
-    heard: "l"
-    key: n_l
-    sources: [nguyen-2026-n-l]
-    basis: Dialect study of Vietnamese; carry-over into English is inferred.
-  # --- a vowel ------------------------------------------------------------------------------
-  - expected: ["æ"]
-    heard: "ɛ"
-    key: ae_e
-    sources: [pham-2023]
-    basis: One of two speakers, occasionally. Weak. docs/PLAN-v7.md section 2 lists /æ/-/e/.
   # --- positions, whatever was heard --------------------------------------------------------
   - expected: ["s", "z"]
     position: final

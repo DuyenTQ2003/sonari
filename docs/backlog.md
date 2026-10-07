@@ -137,3 +137,5 @@ PR description.
   tagged *Study and work*. Measure their precision on a read sample before the per-unit counts decide a unit.
 - Missed frame by type: voa-trim-corpus.md measured 57% of the 724 as free of a frame line the lists miss, mostly in
   the lesson programmes. Re-measure it on the 370 explainers and news items, the set the reading path draws from.
+- `--dry-run` for `ingest_speaking_items.py`, as `ingest_sources.py` has: bind without indexes and
+  report. Left out of the speaking-items PR to stay under its 250-line budget.

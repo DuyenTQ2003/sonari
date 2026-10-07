@@ -32,33 +32,9 @@
         "why": "Âm /θ/ trong “{word}” đang nghe giống /{heard}/. Tiếng Việt không có âm /θ/ nên rất dễ đọc thành “t” hoặc “th” của tiếng Việt.",
         "how": "Đặt đầu lưỡi nhẹ giữa hai hàm răng rồi thổi hơi ra liên tục qua khe hẹp giữa lưỡi và răng. Đừng để lưỡi chặn kín luồng hơi, đừng bật hơi ra, và đừng rung cổ họng."
       },
-      "th_sibilant": {
-        "why": "Âm /θ/ trong “{word}” đang nghe giống /{heard}/ (âm xì). Tiếng Việt không có âm /θ/.",
-        "how": "Với /s/ đầu lưỡi nằm sau răng cửa, còn với /θ/ đầu lưỡi phải đưa ra chạm nhẹ vào mép răng cửa trên. Thổi hơi ra êm và đều, không rung cổ họng."
-      },
-      "dh_stop": {
-        "why": "Âm /ð/ trong “{word}” đang nghe giống /{heard}/, tức là lưỡi đã chặn hẳn luồng hơi. /ð/ là âm xát, hơi phải đi ra liên tục.",
-        "how": "Đặt đầu lưỡi nhẹ giữa hai hàm răng như khi đọc /θ/, nhưng lần này cổ họng phải rung. Đặt tay lên cổ để cảm nhận độ rung."
-      },
       "dh_sibilant": {
         "why": "Âm /ð/ trong “{word}” đang nghe giống /{heard}/. Với /z/ đầu lưỡi ở sau răng cửa, còn với /ð/ đầu lưỡi phải ở giữa hai hàm răng.",
         "how": "Đưa đầu lưỡi ra chạm nhẹ vào mép răng cửa trên, thổi hơi ra liên tục và để cổ họng rung."
-      },
-      "sh_s": {
-        "why": "Âm /ʃ/ trong “{word}” đang nghe giống /{heard}/. Hai âm này khác nhau ở vị trí của lưỡi và hình dạng của môi.",
-        "how": "Chu nhẹ hai môi về phía trước, kéo thân lưỡi lùi về sau so với khi đọc /s/ và nâng lên gần vòm miệng, rồi thổi hơi ra đều. Âm /ʃ/ nghe trầm và dày hơn /s/."
-      },
-      "l_n": {
-        "why": "Âm /l/ trong “{word}” đang nghe giống /{heard}/, tức là hơi bị đẩy qua mũi.",
-        "how": "Đặt đầu lưỡi chạm lợi trên rồi để hơi thoát ra hai bên lưỡi, qua miệng. Thử bịt mũi khi đọc /l/: âm vẫn phải ra bình thường."
-      },
-      "n_l": {
-        "why": "Âm /n/ trong “{word}” đang nghe giống /{heard}/, tức là hơi thoát ra hai bên lưỡi thay vì đi qua mũi.",
-        "how": "Đặt đầu lưỡi chạm kín lợi trên để hơi không ra miệng được, rồi cho hơi đi qua mũi và rung cổ họng. Bịt mũi khi đọc /n/ thì âm sẽ bị tắt."
-      },
-      "ae_e": {
-        "why": "Âm /æ/ trong “{word}” đang nghe giống /{heard}/. Âm /æ/ cần miệng mở rộng hơn.",
-        "how": "Hạ hàm dưới xuống thấp, mở miệng rộng, để lưỡi thấp và phẳng với đầu lưỡi chạm nhẹ sau răng cửa dưới. Âm nghe nằm giữa “a” và “e” của tiếng Việt."
       },
       "final_sibilant": {
         "why": "Âm /{expected}/ ở cuối từ “{word}” nghe chưa rõ. Tiếng Việt không có âm xát ở cuối từ nên âm này rất dễ bị bỏ mất.",

@@ -123,6 +123,13 @@ SOURCES_FILE ?= $(HOME)/sonari-trimmed/voa/trimmed.jsonl
 ingest-sources: infra
 	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_sources.py $(SOURCES_FILE) $(ARGS)
 
+# Loads the picked practice sentences into content.speaking_items. Needs `make ingest-sources`
+# first. Idempotent: a second run stores nothing twice.
+ITEMS_FILE ?= $(CURDIR)/tools/speaking_items/items.jsonl
+.PHONY: ingest-speaking-items
+ingest-speaking-items: infra
+	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_speaking_items.py $(ITEMS_FILE) $(ARGS)
+
 # What the text-less pages are: the seeded sample's labels (docs/reports/voa-missing-labels.tsv) with
 # confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.
 voa-missing:
@@ -134,6 +141,12 @@ voa-missing:
 # labels in docs/reports/voa-classify-labels.tsv.
 voa-classify:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.classify_report $(ARGS)
+
+# Picks the practice sentences (tools/speaking_items/items.jsonl) from the trimmed corpus; needs the
+# speech service's environment for G2P. Read only on the corpus; rewrites the items file.
+.PHONY: speaking-items
+speaking-items:
+	PYTHONPATH=$(CURDIR)/tools $(UV_RUN) services/speech python -m speaking_items.pick $(ARGS)
 
 voa-classify-validate:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.classify_validate $(ARGS)

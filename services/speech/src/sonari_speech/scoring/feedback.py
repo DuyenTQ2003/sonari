@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Literal, Self
 
 import yaml
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from sonari_speech.phoneset.mapping import vowel_tokens
 from sonari_speech.scoring.contract import Feedback, FeedbackParams, PhonemeVerdict, WordScore
@@ -37,8 +37,7 @@ class Rule(_Strict):
     heard: str | None = None
     position: Literal["final", "cluster"] | None = None
     key: str
-    sources: list[str] = []
-    unsourced: str | None = None
+    sources: list[str] = Field(min_length=1)  # a rule with no evidence is not a rule
     basis: str | None = None
 
     @model_validator(mode="after")
@@ -47,8 +46,6 @@ class Rule(_Strict):
             raise ValueError(f"{self.key}: name either `heard` or `position`")
         if self.heard is not None and not self.expected:
             raise ValueError(f"{self.key}: a pair rule needs `expected`")
-        if bool(self.sources) == (self.unsourced is not None):
-            raise ValueError(f"{self.key}: give `sources` or `unsourced`, not both or neither")
         return self
 
 
