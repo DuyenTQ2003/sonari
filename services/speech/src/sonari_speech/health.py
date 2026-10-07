@@ -1,7 +1,7 @@
 """Liveness (`/healthz`) and readiness (`/readyz`).
 
-Liveness only says the process is up. Readiness says the model is loaded and warmed up and
-ffmpeg can be started, so an orchestrator sends no traffic before it can be served.
+Liveness only says the process is up. Readiness says the model is loaded and warmed up, G2P is
+loaded, and ffmpeg can be started, so an orchestrator sends no traffic before it can be served.
 """
 
 from typing import Literal
@@ -43,6 +43,7 @@ def readyz(request: Request) -> JSONResponse:
     runtime: SpeechRuntime = request.app.state.runtime
     checks: dict[str, Verdict] = {
         "model": "ok" if runtime.ready else "down",
+        "g2p": "ok" if request.app.state.scorer.ready else "down",
         "ffmpeg": "ok" if ffmpeg_available(runtime.settings) else "down",
     }
     if all(verdict == "ok" for verdict in checks.values()):

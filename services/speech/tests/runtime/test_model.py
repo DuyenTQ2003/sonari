@@ -79,8 +79,8 @@ needs_model = pytest.mark.skipif(not MODEL_PATH.exists(), reason=f"{MODEL_PATH} 
 
 
 @pytest.fixture(scope="module")
-def real() -> ModelSession:
-    return ModelSession.load(MODEL_PATH, intra_op_threads=1)
+def real(real_model: ModelSession) -> ModelSession:
+    return real_model
 
 
 @needs_model

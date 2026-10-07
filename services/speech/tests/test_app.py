@@ -6,6 +6,7 @@ import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from tests.runtime.fakes import BlockingSession, FakeOrtSession
+from tests.scoring.fakes import fake_pronouncer
 from tests.support import needs_ffmpeg
 
 from sonari_speech.main import create_app
@@ -20,7 +21,7 @@ def make_app(session: FakeOrtSession | None = None, **overrides: object) -> Fast
     settings = Settings(cores=1, **overrides)  # type: ignore[arg-type]
     fake = session or FakeOrtSession()
     runtime = SpeechRuntime(settings, lambda _: ModelSession.from_session(fake))
-    app = create_app(settings, runtime)
+    app = create_app(settings, runtime, fake_pronouncer)
 
     @app.post("/_test/analyse")  # stands in for /v1/score until P23
     async def analyse(request: Request) -> dict[str, float]:
@@ -58,7 +59,7 @@ def test_the_model_loads_in_the_background_and_readyz_turns_green() -> None:
         wait_until_ready(client)
         assert client.get("/readyz").json() == {
             "status": "ready",
-            "checks": {"model": "ok", "ffmpeg": "ok"},
+            "checks": {"model": "ok", "g2p": "ok", "ffmpeg": "ok"},
         }
 
 
@@ -75,12 +76,12 @@ def test_readyz_is_503_when_ffmpeg_is_missing() -> None:
             time.sleep(0.02)
         checks = response.json()["error"]["details"]["checks"]
         assert response.status_code == 503
-        assert checks == {"model": "ok", "ffmpeg": "down"}
+        assert checks == {"model": "ok", "g2p": "ok", "ffmpeg": "down"}
 
 
 def test_a_model_that_fails_to_load_keeps_the_process_up_and_not_ready() -> None:
     settings = Settings(cores=1, model_dir=Path("/nonexistent"))
-    app = create_app(settings)  # the real loader, pointed at nothing
+    app = create_app(settings, pronouncer_factory=fake_pronouncer)  # the real model loader
     with TestClient(app) as client:
         time.sleep(0.3)
         assert client.get("/healthz").status_code == 200
