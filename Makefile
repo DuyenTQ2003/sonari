@@ -85,6 +85,7 @@ test-tools:
 # VOA inventory (P06): a polite, resumable crawl into DATA_DIR/voa_cache, then an offline
 # report. The crawl needs VOA_CONTACT_EMAIL (it goes into the User-Agent). Not part of CI.
 .PHONY: voa-crawl voa-report voa-sample voa-evaluate voa-corpus voa-trim voa-wordlists voa-missing
+.PHONY: voa-classify voa-classify-validate
 voa-crawl:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_inventory.crawl $(ARGS)
 
@@ -126,6 +127,16 @@ ingest-sources: infra
 # confidence intervals, and a census of the article text the parser never reads. Read only; about 60 s.
 voa-missing:
 	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.missing $(ARGS)
+
+# Tags the trimmed corpus by type and topic safety and prints the counts (docs/reports/voa-classify.md).
+# Read only on TRIM_DIR, no model, a few seconds. `ARGS=--sample 50` prints the seeded sample to read
+# by hand, untagged; `ARGS=--tsv` prints one line per passage. `voa-classify-validate` scores the hand
+# labels in docs/reports/voa-classify-labels.tsv.
+voa-classify:
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.classify_report $(ARGS)
+
+voa-classify-validate:
+	PYTHONPATH=tools uv run --no-project --with pyyaml python -m voa_corpus.classify_validate $(ARGS)
 
 # Topic-tagger evaluation (needs the owner's labels in tools/voa_inventory/labels/). The
 # sample step is cheap; the evaluate step loads bge-m3 (2.3 GB download, ~3 GB RAM).
