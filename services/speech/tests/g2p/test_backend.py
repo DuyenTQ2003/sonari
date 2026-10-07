@@ -57,8 +57,8 @@ def test_the_default_data_dir_follows_data_dir_env(monkeypatch: pytest.MonkeyPat
 
 
 @pytest.fixture(scope="module")
-def pronouncer() -> Pronouncer:
-    return Pronouncer(G2pEnBackend(DATA_DIR))
+def pronouncer(real_pronouncer: Pronouncer) -> Pronouncer:
+    return real_pronouncer
 
 
 def tokens(pron: WordPron) -> str:

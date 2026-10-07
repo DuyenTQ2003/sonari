@@ -18,9 +18,9 @@ model (P20), then alignment and GOP scoring. No torch: onnxruntime and numpy onl
 4. **Gate** (`runtime/gate.py`): at most `slots` requests run at once, at most
    `in_flight_limit` are admitted; the next gets 503 + `Retry-After` at once, not a long queue.
 
-The model loads in a background task. `/healthz` answers at once; `/readyz` is 503 until the
-file's SHA-256 matched `runtime/models.yaml`, the session loaded and a warm-up inference ran,
-and while ffmpeg cannot be started. A model that fails to load keeps the process up and not
+The model and G2P load in background tasks. `/healthz` answers at once; `/readyz` is 503 until
+the file's SHA-256 matched `runtime/models.yaml`, the session loaded and a warm-up inference
+ran, until G2P loaded (`g2p` check), and while ffmpeg cannot be started. A model that fails to load keeps the process up and not
 ready (the reason is in the log).
 
 | Variable | Default | Meaning |
@@ -63,8 +63,8 @@ docker run --rm --cpus 2 -p 8001:8001 -v ~/sonari-data/onnx:/models:ro sonari-sp
 ```
 
 Measured 2026-10-03 on the laptop (WSL2, i5-11400H; the VOA crawl was running, the model
-file was in the page cache), after `g2p-en` joined the dependencies. The image has no NLTK
-data yet; the scoring endpoint (P23) will need it (see "NLTK data"):
+file was in the page cache), after `g2p-en` joined the dependencies. The Dockerfile has since
+started fetching the NLTK cmudict at build time (2026-10-07, not yet rebuilt or re-measured):
 
 | | |
 |---|---|
@@ -106,6 +106,21 @@ It never downloads at runtime: it raises `G2pDataMissing`, and importing g2p_en 
 ```bash
 uv run --directory services/speech python -m sonari_speech.g2p.backend
 ```
+
+## Scoring (P22, part of P23): `POST /v1/score`
+
+Multipart `audio` (any format above) and `referenceText` (1-300 characters). The response is
+`packages/contracts/schema/score-response.schema.json`: per word, per expected phoneme,
+`correct`, `heard` (what the model rated highest instead, when wrong), `gop` and the time span.
+
+1. G2P turns the reference into espeak tokens per word; the runtime gives log-posteriors.
+2. `scoring/align.py` force-aligns the WHOLE sentence (CTC Viterbi, from spikes/gop/align.py).
+3. `scoring/gop.py` scores each phoneme as P02 did and calls it correct when
+   `gop > gop_min` of `scoring/thresholds/v0.yaml`: **0.0, uncalibrated**; read that file.
+
+Speech too short to hold the sentence: 422 `audio_too_short` with
+`details.reason = "shorter_than_reference"`. Align + GOP take 2-16 ms; the model is the cost.
+Per-phoneme output on the G0 clips: `uv run pytest -rP tests/scoring/test_g0_clips.py`.
 
 ## Running the tests
 

@@ -21,7 +21,11 @@ RUN apt-get update \
 COPY --from=build /app /app
 ENV PATH=/app/.venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
-    SPEECH_MODEL_DIR=/models
+    SPEECH_MODEL_DIR=/models \
+    DATA_DIR=/app
+
+# G2P reads the cmudict corpus from $DATA_DIR/nltk_data and never downloads at runtime.
+RUN python -m sonari_speech.g2p.backend /app/nltk_data
 
 # Fetch the pinned model at build time; the checksum in models.yaml must match.
 ARG MODEL_URL=""
