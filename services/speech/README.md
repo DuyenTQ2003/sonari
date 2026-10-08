@@ -114,12 +114,14 @@ Multipart `audio` (any format above) and `referenceText` (1-300 characters). The
 `verdict` (correct / unclear / wrong), `heard` (what the model rated highest instead, when not
 correct), `gop` and the time span; per word, the worse verdict and the `reference` accent used.
 
-1. G2P turns the reference into espeak tokens per word twice: en-us (g2p_en) and en-gb
-   (`g2p/espeak.py`, espeak-ng, which must be installed); the runtime gives log-posteriors.
+1. G2P turns the reference into espeak tokens per word: en-us (g2p_en), en-gb
+   (`g2p/espeak.py`, espeak-ng, which must be installed), and, for a closed list of ten function
+   words, their weak and strong forms (`g2p/weak_forms.yaml`, each with its source); the runtime
+   gives log-posteriors.
 2. `scoring/align.py` force-aligns the WHOLE sentence (CTC Viterbi, from spikes/gop/align.py),
-   once per accent over the same posteriors; `scoring/accents.py` keeps the better per word.
-3. `scoring/gop.py` scores each phoneme as P02 did; `scoring/thresholds/v1.yaml` says correct
-   above 0, wrong below −3.4, unclear between, and how −3.4 was derived; read that file.
+   once per reference over the same posteriors; `scoring/accents.py` keeps the best per word.
+3. `scoring/gop.py` scores each phoneme as P02 did; `scoring/thresholds/v2.yaml` says correct
+   above 0, wrong below −4.5, unclear between, and how −4.5 was derived; read that file.
 
 Dev only: `SPEECH_DEBUG_DUMP_DIR=<dir>` keeps every request's audio, referenceText and response
 (`scoring/dump.py`); refused inside a container, never set in the image.

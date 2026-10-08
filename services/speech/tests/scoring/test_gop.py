@@ -8,6 +8,7 @@ from tests.scoring.fakes import fake_pronouncer, posteriors
 from sonari_speech.phoneset.mapping import mapped_tokens
 from sonari_speech.scoring.contract import ScoreResponse
 from sonari_speech.scoring.gop import (
+    THRESHOLDS_DIR,
     Thresholds,
     load_thresholds,
     load_vocab,
@@ -34,8 +35,12 @@ def test_the_blank_and_special_tokens_never_compete() -> None:
     assert {vocab.tokens[int(i)] for i in vocab.phonemes}.isdisjoint({"<s>", "<pad>", "</s>"})
 
 
-def test_the_shipped_thresholds_are_v1_from_the_native_control() -> None:
-    assert load_thresholds() == Thresholds("v1-native-g0", 0.0, -3.4)
+def test_the_shipped_thresholds_are_v2_from_400_native_utterances() -> None:
+    assert load_thresholds() == Thresholds("v2-native-ls400", 0.0, -4.5)
+
+
+def test_v1_is_kept_and_still_loads() -> None:
+    assert load_thresholds(THRESHOLDS_DIR / "v1.yaml") == Thresholds("v1-native-g0", 0.0, -3.4)
 
 
 def test_three_verdicts_split_at_the_two_thresholds() -> None:

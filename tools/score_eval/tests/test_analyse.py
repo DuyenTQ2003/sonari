@@ -1,4 +1,4 @@
-"""Verdicts, the per-word accent choice (as scoring/accents.py), the v2 search, collapse."""
+"""Verdicts, the per-word choice of reference (as scoring/accents.py), the v2 search, collapse."""
 
 from typing import Any
 
@@ -9,6 +9,7 @@ from score_eval.analyse import (
     per_clip,
     propose,
     verdict,
+    without_weak,
     wrong_share,
 )
 from score_eval.native import sample
@@ -18,9 +19,17 @@ def ph(gop: float, expected: str = "x") -> dict[str, Any]:
     return {"expected": expected, "gop": gop, "heard": "y"}
 
 
-def word(us: list[float], gb: list[float] | None = None, text: str = "w") -> dict[str, Any]:
-    british = None if gb is None else [ph(g) for g in gb]
-    return {"text": text, "us": [ph(g) for g in us], "gb": british}
+def rows(gops: list[float] | None) -> list[dict[str, Any]] | None:
+    return None if gops is None else [ph(g) for g in gops]
+
+
+def word(
+    us: list[float],
+    gb: list[float] | None = None,
+    text: str = "w",
+    weak: list[list[float] | None] | None = None,
+) -> dict[str, Any]:
+    return {"text": text, "us": rows(us), "gb": rows(gb), "weak": [rows(w) for w in weak or []]}
 
 
 def clip(*words: dict[str, Any], cid: str = "c", speaker: str = "s") -> dict[str, Any]:
@@ -42,6 +51,20 @@ def test_the_accent_with_fewer_wrong_then_fewer_unclear_then_higher_mean_wins() 
     assert choose(word([1.0, 2.0], [1.0, 3.0]), -3.4)[0] == "en-gb"  # higher mean
     assert choose(word([1.0, 3.0], [1.0, 3.0]), -3.4)[0] == "en-us"  # a tie keeps en-us
     assert choose(word([-5.0]), -3.4)[0] == "en-us"  # no British form
+
+
+def test_a_weak_form_wins_only_when_strictly_better_and_en_gb_wins_a_tie_with_it() -> None:
+    assert choose(word([-5.0], weak=[[1.0]]), -3.4)[0] == "weak"
+    assert choose(word([1.0], weak=[[1.0]]), -3.4)[0] == "en-us"
+    assert choose(word([-5.0], [1.0], weak=[[1.0]]), -3.4)[0] == "en-gb"
+    assert choose(word([-5.0], weak=[None, [-1.0], [1.0]]), -3.4) == ("weak", [ph(1.0)])
+    assert choose({"us": [ph(-5.0)], "gb": None}, -3.4)[0] == "en-us"  # a file from PR #51
+
+
+def test_without_weak_gives_back_the_two_reference_result() -> None:
+    clips = [clip(word([-5.0], weak=[[1.0]]))]
+    assert wrong_share(clips, -3.4) == 0.0
+    assert wrong_share(without_weak(clips), -3.4) == 1.0
 
 
 def test_the_choice_depends_on_the_threshold() -> None:

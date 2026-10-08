@@ -7,8 +7,8 @@ The GOP formula and the rival are P02's (spikes/gop/run_gop.py), kept as they we
 
 q ranges over phoneme tokens only; blank and `<s> <pad> </s> <unk>` never compete. What
 changed from the spike: the whole sentence is aligned, not one word, and the verdict comes
-from a versioned thresholds file (thresholds/v1.yaml): correct above `correct_above`, wrong
-below `wrong_below`, unclear between.
+from a versioned thresholds file (thresholds/v2.yaml; v1 is kept): correct above
+`correct_above`, wrong below `wrong_below`, unclear between.
 """
 
 import json
@@ -26,7 +26,8 @@ from sonari_speech.scoring.align import token_spans, viterbi_align
 from sonari_speech.scoring.contract import Accent, PhonemeVerdict, Verdict, WordScore
 
 VOCAB_PATH = Path(__file__).with_name("vocab.json")  # facebook/wav2vec2-lv-60-espeak-cv-ft
-THRESHOLDS_PATH = Path(__file__).parent / "thresholds" / "v1.yaml"
+THRESHOLDS_DIR = Path(__file__).parent / "thresholds"
+THRESHOLDS_PATH = THRESHOLDS_DIR / "v2.yaml"
 BLANK = "<pad>"
 SPECIAL = frozenset({"<s>", "<pad>", "</s>", "<unk>"})
 WORST_FIRST: tuple[Verdict, ...] = ("wrong", "unclear", "correct")

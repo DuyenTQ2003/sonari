@@ -1,19 +1,21 @@
-"""Raw GOP per phoneme for a clip, per accent, exactly as /v1/score computes it.
+"""Raw GOP per phoneme for a clip, per reference, exactly as /v1/score computes it.
 
 Needs the speech service's environment (`PYTHONPATH=tools uv run --directory services/speech`).
 No verdict is taken here: the thresholds are applied later (analyse.py), so one run serves
-v1 and any candidate v2. Each word keeps its en-us phonemes and, when espeak-ng gives a
-different British form, its en-gb phonemes from the second alignment, as scoring/accents.py.
+v1 and any candidate v2. Each word keeps its en-us phonemes and, where a further reference
+gives it a different form, the phonemes of that alignment as scoring/accents.py makes it:
+"gb" (espeak-ng en-gb) and "weak" (one entry per rank of g2p/weak_forms.yaml).
 """
 
 import subprocess
-from dataclasses import replace
 from typing import Any
 
 from sonari_speech.g2p import G2pEnBackend, Pronouncer, WordPron
 from sonari_speech.g2p.espeak import EspeakReference
+from sonari_speech.g2p.weak_forms import load_weak_forms, weak_references
 from sonari_speech.runtime.model import FRAME_S
 from sonari_speech.runtime.service import Analysis, SpeechRuntime
+from sonari_speech.scoring.accents import substitute
 from sonari_speech.scoring.align import TooFewFrames
 from sonari_speech.scoring.gop import PhonemeGop, Vocab, load_vocab, phoneme_gops
 from sonari_speech.settings import Settings
@@ -31,6 +33,7 @@ class ClipScorer:
         self.vocab: Vocab = load_vocab()
         self.pronouncer = Pronouncer(G2pEnBackend())
         self.british = EspeakReference(self.vocab.ids)
+        self.weak = load_weak_forms(self.vocab.ids)
 
     async def start(self) -> None:
         await self.runtime.start()
@@ -40,26 +43,25 @@ class ClipScorer:
     async def score(self, data: bytes, text: str) -> dict[str, Any]:
         words = self.pronouncer.pronounce(text)
         analysis = await self.runtime.analyse(data)
-        british = self.british.tokens(words)
-        return {"speech_s": analysis.speech_s, "words": self._words(words, british, analysis)}
-
-    def _words(
-        self, words: list[WordPron], british: list[tuple[str, ...] | None], analysis: Analysis
-    ) -> list[dict[str, Any]]:
+        references = [self.british.tokens(words), *weak_references(words, self.weak)]
         us = self._split(words, analysis)
-        differs = [gb is not None and gb != w.tokens for w, gb in zip(words, british, strict=True)]
-        gb_words = [
-            replace(w, tokens=gb) if d and gb else w
-            for w, gb, d in zip(words, british, differs, strict=True)
-        ]
-        try:
-            gb = self._split(gb_words, analysis) if any(differs) else None
-        except TooFewFrames:
-            gb = None
-        return [
-            {"text": w.text, "us": us[i], "gb": gb[i] if gb is not None and differs[i] else None}
+        gb, *weak = (self._alternative(words, r, analysis) for r in references)
+        scored = [
+            {"text": w.text, "us": us[i], "gb": gb[i], "weak": [a[i] for a in weak]}
             for i, w in enumerate(words)
         ]
+        return {"speech_s": analysis.speech_s, "words": scored}
+
+    def _alternative(
+        self, words: list[WordPron], reference: list[tuple[str, ...] | None], analysis: Analysis
+    ) -> list[list[dict[str, Any]] | None]:
+        """Per word: its phonemes under `reference`, None where it adds no different form."""
+        swapped, differs = substitute(words, reference)
+        try:
+            scored = self._split(swapped, analysis) if any(differs) else None
+        except TooFewFrames:
+            scored = None
+        return [scored[i] if scored is not None and d else None for i, d in enumerate(differs)]
 
     def _split(self, words: list[WordPron], analysis: Analysis) -> list[list[dict[str, Any]]]:
         """Raises TooFewFrames when the sentence does not fit the frames."""

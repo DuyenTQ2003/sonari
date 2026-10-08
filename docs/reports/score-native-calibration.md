@@ -5,6 +5,9 @@ Reproduce: `make score-native` (about 4 min on a 12-core laptop; the tables belo
 
 **Part 2 (the Vietnamese evaluation set) is not done:** the recordings do not exist yet.
 
+**Followed up** in `score-weak-forms.md`: the weak forms recommended below were added, and v2 (−4.5, not
+−7.2) is the shipped threshold. This report is the measurement it started from; its numbers stand.
+
 ## Method
 
 - **Sample:** 400 LibriSpeech dev-clean utterances (CC BY 4.0), seed 20261008, drawn from the
