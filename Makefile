@@ -9,7 +9,8 @@ TYPECHECK_TARGETS := $(SERVICES:%=typecheck-%)
 # must use static pattern rules ("targets: pattern:"), never a bare "lint-%:" rule;
 # otherwise they silently become empty recipes ("Nothing to be done").
 .PHONY: setup dev infra infra-reset lint typecheck test test-core test-speech test-scripts \
-	test-tools check-phoneset check-imports fmt lint-scripts $(LINT_TARGETS) $(TYPECHECK_TARGETS)
+	test-tools check-phoneset check-imports fmt lint-scripts typecheck-web test-web build-web \
+	$(LINT_TARGETS) $(TYPECHECK_TARGETS)
 
 # One-time setup per clone: the pre-commit hook and the commit-msg hook (strips AI trailers).
 # Git worktrees of the clone share these hooks.
@@ -30,13 +31,31 @@ infra: .env
 infra-reset: .env
 	docker compose down --volumes --remove-orphans
 
-# Starts the infra, then the apps in the foreground. Use `make infra` when you only need
-# the databases (for example `make infra && make test-core`).
-dev: infra
+# Starts the infra, then the apps in the foreground: core :8000, speech :8001 and the web app
+# :3000, which proxies to both. Use `make infra` when you only need the databases (for example
+# `make infra && make test-core`).
+dev: infra apps/web/node_modules
 	@trap 'kill 0' INT TERM; \
 	$(UV_RUN) services/core --env-file $(CURDIR)/.env uvicorn sonari_core.main:app_factory --factory --reload --port 8000 & \
 	$(UV_RUN) services/speech uvicorn sonari_speech.main:app --reload --port 8001 & \
+	NEXT_TELEMETRY_DISABLED=1 CORE_URL=http://localhost:8000 SPEECH_URL=http://localhost:8001 npm run --prefix apps/web dev & \
 	wait
+
+# The web app (apps/web). It needs Node 22 on the machine that runs make: in WSL, install it inside
+# the distro (the Windows node and npm do not count). `npm ci` runs again when the lockfile changes.
+apps/web/node_modules: apps/web/package-lock.json
+	@command -v node >/dev/null || { echo "node is not installed: apps/web needs Node 22 (install it inside WSL)"; exit 1; }
+	npm ci --prefix apps/web --no-audit --no-fund
+	@touch $@
+
+typecheck-web: apps/web/node_modules
+	npm run --prefix apps/web typecheck
+
+test-web: apps/web/node_modules
+	npm test --prefix apps/web
+
+build-web: apps/web/node_modules
+	NEXT_TELEMETRY_DISABLED=1 npm run --prefix apps/web build
 
 lint: $(LINT_TARGETS) lint-scripts
 
@@ -56,12 +75,12 @@ lint-scripts:
 	uv run --no-project --with ruff ruff format --check scripts tools spikes
 	uv run --no-project python scripts/check_no_vietnamese.py services scripts tools spikes
 
-typecheck: $(TYPECHECK_TARGETS)
+typecheck: $(TYPECHECK_TARGETS) typecheck-web
 
 $(TYPECHECK_TARGETS): typecheck-%:
 	$(UV_RUN) services/$* mypy
 
-test: test-core test-speech test-scripts test-tools
+test: test-core test-speech test-scripts test-tools test-web
 
 test-core:
 	$(UV_RUN) services/core pytest

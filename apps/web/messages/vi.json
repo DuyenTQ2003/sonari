@@ -24,6 +24,15 @@
     },
     "speech": {
       "busy": "Hệ thống chấm điểm đang bận. Bạn hãy thử lại sau vài giây."
+    },
+    "mic": {
+      "denied": "Trình duyệt chưa cho phép dùng micro. Hãy bật quyền micro cho trang này trong cài đặt trình duyệt rồi thử lại.",
+      "not_found": "Không tìm thấy micro. Hãy cắm micro hoặc kiểm tra thiết bị rồi thử lại.",
+      "unsupported": "Trình duyệt này không ghi âm được. Hãy dùng Chrome, Firefox hoặc Safari bản mới và mở trang qua HTTPS.",
+      "unavailable": "Chưa dùng được micro. Có thể một ứng dụng khác đang dùng micro; hãy đóng ứng dụng đó rồi thử lại."
+    },
+    "upstream": {
+      "unavailable": "Không kết nối được tới hệ thống. Bạn hãy thử lại sau ít phút."
     }
   },
   "pronunciation": {
@@ -53,5 +62,22 @@
         "how": "Nghe lại mẫu, chú ý vị trí của lưỡi và môi, rồi nói chậm hơn và thử lại."
       }
     }
+  },
+  "app": {
+    "title": "Sonari – Luyện nói tiếng Anh"
+  },
+  "practice": {
+    "heading": "Luyện nói",
+    "instruction": "Đọc to câu tiếng Anh dưới đây. Bấm “Ghi âm” để bắt đầu và “Dừng” khi đọc xong.",
+    "loading": "Đang tải câu luyện tập…",
+    "empty": "Chưa có câu luyện tập nào.",
+    "record": "Ghi âm",
+    "stop": "Dừng",
+    "again": "Ghi lại",
+    "retry": "Gửi lại",
+    "next": "Câu khác",
+    "recording": "Đang ghi âm… Hãy đọc to câu trên.",
+    "scoring": "Đang chấm điểm…",
+    "result": "Kết quả (dữ liệu thô)"
   }
 }

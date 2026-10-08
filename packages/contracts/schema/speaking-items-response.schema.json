@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sonari.dev/schema/speaking-items-response.schema.json",
+  "title": "SpeakingItemsResponse",
+  "description": "Answer of the core service's GET /v1/speaking-items: the practice sentences, in a fixed order. `text` is the exact string to send to POST /v1/score as referenceText.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": { "type": "array", "items": { "$ref": "#/$defs/item" } }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "unit"],
+      "properties": {
+        "id": {
+          "description": "Stable key of the item: the pinned Source version, the line and the offset. Not for display and not a URL path segment.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": { "description": "The sentence, unchanged from its source passage.", "type": "string", "minLength": 1 },
+        "unit": { "description": "The unit the sentence belongs to, in English (the client has no copy for it yet).", "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
