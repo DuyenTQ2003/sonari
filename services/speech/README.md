@@ -111,14 +111,20 @@ uv run --directory services/speech python -m sonari_speech.g2p.backend
 
 Multipart `audio` (any format above) and `referenceText` (1-300 characters). The response is
 `packages/contracts/schema/score-response.schema.json`: per word, per expected phoneme,
-`correct`, `heard` (what the model rated highest instead, when wrong), `gop` and the time span.
+`verdict` (correct / unclear / wrong), `heard` (what the model rated highest instead, when not
+correct), `gop` and the time span; per word, the worse verdict and the `reference` accent used.
 
-1. G2P turns the reference into espeak tokens per word; the runtime gives log-posteriors.
-2. `scoring/align.py` force-aligns the WHOLE sentence (CTC Viterbi, from spikes/gop/align.py).
-3. `scoring/gop.py` scores each phoneme as P02 did and calls it correct when
-   `gop > gop_min` of `scoring/thresholds/v0.yaml`: **0.0, uncalibrated**; read that file.
+1. G2P turns the reference into espeak tokens per word twice: en-us (g2p_en) and en-gb
+   (`g2p/espeak.py`, espeak-ng, which must be installed); the runtime gives log-posteriors.
+2. `scoring/align.py` force-aligns the WHOLE sentence (CTC Viterbi, from spikes/gop/align.py),
+   once per accent over the same posteriors; `scoring/accents.py` keeps the better per word.
+3. `scoring/gop.py` scores each phoneme as P02 did; `scoring/thresholds/v1.yaml` says correct
+   above 0, wrong below −3.4, unclear between, and how −3.4 was derived; read that file.
 
-Each wrong phoneme also carries `feedback`: a message key (`pronunciation.fix.<rule>`) and
+Dev only: `SPEECH_DEBUG_DUMP_DIR=<dir>` keeps every request's audio, referenceText and response
+(`scoring/dump.py`); refused inside a container, never set in the image.
+
+Each wrong phoneme (not an unclear one) also carries `feedback`: a message key (`pronunciation.fix.<rule>`) and
 parameters, never text. `scoring/feedback.py` picks the rule from `scoring/feedback.yaml`, which
 also lists the sources and the pairs that have none; the Vietnamese copy is the client's, in
 `apps/web/messages/vi.json`. No LLM is involved.

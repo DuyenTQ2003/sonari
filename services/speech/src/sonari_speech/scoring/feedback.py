@@ -19,6 +19,8 @@ from sonari_speech.phoneset.mapping import vowel_tokens
 from sonari_speech.scoring.contract import Feedback, FeedbackParams, PhonemeVerdict, WordScore
 
 TABLE_PATH = Path(__file__).with_name("feedback.yaml")
+# IPA vowel letters: an en-gb token from espeak-ng (ɒ, əʊ, eə, a) is not in the ARPAbet table.
+IPA_VOWELS = frozenset("aeiouyæøœɐɑɒɔɘəɚɛɜɞɤɨɪɯɵɶʉʊʌʏᵻ")  # noqa: RUF001
 KEY_PREFIX = "pronunciation.fix."
 FALLBACK_KEY = "generic"
 
@@ -65,6 +67,10 @@ def fold(token: str) -> str:
     return "".join(c for c in decomposed if unicodedata.category(c) not in ("Mn", "Lm"))
 
 
+def is_vowel(token: str) -> bool:
+    return token in vowel_tokens() or fold(token)[:1] in IPA_VOWELS
+
+
 def _matches(rule: Rule, verdict: PhonemeVerdict, final: bool, cluster: bool) -> bool:
     if rule.expected and verdict.expected not in rule.expected:
         return False
@@ -74,15 +80,14 @@ def _matches(rule: Rule, verdict: PhonemeVerdict, final: bool, cluster: bool) ->
 
 
 def feedback_for(phonemes: Sequence[PhonemeVerdict], index: int, word: str) -> Feedback | None:
-    """Feedback for `phonemes[index]` of `word`; None when it was said correctly."""
+    """Feedback for `phonemes[index]` of `word`; None unless the verdict is "wrong"."""
     verdict = phonemes[index]
-    if verdict.correct or verdict.heard is None:
+    if verdict.verdict != "wrong" or verdict.heard is None:
         return None
-    vowels = vowel_tokens()
-    consonant = verdict.expected not in vowels
+    consonant = not is_vowel(verdict.expected)
     touching = (phonemes[j].expected for j in (index - 1, index + 1) if 0 <= j < len(phonemes))
     final = consonant and index == len(phonemes) - 1
-    cluster = consonant and any(token not in vowels for token in touching)
+    cluster = consonant and any(not is_vowel(token) for token in touching)
     key = next(
         (r.key for r in load_table().rules if _matches(r, verdict, final, cluster)), FALLBACK_KEY
     )

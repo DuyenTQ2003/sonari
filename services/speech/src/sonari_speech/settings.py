@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     ffmpeg_path: str = "ffmpeg"
     decode_timeout_s: float = 10.0
 
+    # Dev only: keep every scored recording here (scoring/dump.py). Never set in an image.
+    debug_dump_dir: Path | None = None
+
     @property
     def model_path(self) -> Path:
         return self.model_dir / MODEL_FILE

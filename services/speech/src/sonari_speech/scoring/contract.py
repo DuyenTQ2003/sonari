@@ -3,8 +3,13 @@
 A test validates what the service returns against that file, so the two cannot drift.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
+
+Verdict = Literal["correct", "unclear", "wrong"]
+Accent = Literal["en-us", "en-gb"]
 
 
 class _Camel(BaseModel):
@@ -26,19 +31,20 @@ class Feedback(_Camel):
 
 class PhonemeVerdict(_Camel):
     expected: str
-    correct: bool
+    verdict: Verdict
     heard: str | None  # the phoneme the model rated highest instead; None when correct
     gop: float
     start_ms: int
     end_ms: int
-    feedback: Feedback | None = None  # set by scoring.feedback for a wrong phoneme
+    feedback: Feedback | None = None  # set by scoring.feedback, only for "wrong"
 
 
 class WordScore(_Camel):
     text: str
     start: int
     end: int
-    correct: bool
+    verdict: Verdict  # the worst of its phonemes; "unclear" when it has none
+    reference: Accent  # the accent whose reference scored this word better
     correct_phonemes: int
     phonemes: list[PhonemeVerdict]
 

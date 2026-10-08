@@ -9,11 +9,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 from tests.runtime.fakes import FakeOrtSession
-from tests.scoring.fakes import fake_pronouncer
+from tests.scoring.fakes import fake_british, fake_pronouncer
 from tests.scoring.test_gop import SCHEMA
 from tests.support import needs_ffmpeg
 
 from sonari_speech.g2p import Pronouncer
+from sonari_speech.g2p.espeak import EspeakUnavailable
 from sonari_speech.main import create_app
 from sonari_speech.runtime.model import ModelSession
 from sonari_speech.runtime.service import SpeechRuntime
@@ -25,7 +26,7 @@ AUDIO = (Path(__file__).parents[1] / "fixtures" / "ios.m4a").read_bytes()  # 1.2
 def make_app(pronouncer_factory: object = fake_pronouncer) -> FastAPI:
     settings = Settings(cores=1)
     runtime = SpeechRuntime(settings, lambda _: ModelSession.from_session(FakeOrtSession()))
-    return create_app(settings, runtime, pronouncer_factory)  # type: ignore[arg-type]
+    return create_app(settings, runtime, pronouncer_factory, fake_british)  # type: ignore[arg-type]
 
 
 @contextmanager
@@ -51,12 +52,13 @@ def test_a_recording_and_a_sentence_give_one_verdict_per_phoneme() -> None:
         body = post(client, "One think you.")
     assert body.pop("status") == 200
     Draft202012Validator(SCHEMA).validate(body)
-    assert body["thresholdsVersion"] == "v0-uncalibrated"
+    assert body["thresholdsVersion"] == "v1-native-g0"
     assert [w["text"] for w in body["words"]] == ["One", "think", "you"]
     assert [p["expected"] for p in body["words"][1]["phonemes"]] == ["θ", "ɪ", "ŋ", "k"]
     for word in body["words"]:
         for p in word["phonemes"]:
-            assert (p["heard"] is None) == p["correct"]
+            assert (p["heard"] is None) == (p["verdict"] == "correct")
+            assert (p["feedback"] is None) == (p["verdict"] != "wrong")
             assert p["startMs"] < p["endMs"] <= 2000
 
 
@@ -102,3 +104,18 @@ def test_scoring_is_503_and_readyz_says_why_when_g2p_failed_to_load() -> None:
     assert body["status"] == 503
     assert body["error"]["code"] == "not_ready"
     assert checks["g2p"] == "down"
+
+
+@needs_ffmpeg
+def test_a_failing_espeak_scores_en_us_only_instead_of_failing() -> None:
+    class Broken:
+        def tokens(self, words: object) -> list[None]:
+            raise EspeakUnavailable("espeak-ng crashed")
+
+    settings = Settings(cores=1)
+    runtime = SpeechRuntime(settings, lambda _: ModelSession.from_session(FakeOrtSession()))
+    app = create_app(settings, runtime, fake_pronouncer, Broken)  # type: ignore[arg-type]
+    with ready_client(app) as client:
+        body = post(client, "One think you.")
+    assert body["status"] == 200
+    assert {w["reference"] for w in body["words"]} == {"en-us"}

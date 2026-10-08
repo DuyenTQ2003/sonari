@@ -20,7 +20,7 @@ SCHEMA = json.loads(
         Path(__file__).resolve().parents[4] / "packages/contracts/schema/score-response.schema.json"
     ).read_text("utf-8")
 )
-V0 = Thresholds("test", 0.0)
+V0 = Thresholds("test", 0.0, -3.0)
 
 
 def test_every_token_g2p_can_emit_is_in_the_model_vocab() -> None:
@@ -34,8 +34,26 @@ def test_the_blank_and_special_tokens_never_compete() -> None:
     assert {vocab.tokens[int(i)] for i in vocab.phonemes}.isdisjoint({"<s>", "<pad>", "</s>"})
 
 
-def test_the_shipped_thresholds_say_they_are_uncalibrated() -> None:
-    assert load_thresholds() == Thresholds("v0-uncalibrated", 0.0)
+def test_the_shipped_thresholds_are_v1_from_the_native_control() -> None:
+    assert load_thresholds() == Thresholds("v1-native-g0", 0.0, -3.4)
+
+
+def test_three_verdicts_split_at_the_two_thresholds() -> None:
+    t = Thresholds("t", 0.0, -3.4)
+    assert [t.verdict(g) for g in (0.01, 0.0, -1.0, -3.4, -3.41)] == [
+        "correct",
+        "unclear",
+        "unclear",
+        "unclear",
+        "wrong",
+    ]
+
+
+def test_a_thresholds_file_with_the_bounds_crossed_is_refused(tmp_path: Path) -> None:
+    path = tmp_path / "bad.yaml"
+    path.write_text("version: bad\ncorrect_above: -1.0\nwrong_below: 0.0\n", "utf-8")
+    with pytest.raises(ValueError, match="wrong_below"):
+        load_thresholds(path)
 
 
 def test_a_phoneme_said_as_expected_scores_positive() -> None:
@@ -62,14 +80,14 @@ def test_words_group_their_phonemes_and_roll_up() -> None:
 
     think, you = scored
     assert (think.text, think.start, think.end) == ("think", 0, 5)
-    assert [(p.expected, p.correct, p.heard) for p in think.phonemes] == [
-        ("θ", False, "t"),
-        ("ɪ", True, None),
-        ("ŋ", True, None),
-        ("k", True, None),
+    assert [(p.expected, p.verdict, p.heard) for p in think.phonemes] == [
+        ("θ", "wrong", "t"),
+        ("ɪ", "correct", None),
+        ("ŋ", "correct", None),
+        ("k", "correct", None),
     ]
-    assert (think.correct, think.correct_phonemes) == (False, 3)
-    assert (you.correct, you.correct_phonemes) == (True, 2)
+    assert (think.verdict, think.correct_phonemes, think.reference) == ("wrong", 3, "en-us")
+    assert (you.verdict, you.correct_phonemes) == ("correct", 2)
     # Frame 1 of the trimmed audio is 20 ms after the speech start, which was 0.5 s in.
     assert (think.phonemes[0].start_ms, think.phonemes[0].end_ms) == (520, 540)
 
@@ -78,9 +96,11 @@ def test_the_threshold_decides_the_verdict() -> None:
     vocab = load_vocab()
     words = fake_pronouncer().pronounce("you")
     log_probs = posteriors(vocab, [None, "j", "uː", None])
-    assert score_words(words, log_probs, 0.0, V0, vocab)[0].correct
-    strict = Thresholds("strict", 100.0)
-    assert not score_words(words, log_probs, 0.0, strict, vocab)[0].correct
+    assert score_words(words, log_probs, 0.0, V0, vocab)[0].verdict == "correct"
+    unsure = Thresholds("unsure", 100.0, -100.0)
+    assert score_words(words, log_probs, 0.0, unsure, vocab)[0].verdict == "unclear"
+    strict = Thresholds("strict", 200.0, 100.0)
+    assert score_words(words, log_probs, 0.0, strict, vocab)[0].verdict == "wrong"
 
 
 @pytest.mark.parametrize("text", ["one think you", "took"])

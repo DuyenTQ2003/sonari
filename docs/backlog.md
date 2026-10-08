@@ -139,3 +139,8 @@ PR description.
   the lesson programmes. Re-measure it on the 370 explainers and news items, the set the reading path draws from.
 - `--dry-run` for `ingest_speaking_items.py`, as `ingest_sources.py` has: bind without indexes and
   report. Left out of the speaking-items PR to stay under its 250-line budget.
+- Score: context-dependent references. "the" before a vowel is ðɪ, "a" in citation is eɪ; one citation form per
+  word gives false errors (held-out native utterance in `docs/reports/score-false-alarms.md`). espeak-ng in
+  sentence mode knows some of this, but then word boundaries in its output are not reliable.
+- Score: GOP over more than one CTC frame (spike plus adjoining blanks, or posterior-weighted). Measure on the
+  evaluation set before choosing.

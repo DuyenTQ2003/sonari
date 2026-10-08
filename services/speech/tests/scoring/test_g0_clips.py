@@ -44,7 +44,7 @@ pytestmark = [
 @pytest.fixture(scope="module")
 def client(real_model: ModelSession, real_pronouncer: Pronouncer) -> Iterator[TestClient]:
     runtime = SpeechRuntime(SETTINGS, lambda _: real_model)
-    app = create_app(SETTINGS, runtime, lambda: real_pronouncer)
+    app = create_app(SETTINGS, runtime, lambda: real_pronouncer)  # and the real espeak-ng
     with ready_client(app, timeout_s=60) as client:
         yield client
 
@@ -62,24 +62,34 @@ def score(client: TestClient, clip: str, text: str) -> list[dict[str, Any]]:
         for p in word["phonemes"]:
             phonemes.append(p)
             verdict = "ok"
-            if not p["correct"]:
+            if p["verdict"] == "unclear":
+                verdict = f"unclear, heard {p['heard']}"
+            elif p["verdict"] == "wrong":
                 verdict = f"WRONG, heard {p['heard']} -> {p['feedback']['messageKey']}"
             print(
                 f"  {word['text']:<6} /{p['expected']}/  gop {p['gop']:>7.2f}  "
                 f"{p['startMs']:>4}-{p['endMs']:<4} ms  {verdict}"
             )
     print(f"  correct: {share_correct(phonemes):.0%} of {len(phonemes)}")
+    print("  references:", [w["reference"] for w in response.json()["words"]])
     return phonemes
 
 
 def share_correct(phonemes: list[dict[str, Any]]) -> float:
-    return sum(p["correct"] for p in phonemes) / len(phonemes)
+    return sum(p["verdict"] == "correct" for p in phonemes) / len(phonemes)
 
 
 def test_good_wav_against_what_it_says_is_mostly_correct(client: TestClient) -> None:
     phonemes = score(client, "good.wav", "one think you")
     assert share_correct(phonemes) >= 0.8
-    assert phonemes[3]["expected"] == "θ" and phonemes[3]["correct"]
+    assert phonemes[3]["expected"] == "θ" and phonemes[3]["verdict"] == "correct"
+
+
+def test_the_native_control_gets_no_wrong_verdict(client: TestClient) -> None:
+    # thresholds/v1.yaml was derived from this clip: the native reader, reading correctly,
+    # must get no "wrong" (and, by the margin's construction, nothing below correct).
+    phonemes = score(client, "good.wav", "one think you")
+    assert {p["verdict"] for p in phonemes} == {"correct"}
 
 
 def test_bad_wav_against_what_it_says_is_mostly_correct_too(client: TestClient) -> None:
@@ -108,7 +118,7 @@ def test_a_substituted_phoneme_is_wrong_names_what_was_said_and_nothing_else_mov
     substituted = score(client, clip, text)
     original = score(client, clip, text.replace("tink", "think").replace("thook", "took"))
     assert substituted[index]["expected"] == expected
-    assert not substituted[index]["correct"]
+    assert substituted[index]["verdict"] == "wrong"
     assert substituted[index]["heard"] == heard
     assert substituted[index]["feedback"]["messageKey"] == f"pronunciation.fix.{fix}"
 

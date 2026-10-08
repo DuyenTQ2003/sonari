@@ -13,9 +13,10 @@ COPY src ./src
 RUN uv sync --frozen --no-dev
 
 FROM python:3.11-slim-bookworm
-# ffmpeg decodes the browsers' recordings (WebM/Opus, MP4/AAC, Ogg, WAV).
+# ffmpeg decodes the browsers' recordings (WebM/Opus, MP4/AAC, Ogg, WAV); espeak-ng gives the
+# en-gb reference (scoring/accents.py).
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
+    && apt-get install -y --no-install-recommends ffmpeg espeak-ng \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --uid 10001 --home-dir /nonexistent sonari
 COPY --from=build /app /app

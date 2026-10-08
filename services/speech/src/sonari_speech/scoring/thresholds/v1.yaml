@@ -1,0 +1,42 @@
+# GOP thresholds, version v1. Derived from ONE native clip; not fitted to any learner.
+#
+# gop = mean over the phoneme's aligned frames of
+#         log p(expected) - max over other phonemes q of log p(q)      (P02, spikes/gop/run_gop.py)
+#
+#   gop >  correct_above               -> correct
+#   wrong_below <= gop <= correct_above -> unclear  (no feedback key)
+#   gop <  wrong_below                 -> wrong    (feedback key)
+#
+# correct_above: 0.0, as in v0: the boundary the definition gives (the expected phoneme beats
+# every rival, on average over its frames).
+#
+# wrong_below: the native control, G0's good.wav (LibriSpeech dev-clean 1993-147149-0008,
+# one native US speaker, CC BY 4.0) scored as "one think you", the int8 model, each word on
+# its better reference (en-us g2p_en or en-gb espeak-ng 1.52; all 3 words chose en-us).
+# Its 9 phonemes scored, in nats:
+#     w +2.59  ʌ +2.74  n +6.33  θ +3.60  ɪ +2.71  ŋ +1.47  k +3.47  j +4.25  uː +2.34
+#   lowest   = +1.47 (ŋ)
+#   margin   = the spread of the same 9 values, highest minus lowest = 6.33 - 1.47 = 4.86.
+#              Stated rule: one native reading already spreads that far between its best and
+#              worst phoneme, so a phoneme must fall that far below the worst native one
+#              before it is called wrong. Chosen before any held-out check was run.
+#   wrong_below = 1.47 - 4.86 = -3.39, rounded away from zero to one decimal: -3.4
+#                 (the best rival at least e^3.4 = 30 times as likely as the expected phoneme).
+#
+# Checks, none of which moved the number (tests/scoring/test_g0_clips.py; local only):
+# - good.wav "one think you": 0 wrong, 0 unclear (the definition of the rule).
+# - P02's substitution in native audio, "one tink you": /t/ -5.5, still wrong.
+# - Held out, the full utterance 1993-147149-0008 ("is there any chance for the other one
+#   think you", 27 phonemes): 1 wrong, "the" before a vowel, ə -3.62 heard ɪ. The speaker said
+#   ðɪ, which is correct; the reference has only the citation form ðə. A reference problem,
+#   not a threshold one; left visible.
+# - bad.wav "and took his dead": 2 wrong, both known: "and" read strong (æ) against ə -4.85,
+#   and "dead" cut by the clip edge (ɛ -4.70).
+#
+# Known limits: 9 phonemes from one speaker of one accent is a very small control, and every
+# phoneme spans one 20 ms frame, so each GOP rests on a single peaky CTC frame (see
+# docs/reports/score-false-alarms.md). Gate G1 (P24/P25) replaces this with v2 from labelled
+# learner recordings, per phoneme if the data supports it.
+version: v1-native-g0
+correct_above: 0.0
+wrong_below: -3.4
