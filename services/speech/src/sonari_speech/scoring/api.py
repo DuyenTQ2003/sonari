@@ -2,11 +2,11 @@
 
     curl -F audio=@take.webm -F referenceText="I think so" localhost:8001/v1/score
 
-Pipeline: G2P (reference -> espeak tokens per word, en-us from g2p_en and en-gb from
-espeak-ng), the runtime (decode, VAD trim, int8 wav2vec2), forced alignment of the whole
-sentence once per accent, GOP per phoneme, the better accent per word (scoring/accents.py),
-versioned thresholds (correct / unclear / wrong), then a message key per wrong phoneme
-(scoring/feedback.py). The Vietnamese text is the client's.
+Pipeline: G2P (reference -> espeak tokens per word, en-us from g2p_en, en-gb from espeak-ng,
+and the weak forms of a closed list of function words), the runtime (decode, VAD trim, int8
+wav2vec2), forced alignment of the whole sentence once per reference, GOP per phoneme, the
+best reference per word (scoring/accents.py), versioned thresholds (correct / unclear / wrong),
+then a message key per wrong phoneme (scoring/feedback.py). The Vietnamese text is the client's.
 No STT and no language model anywhere: the model's posteriors are read, never decoded.
 """
 
@@ -22,9 +22,10 @@ from opentelemetry import trace
 from sonari_speech.errors import AppError, ErrorEnvelope, MessageKey, error_response
 from sonari_speech.g2p import G2pEnBackend, Pronouncer, WordPron
 from sonari_speech.g2p.espeak import EspeakReference, EspeakUnavailable
+from sonari_speech.g2p.weak_forms import Forms, load_weak_forms, weak_references
 from sonari_speech.runtime.service import SpeechRuntime
 from sonari_speech.scoring import dump
-from sonari_speech.scoring.accents import score_accents
+from sonari_speech.scoring.accents import Alternative, score_accents
 from sonari_speech.scoring.align import TooFewFrames
 from sonari_speech.scoring.contract import ScoreResponse
 from sonari_speech.scoring.feedback import explain_words
@@ -68,24 +69,26 @@ class Scorer:
         self._british_factory = british_factory
         self._pronouncer: Pronouncer | None = None
         self._british: EspeakReference | None = None
+        self._weak: Forms | None = None
         self.failure: str | None = None
 
     @property
     def ready(self) -> bool:
-        return self._pronouncer is not None and self._british is not None
+        return None not in (self._pronouncer, self._british, self._weak)
 
     async def start(self) -> None:
-        """Load both G2Ps; like the model, a failure leaves the process up and not ready."""
+        """Load both G2Ps and the weak forms; a failure leaves the process up and not ready."""
         try:
             self._british = await asyncio.to_thread(self._british_factory)
             self._pronouncer = await asyncio.to_thread(self._factory)
+            self._weak = load_weak_forms(load_vocab().ids)
         except Exception as err:
             self.failure = f"{type(err).__name__}: {err}"
             logger.error("g2p failed to load: %s", self.failure)
 
     async def score(self, data: bytes, reference_text: str) -> ScoreResponse:
-        pronouncer, british = self._pronouncer, self._british
-        if pronouncer is None or british is None:
+        pronouncer, british, weak = self._pronouncer, self._british, self._weak
+        if pronouncer is None or british is None or weak is None:
             retry = str(self.runtime.settings.retry_after_s)
             raise AppError(503, "not_ready", MessageKey.NOT_READY, headers={"Retry-After": retry})
         words = pronouncer.pronounce(reference_text)
@@ -96,16 +99,19 @@ class Scorer:
             self.runtime.analyse(data), asyncio.to_thread(british_forms, british, words)
         )
         thresholds = load_thresholds()
+        alternatives: list[Alternative] = [("en-gb", gb_tokens)]
+        alternatives += [("en-us", ref) for ref in weak_references(words, weak)]
         with tracer.start_as_current_span("speech.score") as span:
             span.set_attribute("score.words", len(words))
             span.set_attribute("score.phonemes", sum(len(w.tokens) for w in words))
             span.set_attribute("score.thresholds_version", thresholds.version)
             span.set_attribute("score.words_en_gb_form", sum(t is not None for t in gb_tokens))
+            span.set_attribute("score.references", len(alternatives) + 1)
             try:
                 scored = await asyncio.to_thread(
                     score_accents,
                     words,
-                    gb_tokens,
+                    alternatives,
                     analysis.log_probs,
                     analysis.speech_start_s,
                     thresholds,

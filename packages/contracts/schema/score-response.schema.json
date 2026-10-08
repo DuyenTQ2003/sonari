@@ -33,7 +33,7 @@
           "$ref": "#/$defs/verdict"
         },
         "reference": {
-          "description": "Which reference accent the word was scored against: each word is scored against both and keeps the one with fewer wrong, then fewer unclear, then the higher mean GOP; a tie keeps en-us.",
+          "description": "Which reference accent the word was scored against. Each word is scored against its en-us reading, its en-gb reading and, for a closed list of function words, their weak forms (a weak form of the en-us reading stays en-us; the phonemes' expected tokens show the form). It keeps the reading with fewer wrong, then fewer unclear, then the higher mean GOP; a tie keeps the earlier one, en-us first.",
           "enum": ["en-us", "en-gb"]
         },
         "correctPhonemes": { "type": "integer", "minimum": 0 },

@@ -144,3 +144,10 @@ PR description.
   sentence mode knows some of this, but then word boundaries in its output are not reliable.
 - Score: GOP over more than one CTC frame (spike plus adjoining blanks, or posterior-weighted). Measure on the
   evaluation set before choosing.
+- Score: remaining native false alarms at v2 (`docs/reports/score-weak-forms.md`), each a reference problem,
+  none coded. (1) The vowel+schwa tokens `aɪə aɪɚ iə` (fire, quiet, diocese): half of their 57 occurrences are wrong
+  and the model hears aɪ; they are 15% of the wrongs left. (2) The flap t→ɾ and the syllabic l (ə→əl). (3) Short
+  words outside the ten, reduced in connected speech: an, his, from, have, because, me, her. Each needs a source for
+  its other forms before it is added; pick them from a sample other than the one the threshold comes from.
+- Score: a speaker-disjoint held-out check for v2 (LibriSpeech test-clean has 40 other speakers); the held-out run
+  in `score-weak-forms.md` shares its 40 speakers with the calibration sample.

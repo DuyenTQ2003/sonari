@@ -1,10 +1,12 @@
-"""Score a sentence against the en-us and the en-gb reference; keep the better one per word.
+"""Score a sentence against its alternative references; keep the best one per word.
 
-Both references are aligned over the same posteriors (one model pass): the en-us sentence,
-then the same sentence with each word's British form where espeak-ng gave one that differs.
-Each word then takes its verdicts from the alignment that judged it better: fewer "wrong",
-then fewer "unclear", then the higher mean GOP; a tie keeps en-us. Neighbouring words may
-so come from different alignments, and their spans may touch or overlap by a frame or two.
+The en-us sentence is aligned first. Then each alternative (the en-gb form, and each rank of
+the weak forms of g2p/weak_forms.yaml) is the same sentence with that reference's tokens for
+every word that has one that differs, aligned over the same posteriors (one model pass).
+Each word takes its verdicts from the alignment that judged it best: fewer "wrong", then
+fewer "unclear", then the higher mean GOP; a tie keeps the earlier reference (en-us first).
+Neighbouring words may so come from different alignments, and their spans may touch or
+overlap by a frame or two.
 """
 
 from collections.abc import Sequence
@@ -14,10 +16,11 @@ import numpy as np
 
 from sonari_speech.g2p import WordPron
 from sonari_speech.scoring.align import TooFewFrames
-from sonari_speech.scoring.contract import WordScore
+from sonari_speech.scoring.contract import Accent, WordScore
 from sonari_speech.scoring.gop import Thresholds, Vocab, score_words
 
-British = Sequence[tuple[str, ...] | None]
+Reference = Sequence[tuple[str, ...] | None]  # tokens per word; None where the word has none
+Alternative = tuple[Accent, Reference]  # a weak form of the en-us reading stays "en-us"
 
 
 def _rank(word: WordScore) -> tuple[int, int, float]:
@@ -26,28 +29,37 @@ def _rank(word: WordScore) -> tuple[int, int, float]:
     return verdicts.count("wrong"), verdicts.count("unclear"), -mean_gop
 
 
+def substitute(
+    words: Sequence[WordPron], reference: Reference
+) -> tuple[list[WordPron], list[bool]]:
+    """`words` with the reference's tokens where they differ from en-us, and where that was."""
+    differs = [r is not None and r != w.tokens for w, r in zip(words, reference, strict=True)]
+    swapped = [
+        replace(w, tokens=r) if d and r is not None else w
+        for w, r, d in zip(words, reference, differs, strict=True)
+    ]
+    return swapped, differs
+
+
 def score_accents(
     words: Sequence[WordPron],
-    british: British,
+    alternatives: Sequence[Alternative],
     log_probs: np.ndarray,
     offset_s: float,
     thresholds: Thresholds,
     vocab: Vocab,
 ) -> list[WordScore]:
     """Raises TooFewFrames only when the en-us sentence does not fit the frames."""
-    american = score_words(words, log_probs, offset_s, thresholds, vocab, "en-us")
-    differs = [gb is not None and gb != w.tokens for w, gb in zip(words, british, strict=True)]
-    if not any(differs):
-        return american
-    gb_words = [
-        replace(w, tokens=gb) if d and gb is not None else w
-        for w, gb, d in zip(words, british, differs, strict=True)
-    ]
-    try:
-        gb_scored = score_words(gb_words, log_probs, offset_s, thresholds, vocab, "en-gb")
-    except TooFewFrames:
-        return american
-    return [
-        min(us, gb, key=_rank) if d else us
-        for us, gb, d in zip(american, gb_scored, differs, strict=True)
-    ]
+    best = score_words(words, log_probs, offset_s, thresholds, vocab, "en-us")
+    for label, reference in alternatives:
+        swapped, differs = substitute(words, reference)
+        if not any(differs):
+            continue
+        try:
+            scored = score_words(swapped, log_probs, offset_s, thresholds, vocab, label)
+        except TooFewFrames:
+            continue
+        best = [
+            min(b, s, key=_rank) if d else b for b, s, d in zip(best, scored, differs, strict=True)
+        ]
+    return best

@@ -1,9 +1,10 @@
 """Verdicts from raw GOPs, the native false-alarm rate, a v2 threshold, word collapse.
 
-Pure stdlib, so `make test-tools` runs it. The per-word accent choice copies
+Pure stdlib, so `make test-tools` runs it. The per-word choice among the references copies
 services/speech/src/sonari_speech/scoring/accents.py (`_rank`): fewer wrong, then fewer
-unclear, then the higher mean GOP; a tie keeps en-us. It depends on the thresholds, so it is
-redone for each one. tests/test_analyse.py pins the rule on hand-made words.
+unclear, then the higher mean GOP; a tie keeps the earlier of en-us, en-gb, the weak forms.
+It depends on the thresholds, so it is redone for each one. tests/test_analyse.py pins the
+rule on hand-made words.
 """
 
 import math
@@ -31,10 +32,12 @@ def _rank(phonemes: list[dict[str, Any]], wrong_below: float) -> tuple[int, int,
 
 
 def choose(word: dict[str, Any], wrong_below: float) -> tuple[str, list[dict[str, Any]]]:
-    """(accent, phonemes) the service would report for this word."""
-    if word["gb"] is None or _rank(word["gb"], wrong_below) >= _rank(word["us"], wrong_below):
-        return "en-us", word["us"]
-    return "en-gb", word["gb"]
+    """(reference, phonemes) the service would report for this word; `min` keeps the earlier."""
+    options = [("en-us", word["us"]), ("en-gb", word["gb"])]
+    options += [("weak", rows) for rows in word.get("weak", [])]  # an old file has none
+    return min(
+        ((n, r) for n, r in options if r is not None), key=lambda o: _rank(o[1], wrong_below)
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,6 +133,11 @@ def propose_upper(clips: list[dict[str, Any]], target: float = TARGET) -> float:
     while bootstrap(clips, t)[1] >= target:
         t = round(t - 0.1, 1)
     return t
+
+
+def without_weak(clips: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The same clips scored against en-us and en-gb only: what PR #51 measured."""
+    return [c | {"words": [w | {"weak": []} for w in c["words"]]} for c in clips if "words" in c]
 
 
 def without_words(clips: list[dict[str, Any]], drop: frozenset[str]) -> list[dict[str, Any]]:

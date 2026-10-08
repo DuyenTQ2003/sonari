@@ -44,7 +44,7 @@ class WordScore(_Camel):
     start: int
     end: int
     verdict: Verdict  # the worst of its phonemes; "unclear" when it has none
-    reference: Accent  # the accent whose reference scored this word better
+    reference: Accent  # the accent of the reference that scored this word best (weak forms: en-us)
     correct_phonemes: int
     phonemes: list[PhonemeVerdict]
 

@@ -1,0 +1,97 @@
+# Other forms of a CLOSED list of function words. /v1/score scores each word against these as
+# well (scoring/accents.py) and keeps the best, as it does for en-gb. Nothing else is open:
+# a word that is not a key here has no variant, and no rule generates one.
+#
+# Why: the en-us reference is CMUdict's FIRST variant, and for function words that is not the
+# form read speech uses. 400 LibriSpeech utterances (docs/reports/score-native-calibration.md):
+# "to" (tuː) and "was" (wɑːz) are read tə and wəz, "and" (ənd) is read ænd, "the" before a
+# vowel is ðɪ. A native speaker was marked wrong for it; the fault is the reference's.
+#
+# Key: the word, lower case, quoted (YAML reads a bare "on" or "no" as a boolean).
+# Each entry:
+#   tokens      espeak tokens of the model's vocabulary, space separated (loading checks them)
+#   a source    at least one of the keys below; tests/g2p/test_weak_forms.py checks each
+#     cmudict     the ARPAbet of one of the word's CMUdict variants; the table must map it to `tokens`
+#     espeak      a phrase in which espeak-ng 1.52 en-us says the word as `tokens` (the model's
+#                 training labels come from espeak-ng, so this is what it learned to emit)
+#     wiktionary  the IPA the entry for the word gives (en.wiktionary.org, read 2026-10-08);
+#                 `tokens` joined must occur in it
+#     wikipedia   the same, from "Weak and strong forms in English" (read 2026-10-08), which
+#                 cites Jones et al., English Pronouncing Dictionary 18th ed., and Roach 2009
+#
+# What is in: for each word, the forms that a pronunciation dictionary or a phonetics text
+# lists besides the reference's own, at most two per word (each form costs one more alignment
+# pass over the whole sentence). Where more qualified, the forms that two sources agree on.
+# What is out: "to" tɪ (CMUdict alone), "was" wɔːz (CMUdict, a dialect vowel), "the" ðʌ (a
+# stressed variant), "and" n̩ (over the cap), "them" əm ('em, a different word), "of" ɐv (a
+# phonetic range in Wiktionary, not a form), and every word outside the ten.
+version: 1
+
+"to":
+  - tokens: t ə
+    cmudict: T AH0
+    wiktionary: /tə/
+    espeak: to go
+  - tokens: t ʊ
+    wiktionary: /tʊ/
+    espeak: to eat
+
+"was":
+  - tokens: w ʌ z
+    cmudict: W AH1 Z
+    wiktionary: /wʌz/
+    espeak: it was a man
+  - tokens: w ə z
+    cmudict: W AH0 Z
+    wiktionary: /wəz/
+
+# The reference is the weak ənd, but read speech says ænd as often.
+"and":
+  - tokens: æ n d
+    cmudict: AE1 N D
+    wiktionary: /ˈænd/
+  - tokens: ə n
+    wikipedia: "[ən]"
+
+# The reference is ðə; before a vowel it is ði or ðɪ.
+"the":
+  - tokens: ð i
+    cmudict: DH IY0
+    wiktionary: /ði/
+  - tokens: ð ɪ
+    wiktionary: "[ðɪj]"
+    espeak: the apple
+
+# The reference is the weak ə.
+"a":
+  - tokens: eɪ
+    cmudict: EY1
+    wiktionary: /eɪ/
+  - tokens: ɐ
+    espeak: a man
+
+"of":
+  - tokens: ə v
+    cmudict: AH0 V
+    wiktionary: /əv/
+
+"for":
+  - tokens: f ɚ
+    cmudict: F ER0
+    wiktionary: /fɚ/
+  - tokens: f ə
+    wiktionary: /fə/
+
+"at":
+  - tokens: ə t
+    wiktionary: /ət/
+
+"can":
+  - tokens: k ə n
+    cmudict: K AH0 N
+    wiktionary: /kən/
+
+"them":
+  - tokens: ð ə m
+    cmudict: DH AH0 M
+    wiktionary: /ðəm/

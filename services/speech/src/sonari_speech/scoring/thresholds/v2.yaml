@@ -1,0 +1,48 @@
+# GOP thresholds, version v2. Derived from 400 native read utterances; not fitted to any learner.
+#
+# gop = mean over the phoneme's aligned frames of
+#         log p(expected) - max over other phonemes q of log p(q)      (P02, spikes/gop/run_gop.py)
+#
+#   gop >  correct_above               -> correct
+#   wrong_below <= gop <= correct_above -> unclear  (no feedback key)
+#   gop <  wrong_below                 -> wrong    (feedback key)
+#
+# correct_above: 0.0, unchanged from v1 (the expected phoneme beats every rival on average).
+#
+# wrong_below: -5.0. Chosen on seed 20261008, validated on seed 20261009.
+#
+# Rule (PR #51, stated before the candidates were looked at): the highest threshold on a 0.1 grid,
+# stepping down from v1's -3.4, at which native phonemes marked wrong are under 1% AND the upper
+# end of the 95% bootstrap interval (resampling whole utterances, 1,000 rounds, seed 0) is under
+# 1% too. On the selection sample that rule gives -4.5. -4.5 then FAILED on the independent
+# sample: its upper bound is 1.11%. So -5.0 ships, the highest step on which both samples pass.
+#
+# Selection sample: LibriSpeech dev-clean (CC BY 4.0), 400 utterances of at most 15 s, seed
+# 20261008, 40 speakers, 24,010 phonemes. Validation sample: seed 20261009, minus the 66 utterances
+# it shares with the first, 334 utterances, the same 40 speakers. Every word scored against its
+# best reference: en-us (g2p_en), en-gb (espeak-ng) and the weak forms of g2p/weak_forms.yaml.
+#
+#   wrong below   selection: wrong (95% interval)   validation: wrong (95% interval)
+#   -4.5          0.79% (0.67-0.92%)  PASS           0.93% (0.78-1.11%)  FAIL (upper bound)
+#   -5.0          0.54% (0.45-0.64%)  PASS           0.60% (0.48-0.74%)  PASS   SHIPPED
+#
+# The cost of -5.0: real errors with GOP between -5.0 and -4.5 are reported as unclear, with no
+# feedback. About 70 native phonemes per sample sit in that band, so it is also where the native
+# false alarms now go. The G0 margin is only 0.54 nats: "one tink you" /t/ is -5.54, still wrong.
+#
+# The same rule on the same audio, before the weak forms, gave -7.2 (3.59% wrong at -3.4): the
+# gap was to/was/and read against the strong forms CMUdict lists first. v2 belongs with the
+# weak forms: scored against en-us and en-gb alone, -4.5 would mark 2.52% of native phonemes
+# wrong. Numbers, the held-out sample and the remaining false alarms:
+# docs/reports/score-weak-forms.md. Reproduce: `make score-native`.
+#
+# Checked (tests/scoring/test_g0_clips.py; local only):
+# - P02's substitution in native audio, "one tink you": /t/ -5.54, still wrong (0.54 nats below).
+# - good.wav "one think you", the clip v1 was derived from: 0 wrong, 0 unclear.
+#
+# Known limits: read audiobook speech from mostly US speakers; every phoneme spans one 20 ms
+# frame, so each GOP rests on one CTC spike. A learner's false-alarm rate is NOT measured here:
+# that needs recordings (PR #51, Part 2). Gate G1 may replace this with per-phoneme thresholds.
+version: v2-native-s20261008-val20261009
+correct_above: 0.0
+wrong_below: -5.0

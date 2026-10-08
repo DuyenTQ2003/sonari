@@ -86,16 +86,19 @@ def test_good_wav_against_what_it_says_is_mostly_correct(client: TestClient) -> 
 
 
 def test_the_native_control_gets_no_wrong_verdict(client: TestClient) -> None:
-    # thresholds/v1.yaml was derived from this clip: the native reader, reading correctly,
-    # must get no "wrong" (and, by the margin's construction, nothing below correct).
+    # thresholds/v1.yaml was derived from this clip, and v2 only lowers the wrong line: the
+    # native reader, reading correctly, must get no "wrong" (nor anything below correct).
     phonemes = score(client, "good.wav", "one think you")
     assert {p["verdict"] for p in phonemes} == {"correct"}
 
 
 def test_bad_wav_against_what_it_says_is_mostly_correct_too(client: TestClient) -> None:
-    # A native reading; the misses are "and" read strong (æ) against the weak form ə, and
-    # "dead" cut off by the clip edge.
-    assert share_correct(score(client, "bad.wav", "and took his dead")) >= 0.6
+    # A native reading. "and" is read strong (æ), which the reference had as ə only (-4.85,
+    # wrong under v1) until weak_forms.yaml gave it ænd; the miss left is "dead", cut by the
+    # clip edge.
+    phonemes = score(client, "bad.wav", "and took his dead")
+    assert {p["verdict"] for p in phonemes[:3]} == {"correct"}
+    assert share_correct(phonemes) >= 0.8
 
 
 def test_bad_wav_against_a_sentence_it_does_not_say_is_mostly_wrong(client: TestClient) -> None:
@@ -105,8 +108,9 @@ def test_bad_wav_against_a_sentence_it_does_not_say_is_mostly_wrong(client: Test
 @pytest.mark.parametrize(
     ("clip", "text", "index", "expected", "heard", "fix"),
     [
-        # P02's gate case, now in a sentence. (t, θ) is not a pair Vietnamese speakers are
-        # known for, so it gets the generic message.
+        # P02's gate case, now in a sentence: /t/ scores -5.54, wrong under v2 (-5.0) and v1
+        # (-3.4); a v2 below -5.54 would make it "unclear", and must not ship. (t, θ) is not a
+        # pair Vietnamese speakers are known for, so it gets the generic message.
         ("good.wav", "one tink you", 3, "t", "θ", "generic"),
         # P02's misplaced case, now placed: (θ, t) is the table's first pair.
         ("bad.wav", "and thook his dead", 3, "θ", "t", "th_stop"),

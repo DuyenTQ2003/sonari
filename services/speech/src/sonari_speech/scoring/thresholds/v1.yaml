@@ -1,4 +1,5 @@
 # GOP thresholds, version v1. Derived from ONE native clip; not fitted to any learner.
+# SUPERSEDED by v2.yaml (400 native utterances, weak forms): kept for the record and its test.
 #
 # gop = mean over the phoneme's aligned frames of
 #         log p(expected) - max over other phonemes q of log p(q)      (P02, spikes/gop/run_gop.py)

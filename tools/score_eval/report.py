@@ -1,18 +1,23 @@
-"""Markdown for docs/reports/score-native-calibration.md from the scored native JSONL.
+"""Markdown for the native-speech reports from the scored native JSONL.
 
-make score-native-report   (python -m score_eval.report <native-....jsonl>)
+make score-native   (python -m score_eval.report <native-....jsonl>)
+
+Without `--wrong-below` the v2 threshold is proposed from the file by the stated rule; with
+it, that threshold is only measured (a held-out file; `--without` drops the utterances that
+are also in the file the threshold was chosen on). The "before" rows score the same audio
+against en-us and en-gb only, which is what PR #51 measured.
 """
 
+import argparse
 import json
-import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 from score_eval import analyse as a
 
-# CMUdict's first variant of these is the strong form; read speech uses the weak (tə, wəz, ən).
-WEAK_FORMS = frozenset({"to", "was", "and"})
+# The words of g2p/weak_forms.yaml (this module runs without the service's packages).
+LISTED = frozenset(["to", "was", "and", "the", "a", "of", "for", "at", "can", "them"])
 _FUNCTION = "the a an to of and in on at for is was are were be been that this it he she his her"
 _MORE = "you i we they them him with as by from or but not so have has had do did"
 FUNCTION_WORDS = frozenset(f"{_FUNCTION} {_MORE}".split())
@@ -24,17 +29,21 @@ def row(*cells: object) -> str:
     return "| " + " | ".join(map(str, cells)) + " |"
 
 
-def rates(clips: Clips, t: float) -> str:
+def rates(label: str, clips: Clips, t: float) -> str:
     counts = a.per_clip(clips, t)
     n, hit = len(counts), sum(c > 0 for c in counts.values())
     lo, hi = a.bootstrap(clips, t)
     share = f"{a.wrong_share(clips, t):.2%} ({lo:.2%}-{hi:.2%})"
-    return row(t, share, f"{sum(counts.values()) / n:.2f}", f"{hit} of {n} ({hit / n:.0%})")
+    return row(label, t, share, f"{sum(counts.values()) / n:.2f}", f"{hit} of {n} ({hit / n:.0%})")
+
+
+def speakers(clips: Clips) -> list[str]:
+    return sorted({c["speaker"] for c in clips})
 
 
 def split_half(clips: Clips) -> list[str]:
-    speakers = sorted({c["speaker"] for c in clips})
-    halves = [set(speakers[0::2]), set(speakers[1::2])]
+    names = speakers(clips)
+    halves = [set(names[0::2]), set(names[1::2])]
     out = []
     for i, fit_on in enumerate(halves):
         t = a.propose([c for c in clips if c["speaker"] in fit_on])
@@ -49,34 +58,72 @@ def who(clips: Clips, t: float) -> list[str]:
     seen = Counter(p.expected for p in ps)
     func = sum(p.word.lower() in FUNCTION_WORDS for p in wrong)
     func_all = sum(p.word.lower() in FUNCTION_WORDS for p in ps)
-    weak = sum(p.word.lower() in WEAK_FORMS for p in wrong)
+    listed = sum(p.word.lower() in LISTED for p in wrong)
     top = Counter(p.expected for p in wrong).most_common(8)
+    words = Counter(p.word.lower() for p in wrong)
+    top10 = sum(n for _, n in words.most_common(10))
+    shares = {s: a.wrong_share([c for c in clips if c["speaker"] == s], t) for s in speakers(clips)}
+    worst = max(shares, key=lambda s: shares[s])
     return [
         f"{len(wrong)} wrong; {func} ({func / len(wrong):.0%}) in function words, which hold "
-        f"{func_all / len(ps):.0%} of the phonemes; {weak} ({weak / len(wrong):.0%}) in "
-        f"{'/'.join(sorted(WEAK_FORMS))} alone.",
+        f"{func_all / len(ps):.0%} of the phonemes; {listed} ({listed / len(wrong):.0%}) in the "
+        f"ten listed words; the top 10 words hold {top10}.",
         "",
         "- phonemes (wrong / seen): " + ", ".join(f"{e} {n}/{seen[e]}" for e, n in top),
-        "- words: "
-        + ", ".join(f"{w} {n}" for w, n in Counter(p.word.lower() for p in wrong).most_common(12)),
+        "- words: " + ", ".join(f"{w} {n}" for w, n in words.most_common(12)),
         "- expected→heard: "
         + ", ".join(
             f"{k} {n}" for k, n in Counter(f"{p.expected}→{p.heard}" for p in wrong).most_common(8)
         ),
+        f"- speakers: wrong share from {min(shares.values()):.2%} to {shares[worst]:.2%} "
+        f"({worst}); median {sorted(shares.values())[len(shares) // 2]:.2%}",
     ]
 
 
-def native(raw: Clips) -> str:
+def forms(clips: Clips, t: float) -> list[str]:
+    """For each listed word, the forms the service would have kept and how often."""
+    seen: dict[str, Counter[str]] = {}
+    for c in clips:
+        for w in c["words"]:
+            if (key := w["text"].lower()) in LISTED:
+                _, rows = a.choose(w, t)
+                seen.setdefault(key, Counter())[" ".join(p["expected"] for p in rows)] += 1
+    return [
+        row(
+            k,
+            sum(n.values()),
+            ", ".join(f"{f} {c / sum(n.values()):.0%}" for f, c in n.most_common()),
+        )
+        for k, n in sorted(seen.items(), key=lambda kv: -sum(kv[1].values()))
+    ]
+
+
+def sentences(clips: Clips, t: float, lo: int = 6, hi: int = 14) -> list[str]:
+    counts = a.per_clip(clips, t)
+    sized = [(len(c["words"]), counts[c["id"]]) for c in clips if "words" in c]
+    rate = sum(counts.values()) / sum(n for n, _ in sized)
+    inside = [k for n, k in sized if lo <= n <= hi]
+    hit = sum(k > 0 for k in inside)
+    return [
+        f"- wrong per word: {rate:.3f}, so {rate * lo:.2f} in a {lo}-word and {rate * hi:.2f} in a "
+        f"{hi}-word sentence, if wrongs fell evenly over words",
+        f"- measured on the {len(inside)} native utterances of {lo}-{hi} words: "
+        f"{sum(inside) / len(inside):.2f} wrong per utterance, "
+        f"{hit} of {len(inside)} ({hit / len(inside):.0%}) with at least one",
+    ]
+
+
+def native(raw: Clips, fixed: float | None = None) -> str:
     clips = [c for c in raw if "words" in c]
+    before = a.without_weak(clips)
     gops = [p.gop for p in a.phonemes(clips, a.V1_WRONG_BELOW)]
-    point, v2 = a.propose(clips), a.propose_upper(clips)
-    rest = a.without_words(clips, WEAK_FORMS)
-    t_rest = a.propose(rest)
+    old = a.propose_upper(before)
+    point, v2 = a.propose(clips), fixed if fixed is not None else a.propose_upper(clips)
     out = [
         f"{len(clips)} utterances ({len(raw) - len(clips)} refused), "
-        f"{len({c['speaker'] for c in clips})} speakers, {len(gops)} phonemes.",
+        f"{len(speakers(clips))} speakers, {len(gops)} phonemes.",
         "",
-        "### GOP distribution (each word on its v1-chosen accent)",
+        "### GOP distribution (each word on the reference chosen at -3.4)",
         "",
         row("quantile", *(f"{q:.1%}" for q in QS)),
         row(*["---"] * (len(QS) + 1)),
@@ -86,9 +133,23 @@ def native(raw: Clips) -> str:
         "",
         "### Native phonemes marked wrong (95% bootstrap interval over utterances)",
         "",
-        row("wrong below", "phonemes wrong", "wrong per utterance", "utterances with any"),
-        row(*["---"] * 4),
-        *(rates(clips, t) for t in (a.V1_WRONG_BELOW, point, v2)),
+        row(
+            "references",
+            "wrong below",
+            "phonemes wrong",
+            "wrong per utterance",
+            "utterances with any",
+        ),
+        row(*["---"] * 5),
+        *(rates("en-us + en-gb", before, t) for t in sorted({a.V1_WRONG_BELOW, old}, reverse=True)),
+        *(
+            rates("+ weak forms", clips, t)
+            for t in sorted({a.V1_WRONG_BELOW, point, v2}, reverse=True)
+        ),
+        "",
+        f"The rule picks {v2}"
+        + (" (fixed, not proposed)" if fixed is not None else "")
+        + f"; without weak forms it picked {old}.",
         "",
         "Split half by speaker (fit on one half, rate on the other):",
         "",
@@ -100,9 +161,15 @@ def native(raw: Clips) -> str:
         out += ["", f"### Who is marked wrong at {t}", "", *who(clips, t)]
     out += [
         "",
-        f"What-if, not a scoring change: without {'/'.join(sorted(WEAK_FORMS))}, "
-        f"{a.wrong_share(rest, a.V1_WRONG_BELOW):.2%} are wrong at {a.V1_WRONG_BELOW}, and under "
-        f"1% needs only {t_rest} ({a.wrong_share(rest, t_rest):.2%}).",
+        f"### Forms kept for the listed words at {v2}",
+        "",
+        row("word", "seen", "form (share)"),
+        row(*["---"] * 3),
+        *forms(clips, v2),
+        "",
+        f"### Expected native wrongs per practice sentence at {v2}",
+        "",
+        *sentences(clips, v2),
         "",
         "### Do native wrongs fail together as whole words?",
         "",
@@ -115,6 +182,15 @@ def native(raw: Clips) -> str:
     return "\n".join(out) + "\n"
 
 
+def read(path: Path) -> Clips:
+    return [json.loads(line) for line in path.read_text("utf-8").splitlines() if line]
+
+
 if __name__ == "__main__":
-    lines = Path(sys.argv[1]).read_text("utf-8").splitlines()
-    print(native([json.loads(line) for line in lines if line]), end="")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("jsonl", type=Path)
+    parser.add_argument("--wrong-below", type=float)
+    parser.add_argument("--without", type=Path)
+    args = parser.parse_args()
+    seen = {c["id"] for c in read(args.without)} if args.without else set()
+    print(native([c for c in read(args.jsonl) if c["id"] not in seen], args.wrong_below), end="")
