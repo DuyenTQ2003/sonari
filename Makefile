@@ -163,6 +163,14 @@ voa-classify:
 
 # Picks the practice sentences (tools/speaking_items/items.jsonl) from the trimmed corpus; needs the
 # speech service's environment for G2P. Read only on the corpus; rewrites the items file.
+# Native GOP calibration (docs/reports/score-native-calibration.md): scores a seeded LibriSpeech
+# dev-clean sample with the real model (400 utterances, 4 workers: about 4 min), then the tables.
+NATIVE_JSONL ?= $(or $(DATA_DIR),$(HOME)/sonari-data)/derived/score_eval/native-20261008-400.jsonl
+.PHONY: score-native
+score-native:
+	PYTHONPATH=$(CURDIR)/tools $(UV_RUN) services/speech --with pyarrow python -m score_eval.native $(ARGS)
+	PYTHONPATH=$(CURDIR)/tools uv run --no-project python -m score_eval.report $(NATIVE_JSONL)
+
 .PHONY: speaking-items
 speaking-items:
 	PYTHONPATH=$(CURDIR)/tools $(UV_RUN) services/speech python -m speaking_items.pick $(ARGS)
