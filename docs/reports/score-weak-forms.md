@@ -1,6 +1,7 @@
 # /v1/score: weak forms of function words, and thresholds v2
 
-Date: 2026-10-08. Thresholds in service: `v2-native-ls400` (correct > 0, **wrong < −4.5**).
+Date: 2026-10-08. Thresholds in service: `v2-native-s20261008-val20261009` (correct > 0, **wrong < −5.0**).
+Chosen on seed 20261008, validated on seed 20261009. The first candidate, −4.5, passed the first sample and failed the second.
 Reproduce: `make score-native` (about 5 min on a 12-core laptop; the main tables below are its
 output). Builds on `score-native-calibration.md` (PR #51), whose audio and seed it reuses.
 
@@ -57,22 +58,26 @@ utterances.
 At v1's −3.4 the weak forms alone halve the native false alarms (3.59% → 1.61%). PR #51 predicted
 −4.5 from a what-if that dropped to/was/and; the real run gives −4.5 as well.
 
-## v2: chosen by PR #51's rule, nothing else
+## v2: chosen by PR #51's rule on seed 20261008, then validated on seed 20261009
 
-The highest threshold on a 0.1 grid, stepping down from −3.4, with native wrong under 1% **and** the
-upper end of the 95% interval under 1%:
+The rule: the highest threshold on a 0.1 grid, stepping down from −3.4, with native wrong under 1%
+**and** the upper end of the 95% interval under 1%. Applied to the selection sample it gives −4.5.
+On the independent sample −4.5 fails the rule (upper end 1.11%), so **−5.0 ships**: the highest
+step on which both samples pass (0.54% selection, 0.60% validation; upper ends 0.64% and 0.74%).
 
 | wrong below | phonemes wrong (95% interval) | per utterance | verdict of the rule |
 | --- | --- | --- | --- |
 | −4.2 | 0.98% (0.85–1.12%) | 0.59 | point under 1%, upper end over |
 | −4.3 | 0.94% (0.81–1.08%) | 0.56 | upper end over 1% |
 | −4.4 | 0.90% (0.77–1.03%) | 0.54 | upper end over 1% |
-| **−4.5** | **0.79% (0.67–0.92%)** | 0.47 | **chosen** |
+| **−4.5** | **0.79% (0.67–0.92%)** | 0.47 | **the rule's pick here; fails on validation** |
+| **−5.0** | **0.54% (0.45–0.64%)** | 0.33 | **shipped** (passes on both samples) |
 
 Split half by speaker, at −4.5: 0.78% and 0.81%.
 
-**The G0 gate holds.** `test_g0_clips` marks the substituted /t/ in "one tink you" wrong: −5.54,
-1.04 nats below −4.5. (A v2 under −5.54 would have made it unclear and I would have stopped.)
+**The G0 gate holds, with a margin of 0.54 nats.** `test_g0_clips` marks the substituted /t/ in
+"one tink you" wrong: −5.54, 0.54 nats below −5.0. (A v2 under −5.54 would have made it unclear, and
+the gate would have stopped the change.)
 good.wav: 9 of 9 correct. bad.wav "and took his dead": "and" is now correct (strong æ, which the
 reference lacked: −4.85 before); the one miss left is "dead", cut by the clip edge.
 
@@ -90,13 +95,17 @@ native-20261008-400.jsonl` prints it.
 | + weak forms | −3.4 | 1.74% (1.53–1.95%) | 1.07 | 188 of 334 (56%) |
 | + weak forms | **−4.5 (v2)** | **0.93% (0.78–1.11%)** | 0.58 | 116 of 334 (35%) |
 
-The weak-form gain holds (3.63% → 1.74% at −3.4). **v2 is under 1% as a point estimate on both
-samples, but on the held-out one its interval crosses 1%** (upper end 1.11%). That is what a
-threshold picked at the edge of the rule does on new data; expect the true native rate to be
-0.8–1.0%. If the owner wants margin: −5.0 gives 0.54% (0.45–0.64) and 0.60% (0.48–0.74) on the two
-samples, and the G0 /t/ stays wrong (0.54 nats below). I shipped what the rule gives.
+The weak-form gain holds (3.63% → 1.74% at −3.4). **−4.5 failed here**: its point estimate is 0.93%,
+but the upper end of the interval is 1.11%, so it does not meet the rule. **−5.0 meets it on this
+sample too** (0.60%, upper end 0.74%), which is why −5.0 ships.
+
+**The cost of −5.0.** Real errors with GOP between −5.0 and −4.5 are reported as "unclear", with no
+feedback. The band holds about 70 native phonemes per sample, so that is where the native false
+alarms now go, and some real errors of that size go with them. The G0 margin is 0.54 nats.
 
 ## What is left: the remaining native false alarms at −4.5
+
+*The counts in this section are at −4.5, the first candidate, and were not recomputed for −5.0. At −5.0 the selection sample has 130 wrong phonemes (0.54%, 0.33 per utterance); the held-out one has 125 (0.60%).*
 
 190 wrongs of 24,010 phonemes in 125 utterances (held-out: 193 of 20,679, in 116).
 

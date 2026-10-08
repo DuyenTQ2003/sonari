@@ -108,7 +108,7 @@ def test_bad_wav_against_a_sentence_it_does_not_say_is_mostly_wrong(client: Test
 @pytest.mark.parametrize(
     ("clip", "text", "index", "expected", "heard", "fix"),
     [
-        # P02's gate case, now in a sentence: /t/ scores -5.54, wrong under v2 (-4.5) and v1
+        # P02's gate case, now in a sentence: /t/ scores -5.54, wrong under v2 (-5.0) and v1
         # (-3.4); a v2 below -5.54 would make it "unclear", and must not ship. (t, θ) is not a
         # pair Vietnamese speakers are known for, so it gets the generic message.
         ("good.wav", "one tink you", 3, "t", "θ", "generic"),

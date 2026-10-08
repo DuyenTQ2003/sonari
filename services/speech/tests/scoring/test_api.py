@@ -52,7 +52,7 @@ def test_a_recording_and_a_sentence_give_one_verdict_per_phoneme() -> None:
         body = post(client, "One think you.")
     assert body.pop("status") == 200
     Draft202012Validator(SCHEMA).validate(body)
-    assert body["thresholdsVersion"] == "v2-native-ls400"
+    assert body["thresholdsVersion"] == "v2-native-s20261008-val20261009"
     assert [w["text"] for w in body["words"]] == ["One", "think", "you"]
     assert [p["expected"] for p in body["words"][1]["phonemes"]] == ["θ", "ɪ", "ŋ", "k"]
     for word in body["words"]:

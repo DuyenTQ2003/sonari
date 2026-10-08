@@ -121,7 +121,7 @@ correct), `gop` and the time span; per word, the worse verdict and the `referenc
 2. `scoring/align.py` force-aligns the WHOLE sentence (CTC Viterbi, from spikes/gop/align.py),
    once per reference over the same posteriors; `scoring/accents.py` keeps the best per word.
 3. `scoring/gop.py` scores each phoneme as P02 did; `scoring/thresholds/v2.yaml` says correct
-   above 0, wrong below −4.5, unclear between, and how −4.5 was derived; read that file.
+   above 0, wrong below −5.0, unclear between, and how −5.0 was chosen and validated; read that file.
 
 Dev only: `SPEECH_DEBUG_DUMP_DIR=<dir>` keeps every request's audio, referenceText and response
 (`scoring/dump.py`); refused inside a container, never set in the image.

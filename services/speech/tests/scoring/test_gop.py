@@ -35,8 +35,8 @@ def test_the_blank_and_special_tokens_never_compete() -> None:
     assert {vocab.tokens[int(i)] for i in vocab.phonemes}.isdisjoint({"<s>", "<pad>", "</s>"})
 
 
-def test_the_shipped_thresholds_are_v2_from_400_native_utterances() -> None:
-    assert load_thresholds() == Thresholds("v2-native-ls400", 0.0, -4.5)
+def test_the_shipped_thresholds_are_v2_chosen_on_400_native_utterances() -> None:
+    assert load_thresholds() == Thresholds("v2-native-s20261008-val20261009", 0.0, -5.0)
 
 
 def test_v1_is_kept_and_still_loads() -> None:
