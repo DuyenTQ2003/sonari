@@ -151,3 +151,9 @@ PR description.
   its other forms before it is added; pick them from a sample other than the one the threshold comes from.
 - Score: a speaker-disjoint held-out check for v2 (LibriSpeech test-clean has 40 other speakers); the held-out run
   in `score-weak-forms.md` shares its 40 speakers with the calibration sample.
+- Web result view, ideas only, none coded: play the learner's own recording back beside a model reading of the
+  sentence (TTS exists, `spikes/tts`); show the position of a wrong phoneme in the recording (the response has
+  `startMs`/`endMs`); remember which words the learner tapped. Open: how a learner reads "Chưa rõ" (unclear) next to
+  "Cần luyện" (wrong) is untested; ask a native reader and watch one learner before the legend wording is fixed.
+- Web: the page trusts the shape of `/v1/score` beyond `words` being an array. If the contract grows a field the view
+  needs, validate it at the proxy (the schema is in `packages/contracts`) rather than in the component.

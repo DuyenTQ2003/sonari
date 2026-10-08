@@ -69,15 +69,31 @@
   "practice": {
     "heading": "Luyện nói",
     "instruction": "Đọc to câu tiếng Anh dưới đây. Bấm “Ghi âm” để bắt đầu và “Dừng” khi đọc xong.",
+    "notice": "Chấm phát âm đang thử nghiệm, có thể đánh dấu nhầm hoặc bỏ sót. Kết quả chỉ để tham khảo.",
     "loading": "Đang tải câu luyện tập…",
     "empty": "Chưa có câu luyện tập nào.",
     "record": "Ghi âm",
     "stop": "Dừng",
-    "again": "Ghi lại",
+    "again": "Thử lại câu này",
     "retry": "Gửi lại",
-    "next": "Câu khác",
+    "previous": "Câu trước",
+    "next": "Câu tiếp theo",
+    "position": "Câu {n}/{total}",
     "recording": "Đang ghi âm… Hãy đọc to câu trên.",
     "scoring": "Đang chấm điểm…",
+    "hint": "Bấm vào một từ để xem từng âm. Từ gạch chân liền có cách sửa.",
+    "clean": "Chưa thấy từ nào cần sửa. Bấm vào một từ để xem từng âm.",
+    "detail": "Các âm trong từ “{word}”",
+    "verdict": {
+      "correct": "Đúng",
+      "unclear": "Chưa rõ",
+      "wrong": "Cần luyện"
+    },
+    "legend": {
+      "correct": "Không gạch chân: đúng",
+      "unclear": "Gạch chân chấm: chưa rõ (hệ thống chưa chắc, không phải lỗi)",
+      "wrong": "Gạch chân liền: cần luyện"
+    },
     "result": "Kết quả (dữ liệu thô)"
   }
 }

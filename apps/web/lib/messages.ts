@@ -10,6 +10,10 @@ function lookup(key: string): string | undefined {
   return typeof found === "string" ? found : undefined;
 }
 
+export function hasMessage(key: string): boolean {
+  return lookup(key) !== undefined;
+}
+
 /** The text of `key`, with `{name}` placeholders filled from `params`. Throws on an unknown key. */
 export function t(key: string, params: Params = {}): string {
   const text = lookup(key);
