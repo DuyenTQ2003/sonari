@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from tests.scoring.fakes import fake_pronouncer, posteriors
 from tests.scoring.test_gop import SCHEMA, V0
 
+from sonari_speech.phoneset.mapping import mapped_tokens, vowel_tokens
 from sonari_speech.scoring.contract import PhonemeVerdict, ScoreResponse, WordScore
 from sonari_speech.scoring.feedback import (
     FALLBACK_KEY,
@@ -16,6 +17,7 @@ from sonari_speech.scoring.feedback import (
     explain_words,
     feedback_for,
     fold,
+    is_vowel,
     load_table,
 )
 from sonari_speech.scoring.gop import load_vocab, score_words
@@ -44,7 +46,7 @@ def verdicts(*phones: tuple[str, str | None]) -> list[PhonemeVerdict]:
     return [
         PhonemeVerdict(
             expected=e,
-            correct=h is None,
+            verdict="correct" if h is None else "wrong",
             heard=h,
             gop=1.0 if h is None else -1.0,
             start_ms=i * 20,
@@ -161,6 +163,23 @@ def test_a_vowel_that_ends_the_word_is_not_a_final_consonant() -> None:
     assert key_of(("h", None), ("iː", "ɪ"), at=1) == FALLBACK_KEY
 
 
+def test_a_british_vowel_is_a_vowel_too() -> None:
+    # en-gb tokens from espeak-ng are not in the ARPAbet table: ɒ, əʊ, eə must not read as
+    # final consonants, nor make the consonant before them a cluster.
+    assert key_of(("k", None), ("ɑː", None), ("eə", "ɛ"), at=2) == FALLBACK_KEY
+    assert key_of(("θ", None), ("ɹ", None), ("əʊ", "oʊ"), at=2) == FALLBACK_KEY
+    assert key_of(("w", None), ("ɒ", None), ("t", "d"), at=2) == "final_consonant"
+
+
+def test_no_en_us_token_changes_class() -> None:
+    assert all(is_vowel(t) == (t in vowel_tokens()) for t in mapped_tokens())
+
+
+def test_an_unclear_phoneme_gets_no_feedback() -> None:
+    unclear = verdicts(("θ", "t"))[0].model_copy(update={"verdict": "unclear"})
+    assert feedback_for([unclear], 0, "think") is None
+
+
 def test_a_pair_beats_a_position() -> None:
     assert key_of(("w", None), ("ɪ", None), ("θ", "t"), at=2) == "th_stop"
 
@@ -202,11 +221,11 @@ def test_explain_words_changes_only_the_feedback_of_wrong_phonemes() -> None:
         assert new.model_dump(exclude={"phonemes": {"__all__": {"feedback"}}}) == old.model_dump(
             exclude={"phonemes": {"__all__": {"feedback"}}}
         )
-    wrong = [p for w in after for p in w.phonemes if not p.correct]
+    wrong = [p for w in after for p in w.phonemes if p.verdict == "wrong"]
     assert [p.expected for p in wrong] == ["θ"]
     assert wrong[0].feedback is not None
     assert wrong[0].feedback.message_key == "pronunciation.fix.th_stop"
-    assert all(p.feedback is None for w in after for p in w.phonemes if p.correct)
+    assert all(p.feedback is None for w in after for p in w.phonemes if p.verdict != "wrong")
 
 
 def test_the_response_with_feedback_matches_the_contract_and_holds_no_vietnamese() -> None:

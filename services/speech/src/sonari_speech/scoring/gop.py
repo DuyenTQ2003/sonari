@@ -6,8 +6,9 @@ The GOP formula and the rival are P02's (spikes/gop/run_gop.py), kept as they we
     heard = the phoneme q with the highest mean log p over those frames
 
 q ranges over phoneme tokens only; blank and `<s> <pad> </s> <unk>` never compete. What
-changed from the spike: the whole sentence is aligned, not one word, and a phoneme is
-correct when `gop > gop_min` from a versioned thresholds file (thresholds/v0.yaml).
+changed from the spike: the whole sentence is aligned, not one word, and the verdict comes
+from a versioned thresholds file (thresholds/v1.yaml): correct above `correct_above`, wrong
+below `wrong_below`, unclear between.
 """
 
 import json
@@ -22,24 +23,34 @@ import yaml
 from sonari_speech.g2p import WordPron
 from sonari_speech.runtime.model import FRAME_S
 from sonari_speech.scoring.align import token_spans, viterbi_align
-from sonari_speech.scoring.contract import PhonemeVerdict, WordScore
+from sonari_speech.scoring.contract import Accent, PhonemeVerdict, Verdict, WordScore
 
 VOCAB_PATH = Path(__file__).with_name("vocab.json")  # facebook/wav2vec2-lv-60-espeak-cv-ft
-THRESHOLDS_PATH = Path(__file__).parent / "thresholds" / "v0.yaml"
+THRESHOLDS_PATH = Path(__file__).parent / "thresholds" / "v1.yaml"
 BLANK = "<pad>"
 SPECIAL = frozenset({"<s>", "<pad>", "</s>", "<unk>"})
+WORST_FIRST: tuple[Verdict, ...] = ("wrong", "unclear", "correct")
 
 
 @dataclass(frozen=True, slots=True)
 class Thresholds:
     version: str
-    gop_min: float
+    correct_above: float
+    wrong_below: float
+
+    def verdict(self, gop: float) -> Verdict:
+        if gop > self.correct_above:
+            return "correct"
+        return "wrong" if gop < self.wrong_below else "unclear"
 
 
 @cache
 def load_thresholds(path: Path = THRESHOLDS_PATH) -> Thresholds:
     raw = yaml.safe_load(path.read_text("utf-8"))
-    return Thresholds(str(raw["version"]), float(raw["gop_min"]))
+    found = Thresholds(str(raw["version"]), float(raw["correct_above"]), float(raw["wrong_below"]))
+    if found.wrong_below > found.correct_above:
+        raise ValueError(f"{path}: wrong_below is above correct_above")
+    return found
 
 
 class Vocab:
@@ -87,6 +98,7 @@ def score_words(
     offset_s: float,
     thresholds: Thresholds,
     vocab: Vocab,
+    reference: Accent = "en-us",
 ) -> list[WordScore]:
     """Verdicts for every word; `offset_s` maps frame 0 back onto the original recording."""
     gops = iter(phoneme_gops(log_probs, [t for w in words for t in w.tokens], vocab))
@@ -98,25 +110,26 @@ def score_words(
     for word in words:
         verdicts = []
         for g in (next(gops) for _ in word.tokens):
-            correct = g.gop > thresholds.gop_min
+            verdict = thresholds.verdict(g.gop)
             verdicts.append(
                 PhonemeVerdict(
                     expected=g.expected,
-                    correct=correct,
-                    heard=None if correct else g.heard,
+                    verdict=verdict,
+                    heard=None if verdict == "correct" else g.heard,
                     gop=round(g.gop, 3),
                     start_ms=ms(g.start),
                     end_ms=ms(g.end),
                 )
             )
-        n_correct = sum(v.correct for v in verdicts)
+        found = {v.verdict for v in verdicts}
         scored.append(
             WordScore(
                 text=word.text,
                 start=word.start,
                 end=word.end,
-                correct=bool(verdicts) and n_correct == len(verdicts),
-                correct_phonemes=n_correct,
+                verdict=next((v for v in WORST_FIRST if v in found), "unclear"),
+                reference=reference,
+                correct_phonemes=sum(v.verdict == "correct" for v in verdicts),
                 phonemes=verdicts,
             )
         )

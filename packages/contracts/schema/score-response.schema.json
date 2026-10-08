@@ -16,15 +16,26 @@
     "words": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/word" } }
   },
   "$defs": {
+    "verdict": {
+      "description": "From the GOP and the thresholds named by thresholdsVersion: correct above the upper threshold, wrong below the lower one, unclear between. Only wrong is reported to the learner as an error.",
+      "enum": ["correct", "unclear", "wrong"]
+    },
     "word": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["text", "start", "end", "correct", "correctPhonemes", "phonemes"],
+      "required": ["text", "start", "end", "verdict", "reference", "correctPhonemes", "phonemes"],
       "properties": {
         "text": { "description": "The word as written in referenceText.", "type": "string" },
         "start": { "description": "Character offset of the word in referenceText.", "type": "integer", "minimum": 0 },
         "end": { "description": "Character offset just past the word.", "type": "integer", "minimum": 0 },
-        "correct": { "description": "True when the word has phonemes and every one of them is correct.", "type": "boolean" },
+        "verdict": {
+          "description": "The worst verdict among the word's phonemes: wrong if any is wrong, else unclear if any is unclear, else correct. Unclear when the word has no phonemes.",
+          "$ref": "#/$defs/verdict"
+        },
+        "reference": {
+          "description": "Which reference accent the word was scored against: each word is scored against both and keeps the one with fewer wrong, then fewer unclear, then the higher mean GOP; a tie keeps en-us.",
+          "enum": ["en-us", "en-gb"]
+        },
         "correctPhonemes": { "type": "integer", "minimum": 0 },
         "phonemes": { "type": "array", "items": { "$ref": "#/$defs/phoneme" } }
       }
@@ -32,19 +43,19 @@
     "phoneme": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["expected", "correct", "heard", "gop", "startMs", "endMs", "feedback"],
+      "required": ["expected", "verdict", "heard", "gop", "startMs", "endMs", "feedback"],
       "properties": {
         "expected": { "description": "espeak IPA token the reference calls for.", "type": "string", "minLength": 1 },
-        "correct": { "type": "boolean" },
+        "verdict": { "$ref": "#/$defs/verdict" },
         "heard": {
-          "description": "When not correct: the phoneme the model found most likely in the expected phoneme's frames. Null when correct.",
+          "description": "When unclear or wrong: the phoneme the model found most likely in the expected phoneme's frames. Null when correct.",
           "type": ["string", "null"]
         },
         "gop": { "description": "Goodness of pronunciation in nats; higher is better.", "type": "number" },
         "startMs": { "description": "Start of the aligned frames, from the start of the recording.", "type": "integer", "minimum": 0 },
         "endMs": { "type": "integer", "minimum": 0 },
         "feedback": {
-          "description": "Null when correct; otherwise always present. Which fixed explanation to show, never the text itself.",
+          "description": "Present exactly when the verdict is wrong; null when correct or unclear. Which fixed explanation to show, never the text itself.",
           "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/feedback" }]
         }
       }

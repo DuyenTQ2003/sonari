@@ -15,8 +15,15 @@ from fastapi import FastAPI
 from sonari_speech.errors import install_error_handlers
 from sonari_speech.health import router as health_router
 from sonari_speech.runtime.service import SpeechRuntime
-from sonari_speech.scoring.api import PronouncerFactory, Scorer, load_pronouncer
+from sonari_speech.scoring.api import (
+    BritishFactory,
+    PronouncerFactory,
+    Scorer,
+    load_british,
+    load_pronouncer,
+)
 from sonari_speech.scoring.api import router as score_router
+from sonari_speech.scoring.dump import dump_dir
 from sonari_speech.settings import Settings
 
 
@@ -34,11 +41,12 @@ def create_app(
     settings: Settings | None = None,
     runtime: SpeechRuntime | None = None,
     pronouncer_factory: PronouncerFactory = load_pronouncer,
+    british_factory: BritishFactory = load_british,
 ) -> FastAPI:
     """Build the application; tests pass their own settings, a fake model and a fake G2P."""
     settings = settings or Settings()
     runtime = runtime or SpeechRuntime(settings)
-    scorer = Scorer(runtime, pronouncer_factory)
+    scorer = Scorer(runtime, pronouncer_factory, british_factory)
     _configure_logging(settings.log_level)
 
     @asynccontextmanager
@@ -57,6 +65,7 @@ def create_app(
     app.state.settings = settings
     app.state.runtime = runtime
     app.state.scorer = scorer
+    app.state.dump_dir = dump_dir(settings.debug_dump_dir)
     install_error_handlers(app)
     app.include_router(health_router)
     app.include_router(score_router)

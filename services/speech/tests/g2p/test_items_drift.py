@@ -61,7 +61,7 @@ def test_the_sentences_can_show_every_rule_of_the_feedback_table() -> None:
                 verdicts = [
                     PhonemeVerdict(
                         expected=t,
-                        correct=j != i,
+                        verdict="correct" if j != i else "wrong",
                         heard=heard if j == i else None,
                         gop=0.0,
                         start_ms=0,

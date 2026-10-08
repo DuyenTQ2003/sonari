@@ -20,9 +20,9 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: services/${{ matrix.service }}/uv.lock
-      - name: Install ffmpeg (decodes the recordings the speech tests upload)
+      - name: Install ffmpeg and espeak-ng (decode the uploads; the en-gb reference)
         if: matrix.service == 'speech'
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
       - run: uv sync --frozen --directory services/${{ matrix.service }}
       # The integration tests need the real stack. `make infra` is what a developer runs: it
       # starts MongoDB as the single-node replica set rs0 (change streams and transactions
