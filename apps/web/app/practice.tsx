@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { loadItems, scoreRecording, type SpeakingItem } from "../lib/api";
 import { messageFor, t } from "../lib/messages";
 import { RecorderError, startRecording, type Recording } from "../lib/recorder";
+import { isDebug, step, type ScoreResponse } from "../lib/score";
+import { CARD, ScoreView } from "./result";
 
 type Phase = "loading" | "idle" | "recording" | "scoring";
 
@@ -16,11 +18,14 @@ export default function Practice() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState<string | null>(null); // a message key
   const [audio, setAudio] = useState<Blob | null>(null); // kept so a failed scoring can be resent
-  const [result, setResult] = useState<unknown>(null);
+  const [result, setResult] = useState<ScoreResponse | null>(null);
+  const [selected, setSelected] = useState<number | null>(null); // the word whose phonemes show
+  const [debug, setDebug] = useState(false);
   const recording = useRef<Recording | null>(null);
   const item = items[index];
 
   useEffect(() => {
+    setDebug(isDebug(window.location.search));
     loadItems().then((loaded) => {
       if (loaded.ok) setItems(loaded.data.items);
       else setError(loaded.messageKey);
@@ -28,6 +33,13 @@ export default function Practice() {
     });
     return () => void recording.current?.stop(); // leaving the page must release the microphone
   }, []);
+
+  function clear() {
+    setResult(null);
+    setSelected(null);
+    setError(null);
+    setAudio(null);
+  }
 
   async function submit(blob: Blob) {
     setPhase("scoring");
@@ -39,9 +51,7 @@ export default function Practice() {
   }
 
   async function start() {
-    setError(null);
-    setResult(null);
-    setAudio(null);
+    clear();
     try {
       recording.current = await startRecording();
       setPhase("recording");
@@ -57,26 +67,38 @@ export default function Practice() {
     await submit(blob);
   }
 
-  function next() {
-    setIndex((index + 1) % items.length);
-    setResult(null);
-    setError(null);
-    setAudio(null);
+  function go(delta: number) {
+    setIndex(step(index, delta, items.length));
+    clear();
   }
 
   const busy = phase !== "idle";
+  const canMove = !busy && items.length > 1;
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-semibold">{t("practice.heading")}</h1>
       <p>{t("practice.instruction")}</p>
+      <p className="text-sm text-slate-600">{t("practice.notice")}</p>
 
       {phase === "loading" && <p>{t("practice.loading")}</p>}
       {phase !== "loading" && !item && !error && <p>{t("practice.empty")}</p>}
       {item && (
-        <p lang="en" className="rounded-lg bg-white p-4 text-xl shadow">
+        <nav className="flex items-center justify-between gap-2">
+          <button className={button} onClick={() => go(-1)} disabled={!canMove}>
+            {t("practice.previous")}
+          </button>
+          <span>{t("practice.position", { n: index + 1, total: items.length })}</span>
+          <button className={button} onClick={() => go(1)} disabled={!canMove}>
+            {t("practice.next")}
+          </button>
+        </nav>
+      )}
+      {item && !result && (
+        <p lang="en" className={CARD}>
           {item.text}
         </p>
       )}
+      {result && <ScoreView result={result} selected={selected} onSelect={setSelected} />}
 
       <div className="flex flex-wrap gap-2">
         {phase === "recording" ? (
@@ -93,9 +115,6 @@ export default function Practice() {
             {t("practice.retry")}
           </button>
         )}
-        <button className={button} onClick={next} disabled={busy || items.length < 2}>
-          {t("practice.next")}
-        </button>
       </div>
 
       {phase === "recording" && <p role="status">{t("practice.recording")}</p>}
@@ -105,7 +124,7 @@ export default function Practice() {
           {messageFor(error)}
         </p>
       )}
-      {result !== null && (
+      {debug && result && (
         <section>
           <h2 className="font-medium">{t("practice.result")}</h2>
           <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-sm text-slate-100">

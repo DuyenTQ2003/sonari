@@ -67,6 +67,34 @@ describe("learner-facing copy", () => {
   });
 });
 
+describe("the copy of the result view", () => {
+  it("has a label and a legend line for each of the three verdicts", () => {
+    for (const verdict of ["correct", "unclear", "wrong"]) {
+      expect(has(`practice.verdict.${verdict}`), verdict).toBe(true);
+      expect(has(`practice.legend.${verdict}`), verdict).toBe(true);
+    }
+  });
+
+  it("has a why and a how for every fix, naming only parameters the service sends", () => {
+    const fixes = vi.pronunciation.fix as Record<string, Record<string, string>>;
+    expect(Object.keys(fixes)).toContain("generic");
+    for (const [rule, copy] of Object.entries(fixes)) {
+      expect(Object.keys(copy).sort(), rule).toEqual(["how", "why"]);
+      for (const text of Object.values(copy)) {
+        for (const match of text.matchAll(/\{(\w+)\}/g)) {
+          expect(["expected", "heard", "word"], `${rule}: {${match[1]}}`).toContain(match[1]);
+        }
+      }
+    }
+  });
+
+  it("does not use a verdict word as a score: no number is part of the result copy", () => {
+    const copy = [...Object.values(vi.practice.verdict), ...Object.values(vi.practice.legend)];
+    expect(copy.filter((text) => /\d|%/.test(text))).toEqual([]);
+    expect(vi.practice.hint + vi.practice.clean + vi.practice.notice).not.toMatch(/\d|%/);
+  });
+});
+
 describe("t and messageFor", () => {
   it("fills {name} placeholders and leaves an unknown one visible", () => {
     expect(t("pronunciation.fix.generic.why", { expected: "θ", word: "think" })).toContain("θ");
