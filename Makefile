@@ -41,6 +41,22 @@ dev: infra apps/web/node_modules
 	NEXT_TELEMETRY_DISABLED=1 CORE_URL=http://localhost:8000 SPEECH_URL=http://localhost:8001 npm run --prefix apps/web dev & \
 	wait
 
+# From a fresh clone to the practice page: the speech data, the infra, the demo content, the apps.
+# Needs Docker, Node 22, uv, ffmpeg and espeak-ng (README.md, "Run it").
+.PHONY: demo
+demo: speech-data ingest-demo-sources ingest-speaking-items dev
+
+# The speech service's data, once per machine (needs network, about 360 MB): the int8 model from
+# Hugging Face, kept only when its size and SHA-256 match runtime/models.yaml, and the CMUdict
+# corpus that g2p_en reads. Both go to DATA_DIR (default ~/sonari-data). ffmpeg and espeak-ng
+# come from the system's package manager.
+.PHONY: speech-data
+speech-data:
+	@command -v ffmpeg >/dev/null || { echo "ffmpeg is not installed (apt install ffmpeg)"; exit 1; }
+	@command -v espeak-ng >/dev/null || { echo "espeak-ng is not installed (apt install espeak-ng)"; exit 1; }
+	$(UV_RUN) services/speech python -m sonari_speech.runtime.weights
+	$(UV_RUN) services/speech python -m sonari_speech.g2p.backend
+
 # The web app (apps/web). It needs Node 22 on the machine that runs make: in WSL, install it inside
 # the distro (the Windows node and npm do not count). `npm ci` runs again when the lockfile changes.
 apps/web/node_modules: apps/web/package-lock.json
@@ -142,8 +158,15 @@ SOURCES_FILE ?= $(HOME)/sonari-trimmed/voa/trimmed.jsonl
 ingest-sources: infra
 	$(UV_RUN) services/core --env-file $(CURDIR)/.env python $(CURDIR)/scripts/ingest_sources.py $(SOURCES_FILE) $(ARGS)
 
+# Only the 13 passages the 20 practice sentences pin (tools/speaking_items/sources.jsonl, copied
+# byte for byte from the trimmed corpus; tests/test_demo_seed.py checks it): a fresh clone needs no
+# VOA crawl, which takes about 14 hours. The full corpus ingested later leaves these unchanged.
+.PHONY: ingest-demo-sources
+ingest-demo-sources: SOURCES_FILE = $(CURDIR)/tools/speaking_items/sources.jsonl
+ingest-demo-sources: ingest-sources
+
 # Loads the picked practice sentences into content.speaking_items. Needs `make ingest-sources`
-# first. Idempotent: a second run stores nothing twice.
+# (or `make ingest-demo-sources`) first. Idempotent: a second run stores nothing twice.
 ITEMS_FILE ?= $(CURDIR)/tools/speaking_items/items.jsonl
 .PHONY: ingest-speaking-items
 ingest-speaking-items: infra
